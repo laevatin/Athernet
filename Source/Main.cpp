@@ -6,6 +6,7 @@
 
 #include "Audio.h"
 #include <objbase.h>
+#include <bitset>
 
 #define PI acos(-1)
 
@@ -44,33 +45,38 @@ public:
 //==============================================================================
 int main(int argc, char* argv[])
 {
-    /* Initialize Player */
-    //AudioDeviceManager dev_manager;
-    //dev_manager.initialiseWithDefaultDevices(1, 1);
-    //AudioDeviceManager::AudioDeviceSetup dev_info;
-    //dev_info = dev_manager.getAudioDeviceSetup();
-    //dev_info.sampleRate = 48000; // Setup sample rate to 48000 Hz
-    //dev_manager.setAudioDeviceSetup(dev_info, false);
-
-    ///* Add callback to AudioDeviceManager */
-    //std::unique_ptr<Tester> tester;
-    //if (tester.get() == nullptr)
-    //{
-    //    tester.reset(new Tester());
-    //    dev_manager.addAudioCallback(tester.get());
-    //}
-
-    ///* Terminate the process */
-    //std::cout << "Press any ENTER to stop.\n";
-    //getchar();
-    //dev_manager.removeAudioCallback(tester.get());
-    //CoInitialize(0);
     MessageManager::getInstance();
     AudioIO audioIO;
 
+    Random rand;
+    constexpr int num = 100;
+    Array<int> input;
+    input.resize(num);
+
+    rand.setSeedRandomly();
+    std::cout << "input: ";
+    for (int i = 0; i < num; i++)
+    {
+        if (rand.nextFloat() > 0.5) {
+            std::cout << 1 << " ";
+            input.set(i, 1);
+        } 
+        else {
+            std::cout << 0 << " ";
+            input.set(i, 0);
+        }
+    }
+    std::cout << newLine;
+
+    //bits.test()
+    audioIO.setTransmitData(input);
     while (getchar()) 
     {
-        audioIO.startTest();
+        std::cout << "output: ";
+        for (int i = 0; i < input.size(); i++)
+            std::cout << audioIO.getOutput(i) << " ";
+        std::cout << newLine;
+        audioIO.startTransmit();
     }
 
     return 0;

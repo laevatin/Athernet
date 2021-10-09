@@ -11,31 +11,96 @@ class AudioDevice : public AudioIODeviceCallback,
 {
 public:
     AudioDevice()
+        : frameLength(48000), 
+          headerLength(1000),
+          bitLength(500),
+          transFreq(5000)
     {}
 
-    void beginTest()
+    AudioDevice(int frame, int header, int bitLen, int freq)
+        : frameLength(frame),
+          headerLength(header),
+          bitLength(bitLen),
+          transFreq(freq)
+    {}
+
+    void beginTransmit()
     {
         startTimer(50);
 
         const ScopedLock sl(lock);
-        createTestSound();
+        createTransSound();
         recordedSound.clear();
         playingSampleNum = recordedSampleNum = 0;
-        testIsRunning = true;
+        isRunning = true;
+    }
+
+    void setData(const Array<int> &data)
+    {
+        // Deep copy
+        inputData = data;
+    }
+
+    int getOutput(int index) const
+    {
+        return outputData[index];
     }
 
     void hiResTimerCallback() override
     {
-        std::cout << "timer callback" << newLine;
-        if (testIsRunning && recordedSampleNum >= recordedSound.getNumSamples())
+        if (isRunning && recordedSampleNum >= recordedSound.getNumSamples())
         {
-            testIsRunning = false;
+            isRunning = false;
             stopTimer();
 
-            // Test has finished, so calculate the result..
-            auto latencySamples = calculateLatencySamples();
+            auto* record = recordedSound.getReadPointer(0);
+            auto* header = transSound.getReadPointer(0);
+            auto* cos = cosSound.getReadPointer(0);
+            float sum = 0.0f;
+            float sum1 = 0.0f;
+            float maxsum = 0.0f;
+            int headerpos = 0;
 
-            std::cout << getMessageDescribingResult(latencySamples);
+            for (int i = 0; i < frameLength - headerLength; i++) {
+                for (int j = 0; j < headerLength; j++) {
+                    sum += record[i + j] * header[j];
+                }
+                if (sum > maxsum) {
+                    maxsum = sum;
+                    headerpos = i;
+                }
+                sum = 0.0f;
+            }
+
+            std::cout << "pos: " << headerpos << newLine;
+            //std::cout << "ref: " << sum1 << newLine;
+            int k = 0;
+
+            for (int i = headerpos + headerLength; i < frameLength; i += bitLength) {
+                for (int j = 0; j < bitLength; j++) {
+                    sum += record[i + j] * cos[headerLength + j];
+                    sum1 += header[i - headerpos + j] * header[headerLength + j];
+                }
+                std::cout << newLine;
+                std::cout << "ref: " << sum1 << newLine;
+                std::cout << "get: " << sum << newLine;
+
+                std::cout << "output: ";
+                if (sum > 0)
+                    std::cout << 1 << " ";
+                else 
+                    std::cout << 0 << " ";
+                std::cout << newLine;
+                
+                sum1 = 0.0f;
+
+                if (sum > 0)
+                    outputData.set(k++, 1);
+                else
+                    outputData.set(k++, 0);
+                sum = 0.0f;
+            }
+            // std::cout << getMessageDescribingResult(latencySamples);
         }
     }
 
@@ -43,41 +108,17 @@ public:
     {
         String message;
 
-        if (latencySamples >= 0)
-        {
-            message << newLine
-                << "Results:" << newLine
-                << latencySamples << " samples (" << String(latencySamples * 1000.0 / sampleRate, 1)
-                << " milliseconds)" << newLine
-                << "The audio device reports an input latency of "
-                << deviceInputLatency << " samples, output latency of "
-                << deviceOutputLatency << " samples." << newLine
-                << "So the corrected latency = "
-                << (latencySamples - deviceInputLatency - deviceOutputLatency)
-                << " samples (" << String((latencySamples - deviceInputLatency - deviceOutputLatency) * 1000.0 / sampleRate, 2)
-                << " milliseconds)";
-        }
-        else
-        {
-            message << newLine
-                << "Couldn't detect the test signal!!" << newLine
-                << "Make sure there's no background noise that might be confusing it..";
-        }
-
         return message;
     }
 
     //==============================================================================
     void audioDeviceAboutToStart(AudioIODevice* device) override
     {
-        testIsRunning = false;
+        isRunning = false;
         playingSampleNum = recordedSampleNum = 0;
+        outputData.resize(inputData.size());
 
-        sampleRate = 48000;
-        deviceInputLatency = device->getInputLatencyInSamples();
-        deviceOutputLatency = device->getOutputLatencyInSamples();
-
-        recordedSound.setSize(1, (int)(0.9 * sampleRate));
+        recordedSound.setSize(1, (int)(sampleRate));
         recordedSound.clear();
     }
 
@@ -88,10 +129,10 @@ public:
     {
         const ScopedLock sl(lock);
 
-        if (testIsRunning)
+        if (isRunning)
         {
             auto* recordingBuffer = recordedSound.getWritePointer(0);
-            auto* playBuffer = testSound.getReadPointer(0);
+            auto* playBuffer = transSound.getReadPointer(0);
 
             for (int i = 0; i < numSamples; ++i)
             {
@@ -108,7 +149,7 @@ public:
 
                 ++recordedSampleNum;
 
-                auto outputSamp = (playingSampleNum < testSound.getNumSamples()) ? playBuffer[playingSampleNum] : 0.0f;
+                auto outputSamp = (playingSampleNum < transSound.getNumSamples()) ? playBuffer[playingSampleNum] : 0.0f;
 
                 for (auto j = numOutputChannels; --j >= 0;)
                     if (outputChannelData[j] != nullptr)
@@ -127,135 +168,59 @@ public:
     }
 
 private:
-    AudioBuffer<float> testSound, recordedSound;
-    Array<int> spikePositions;
+    AudioBuffer<float> transSound, recordedSound;
+    AudioBuffer<float> cosSound;
+    Array<int> inputData, outputData;
     CriticalSection lock;
 
     int playingSampleNum = 0;
-    int recordedSampleNum = -1;
-    double sampleRate = 0.0;
-    bool testIsRunning = false;
-    int deviceInputLatency = 0, deviceOutputLatency = 0;
+    int recordedSampleNum = 0;
+    
+    int headerLength;
+    int frameLength;
+    int bitLength;
+    int transFreq;
+
+    double sampleRate = 48000;
+    bool isRunning = false;
 
     //==============================================================================
     // create a test sound which consists of a series of randomly-spaced audio spikes..
-    void createTestSound()
+    void createTransSound()
     {
-        auto length = ((int)sampleRate) / 4;
-        testSound.setSize(1, length);
-        testSound.clear();
+        auto length = ((int)sampleRate);
+        transSound.setSize(1, length);
+        cosSound.setSize(1, bitLength);
+        transSound.clear();
 
-        int freq = 800; // Hz
+        transFreq = 9234; // 1000 Hz carrier wave
         float amp = 0.7;
-        int sampleRate = 48000;
         int channelNum = 1;
-        float dPhasePerSample = 2 * PI * ((float)freq / (float)sampleRate);
+        float dPhasePerSample = 2 * PI * ((float)transFreq / (float)sampleRate);
+        float dPhasePerSampleHeader = 2 * PI * ((float)5923.0 / (float)sampleRate);
         float initPhase = 0;
         float data;
 
-        for (int i = 0; i < length; i++) {
-            data = amp * sin(dPhasePerSample * i + initPhase);
+        for (int i = 0; i < headerLength; i++) {
+            data = amp * cos(dPhasePerSampleHeader * i);
             // Write the sample into the output channel 
-            testSound.setSample(0, i, data);
+            transSound.setSample(0, i, data);
         }
 
-        //Random rand;
-
-        //for (int i = 0; i < length; ++i)
-        //    testSound.setSample(0, i, (rand.nextFloat() - rand.nextFloat() + rand.nextFloat() - rand.nextFloat()) * 0.06f);
-
-        //spikePositions.clear();
-
-        //int spikePos = 0;
-        //int spikeDelta = 50;
-
-        //while (spikePos < length - 1)
-        //{
-        //    spikePositions.add(spikePos);
-
-        //    testSound.setSample(0, spikePos, 0.99f);
-        //    testSound.setSample(0, spikePos + 1, -0.99f);
-
-        //    spikePos += spikeDelta;
-        //    spikeDelta += spikeDelta / 6 + rand.nextInt(5);
-        //}
-    }
-
-    // Searches a buffer for a set of spikes that matches those in the test sound
-    int findOffsetOfSpikes(const AudioBuffer<float>& buffer) const
-    {
-        return 0;
-        auto minSpikeLevel = 5.0f;
-        auto smooth = 0.975;
-        auto* s = buffer.getReadPointer(0);
-        int spikeDriftAllowed = 5;
-
-        Array<int> spikesFound;
-        spikesFound.ensureStorageAllocated(100);
-        auto runningAverage = 0.0;
-        int lastSpike = 0;
-
-        for (int i = 0; i < buffer.getNumSamples() - 10; ++i)
-        {
-            auto samp = std::abs(s[i]);
-
-            if (samp > runningAverage * minSpikeLevel && i > lastSpike + 20)
-            {
-                lastSpike = i;
-                spikesFound.add(i);
-            }
-
-            runningAverage = runningAverage * smooth + (1.0 - smooth) * samp;
+        for (int i = 0; i < bitLength; i++) {
+            data = amp * cos(dPhasePerSample * i);
+            cosSound.setSample(0, i, data);
         }
 
-        int bestMatch = -1;
-        auto bestNumMatches = spikePositions.size() / 3; // the minimum number of matches required
-
-        if (spikesFound.size() < bestNumMatches)
-            return -1;
-
-        for (int offsetToTest = 0; offsetToTest < buffer.getNumSamples() - 2048; ++offsetToTest)
-        {
-            int numMatchesHere = 0;
-            int foundIndex = 0;
-
-            for (int refIndex = 0; refIndex < spikePositions.size(); ++refIndex)
-            {
-                auto referenceSpike = spikePositions.getUnchecked(refIndex) + offsetToTest;
-                int spike = 0;
-
-                while ((spike = spikesFound.getUnchecked(foundIndex)) < referenceSpike - spikeDriftAllowed
-                    && foundIndex < spikesFound.size() - 1)
-                    ++foundIndex;
-
-                if (spike >= referenceSpike - spikeDriftAllowed && spike <= referenceSpike + spikeDriftAllowed)
-                    ++numMatchesHere;
+        for (int i = 0; i * bitLength < length - headerLength; i += 1) {
+            for (int j = 0; j < bitLength; j++) {
+                //int a = inputData[i];
+                data = amp * cos(dPhasePerSample * j + PI * inputData[i]);
+                // Write the sample into the output channel 
+                transSound.setSample(0, i * bitLength + j + headerLength, data);
             }
 
-            if (numMatchesHere > bestNumMatches)
-            {
-                bestNumMatches = numMatchesHere;
-                bestMatch = offsetToTest;
-
-                if (numMatchesHere == spikePositions.size())
-                    break;
-            }
         }
-
-        return bestMatch;
-    }
-
-    int calculateLatencySamples() const
-    {
-        // Detect the sound in both our test sound and the recording of it, and measure the difference
-        // in their start times..
-        auto referenceStart = findOffsetOfSpikes(testSound);
-        jassert(referenceStart >= 0);
-
-        auto recordedStart = findOffsetOfSpikes(recordedSound);
-
-        return (recordedStart < 0) ? -1
-            : (recordedStart - referenceStart);
     }
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioDevice)
@@ -268,6 +233,7 @@ public:
     AudioIO()
     {
         audioDeviceManager.initialiseWithDefaultDevices(1, 1);
+        audioDevice.reset(new AudioDevice());
     }
 
     ~AudioIO()
@@ -276,16 +242,22 @@ public:
         audioDevice.reset();
     }
 
-    void startTest()
+    void startTransmit()
     {
-        std::cout << "test start" << newLine;
-        if (audioDevice.get() == nullptr)
-        {
-            audioDevice.reset(new AudioDevice());
-            audioDeviceManager.addAudioCallback(audioDevice.get());
-        }
+        //std::cout << "test start" << newLine;
+        audioDeviceManager.addAudioCallback(audioDevice.get());
 
-        audioDevice->beginTest();
+        audioDevice->beginTransmit();
+    }
+
+    void setTransmitData(const Array<int>& data)
+    {
+        audioDevice->setData(data);
+    }
+
+    int getOutput(int i)
+    {
+        return audioDevice->getOutput(i);
     }
 
 private:
