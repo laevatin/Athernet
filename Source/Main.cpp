@@ -7,68 +7,43 @@
 #include "Audio.h"
 #include <objbase.h>
 #include <bitset>
+#include <fstream>
 
 #define PI acos(-1)
 
-using namespace juce;
+void getInputFromFile(Array<int8_t> &input, const std::string &path)
+{
+    std::ifstream inputFile;
+    int8_t in;
+    int idx = 0;
 
-class Tester : public AudioIODeviceCallback {
-
-public:
-    Tester() {}
-
-    void audioDeviceAboutToStart(AudioIODevice* device) override {}
-
-    void audioDeviceStopped() override {}
-
-    void audioDeviceIOCallback(const float** inputChannelData, int numInputChannels,
-        float** outputChannelData, int numOutputChannels, int numSamples) override {
-        // Generate Sine Wave Data
-        int freq = 9000; // Hz
-        float amp = 0.7;
-        int sampleRate = 48000;
-        int channelNum = 1;
-        float dPhasePerSample = 2 * PI * ((float)freq / (float)sampleRate);
-        float initPhase = 0;
-        float data;
-
-        for (int i = 0; i < numSamples; i++) {
-            data = amp * sin(dPhasePerSample * i + initPhase);
-            // Write the sample into the output channel 
-            outputChannelData[0][i] = data;
-        }
+    inputFile.open(path);
+    if (!inputFile)
+    {
+        std::cerr << "ERROR: Unable to open input file." << newLine;
+        exit(1);
+    }
+    
+    while (inputFile >> in) 
+    {
+        input.set(idx++, in - '0');
     }
 
-
-};
+    inputFile.close();
+}
 
 //==============================================================================
 int main(int argc, char* argv[])
 {
     MessageManager::getInstance();
     AudioIO audioIO;
-
-    Random rand;
-    constexpr int num = 100;
-    Array<int> input;
-    input.resize(num);
-
-    rand.setSeedRandomly();
-    std::cout << "input: ";
-    for (int i = 0; i < num; i++)
-    {
-        if (rand.nextFloat() > 0.5) {
-            std::cout << 1 << " ";
-            input.set(i, 1);
-        } 
-        else {
-            std::cout << 0 << " ";
-            input.set(i, 0);
-        }
-    }
+    
+    Array<int8_t> input;
+    getInputFromFile(input, "C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Source\\input.in");
+    for (auto elem : input)
+        std::cout << (int)elem << " ";
     std::cout << newLine;
 
-    //bits.test()
     audioIO.setTransmitData(input);
     while (getchar()) 
     {
