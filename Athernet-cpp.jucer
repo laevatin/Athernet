@@ -4,7 +4,10 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="qncXkF" name="Athernet-cpp">
     <GROUP id="{B965A200-6802-14F0-61F8-1D128E044BDD}" name="Source">
+      <FILE id="oFfc86" name="Audio.cpp" compile="1" resource="0" file="Source/Audio.cpp"/>
+      <FILE id="nOKBuq" name="Audio.h" compile="0" resource="0" file="Source/Audio.h"/>
       <FILE id="mGU128" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="ADMfgt" name="Ringbuffer.hpp" compile="0" resource="0" file="Source/Ringbuffer.hpp"/>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_ASIO="1" JUCE_WASAPI="0"
