@@ -439,6 +439,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\Frame.cpp">
+      <Filter>Athernet-cpp\Source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\Audio.cpp">
       <Filter>Athernet-cpp\Source</Filter>
     </ClCompile>
@@ -2532,6 +2535,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\Frame.h">
+      <Filter>Athernet-cpp\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\Audio.h">
       <Filter>Athernet-cpp\Source</Filter>
     </ClInclude>
