@@ -23,7 +23,7 @@ public:
 
     void write(const Type* data, std::size_t len)
     {
-        if (fillCount + len >= CAPACITY)
+        if (fillCount + len > CAPACITY)
             std::cerr << "Ring Buffer Overflow\n";
 
         if ((uint16_t)(head + len) < head)
@@ -49,16 +49,30 @@ public:
             memcpy(data + (UINT16_MAX - tail), buffer, sizeof(Type) * (uint16_t)(tail + len));
         }
         else
-        {
             memcpy(data, buffer + tail, sizeof(Type) * len);
-        }
-
 
         tail += len;
         fillCount -= len;
     }
 
-    std::size_t size()
+    void reset()
+    {
+        head = 0;
+        tail = 0;
+        fillCount = 0;
+    }
+
+    bool hasEnoughSpace(std::size_t len) const
+    {
+        return fillCount + len <= CAPACITY;
+    }
+
+    bool hasEnoughElem(std::size_t elem) const
+    {
+        return fillCount >= elem;
+    }
+
+    std::size_t size() const
     {
         return fillCount;
     }

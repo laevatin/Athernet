@@ -47,10 +47,10 @@ int main(int argc, char* argv[])
     audioIO.setTransmitData(input);
     while (getchar()) 
     {
-        std::cout << "output: ";
-        for (int i = 0; i < input.size(); i++)
-            std::cout << audioIO.getOutput(i) << " ";
-        std::cout << newLine;
+        //std::cout << "output: ";
+        //for (int i = 0; i < input.size(); i++)
+        //    std::cout << audioIO.getOutput(i) << " ";
+        //std::cout << newLine;
         audioIO.startTransmit();
     }
 

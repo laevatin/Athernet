@@ -1,27 +1,38 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include <list>
+#include "Frame.h"
+#include "Ringbuffer.hpp"
 
 #define PI acos(-1)
+#define PENDING_QUEUE_SIZE 10
 
 using namespace juce;
+
+typedef Array<int8_t> DataType;
+typedef AudioBuffer<float> AudioType;
 
 class AudioDevice : public AudioIODeviceCallback,
     private HighResolutionTimer
 {   
-    typedef AudioBuffer<float> AudioType;
-    typedef Array<int8_t> DataType;
-
 public:
-    AudioDevice(int frame, int header, int bitLen, int freq);
+
+    enum state {
+        SENDING = 1,
+        RECEIVING = 2,
+        BOTH = 3
+    };
+
+    AudioDevice();
 
     void beginTransmit();
 
-    void setTransmitData(const DataType &data);
-
-    int getOutput(int index) const;
-
     void hiResTimerCallback() override;
+
+    void setDeviceState(enum state s);
+
+    void setSendData(DataType &input);
 
     //==============================================================================
     void audioDeviceAboutToStart(AudioIODevice* device) override;
@@ -32,36 +43,24 @@ public:
         float** outputChannelData, int numOutputChannels, int numSamples) override;
 
 private:
-    
-    AudioType transSound, recordedSound;
-    AudioType cos0Sound, cosPISound, headerSound;
     DataType inputData, outputData;
+    int inputPos, outputPos;
     CriticalSection lock;
-
-    int playingSampleNum = 0;
-    int recordedSampleNum = 0;
-    
-    const int headerLength;
-    const int frameLength;
-    const int bitLength;
-    const int transFreq;
-    const int headerFreq = 5923;
-
-    int framecnt = 0;
-    int duration = 0;
-    int transPos = 0;
+    RingBuffer<float> sender, receiver;
+    std::list<Frame> pendingFrames;
 
     const double sampleRate = 48000;
-    bool isRunning = false;
+
+    /* Send by default */
+    enum state curState = SENDING;
+
+    bool isSending = false;
+    bool isReceiving = false;
     
-    void createTransSound();
+    void createNextFrame();
 
     /* Append the sound from src to dest at start */
     void addTransSound(const AudioType &src, int channel);
-    
-    void analyseRecord();
-
-    int findHeaderPos(int start, int len);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioDevice)
 };
@@ -69,20 +68,21 @@ private:
 //==============================================================================
 class AudioIO
 {
-    typedef Array<int8_t> DataType;
-
 public:
     AudioIO();
     ~AudioIO();
 
     void startTransmit();
-    void setTransmitData(const DataType &data);
-    int getOutput(int i);
+    void write(const DataType &data);
+    int read(DataType &data);
     
 private:
     AudioDeviceManager audioDeviceManager;
 
     std::unique_ptr<AudioDevice> audioDevice;
+
+    DataType inputBuffer;
+    DataType outputBuffer;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioIO)
 };

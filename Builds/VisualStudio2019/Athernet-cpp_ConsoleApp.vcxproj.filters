@@ -439,6 +439,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\Demodulator.cpp">
+      <Filter>Athernet-cpp\Source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\Frame.cpp">
       <Filter>Athernet-cpp\Source</Filter>
     </ClCompile>
@@ -2535,6 +2538,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\Demodulator.h">
+      <Filter>Athernet-cpp\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\Frame.h">
       <Filter>Athernet-cpp\Source</Filter>
     </ClInclude>

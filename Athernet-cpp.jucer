@@ -5,6 +5,8 @@
               compilerFlagSchemes="NewScheme">
   <MAINGROUP id="qncXkF" name="Athernet-cpp">
     <GROUP id="{B965A200-6802-14F0-61F8-1D128E044BDD}" name="Source">
+      <FILE id="KqNODK" name="Demodulator.cpp" compile="1" resource="0" file="Source/Demodulator.cpp"/>
+      <FILE id="W7g0Iq" name="Demodulator.h" compile="0" resource="0" file="Source/Demodulator.h"/>
       <FILE id="nJroVr" name="Frame.cpp" compile="1" resource="0" file="Source/Frame.cpp"/>
       <FILE id="G5PHfv" name="Frame.h" compile="0" resource="0" file="Source/Frame.h"/>
       <FILE id="oFfc86" name="Audio.cpp" compile="1" resource="0" file="Source/Audio.cpp"/>

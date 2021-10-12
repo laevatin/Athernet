@@ -4,7 +4,7 @@
 #define __FRAME_H__
 
 #include "Ringbuffer.hpp"
-#include <JuceHeader.h>
+#include "Audio.h"
 using namespace juce;
 
 /**
@@ -14,29 +14,33 @@ using namespace juce;
 class Frame 
 {
 public:
-    Frame(const Array<int8_t> &data, int start, int len);
+    Frame(const DataType &data, int start);
     ~Frame();
 
     const float *getReadPointer() const;
 
     void addToBuffer(RingBuffer<float> &buffer) const;
 
-    static void setHeader(const AudioBuffer<float> &header);
-    static void setFrameProperties(int bitLen, int headerLen, int frameLen, int freq);
+    static void setHeader(const AudioType &header, int headerLen);
+    static void setFrameProperties(int bitLen, int frameLen, int freq);
+
+    static int getBitPerFrame();
+    static int getFrameLength();
 
 private:
 
     void modulate();
     void addHeader();
 
-    AudioBuffer<float> frameAudio;
+    AudioType frameAudio;
     
     static int bitLen;
     static int headerLen;
     static int frameLen;
     static int freq;
+    static int bitPerFrame;
 
-    static AudioBuffer<float> header;
+    static AudioType header;
 
 };
 
