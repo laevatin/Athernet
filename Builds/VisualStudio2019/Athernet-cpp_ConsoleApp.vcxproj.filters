@@ -2538,6 +2538,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\Accumulator.h">
+      <Filter>Athernet-cpp\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\Demodulator.h">
       <Filter>Athernet-cpp\Source</Filter>
     </ClInclude>

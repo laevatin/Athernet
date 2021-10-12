@@ -2087,6 +2087,7 @@
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_gui_extra.cpp"/>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\Accumulator.h"/>
     <ClInclude Include="..\..\Source\Demodulator.h"/>
     <ClInclude Include="..\..\Source\Frame.h"/>
     <ClInclude Include="..\..\Source\Audio.h"/>
