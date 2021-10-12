@@ -21,7 +21,7 @@ public:
 
     void addToBuffer(RingBuffer<float> &buffer) const;
 
-    static void setHeader(const AudioType &header, int headerLen);
+    static void generateHeader();
     static void setFrameProperties(int bitLen, int frameLen, int freq);
 
     static int getBitPerFrame();

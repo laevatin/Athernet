@@ -18,10 +18,32 @@ void Frame::addToBuffer(RingBuffer<float> &buffer) const
     buffer.write(getReadPointer(), frameLen);
 }
 
-void Frame::setHeader(const AudioBuffer<float> &header, int headerLen)
+void Frame::generateHeader()
 {
-    Frame::header = header;
+    // generate the header
+    constexpr int headerLen = 440;
+    double startFreq = 2000;
+    double endFreq = 10000;
+
+    float f_p[headerLen];
+    float omega[headerLen];
+    Frame::header.setSize(0, headerLen);
     Frame::headerLen = headerLen;
+
+    f_p[0] = startFreq;
+    for (int i = 1; i < headerLen / 2; i++)
+        f_p[i] = f_p[i - 1] + (endFreq - startFreq) / (headerLen / 2);
+    
+    f_p[headerLen / 2] = endFreq;
+    for (int i = headerLen / 2 + 1; i < headerLen; i++)
+        f_p[i] = f_p[i - 1] - (endFreq - startFreq) / (headerLen / 2);
+
+    omega[0] = 0;
+    for (int i = 1; i < headerLen; i++)
+        omega[i] = omega[i - 1] + (f_p[i] + f_p[i - 1]) / 2.0 * (1.0 / 48000);
+
+    for (int i = 0; i < headerLen; i++)
+        Frame::header.setSample(0, i, sin(2 * PI * omega[i]));
 }
 
 void Frame::setFrameProperties(int bitLen, int frameLen, int freq)
@@ -63,5 +85,5 @@ void Frame::modulate()
 
 void Frame::addHeader()
 {
-
+    frameAudio.copyFrom(0, 0, Frame::header, 0, 0, Frame::headerLen);
 }
