@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef __AUDIO_H__
+#define __AUDIO_H__
+
 #include <JuceHeader.h>
 #include <list>
 #include "Frame.h"
@@ -74,7 +77,7 @@ public:
 
     void startTransmit();
     void write(const DataType &data);
-    int read(DataType &data);
+    void read(DataType &data);
     
 private:
     AudioDeviceManager audioDeviceManager;
@@ -86,3 +89,5 @@ private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioIO)
 };
+
+#endif

@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
         std::cout << (int)elem << " ";
     std::cout << newLine;
 
-    audioIO.setTransmitData(input);
+    audioIO.write(input);
     while (getchar()) 
     {
         //std::cout << "output: ";

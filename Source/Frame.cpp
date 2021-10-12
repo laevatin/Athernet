@@ -1,12 +1,23 @@
 #include "Frame.h"
 
-Frame::Frame(const Array<int8_t> &data, int start)
+int Frame::bitLen;
+int Frame::headerLen;
+int Frame::frameLen;
+int Frame::freq;
+int Frame::bitPerFrame;
+
+AudioType Frame::header;
+
+Frame::Frame(const DataType &data, int start)
 {
-    frameAudio.setSize(0, frameLen);
+    frameAudio.setSize(1, frameLen);
 
     addHeader();
     modulate();
 }
+
+Frame::~Frame()
+{}
 
 const float *Frame::getReadPointer() const
 {
@@ -22,12 +33,12 @@ void Frame::generateHeader()
 {
     // generate the header
     constexpr int headerLen = 440;
-    double startFreq = 2000;
-    double endFreq = 10000;
+    float startFreq = 2000;
+    float endFreq = 10000;
 
     float f_p[headerLen];
     float omega[headerLen];
-    Frame::header.setSize(0, headerLen);
+    Frame::header.setSize(1, headerLen);
     Frame::headerLen = headerLen;
 
     f_p[0] = startFreq;
@@ -64,6 +75,16 @@ int Frame::getFrameLength()
     return Frame::frameLen;
 }
 
+int Frame::getHeaderLength()
+{
+    return Frame::headerLen;
+}
+
+const float *Frame::getHeader()
+{
+    return header.getReadPointer(0);
+}
+
 void Frame::modulate() 
 {
     // float dPhasePerSample = 2 * PI * ((float)freq / (float)sampleRate);
@@ -81,6 +102,8 @@ void Frame::modulate()
 
     // for (int i = 0; i < headerLength; i++) 
     //     headerSound.setSample(0, i, cos(dPhasePerSampleHeader * i));
+    for (int i = 0; i < frameLen; i++) 
+        frameAudio.addSample(0, i, 0);
 }
 
 void Frame::addHeader()

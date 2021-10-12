@@ -3,9 +3,15 @@
 #ifndef __FRAME_H__
 #define __FRAME_H__
 
+#include <JuceHeader.h>
 #include "Ringbuffer.hpp"
-#include "Audio.h"
+
+#define PI acos(-1)
+
 using namespace juce;
+
+typedef Array<int8_t> DataType;
+typedef AudioBuffer<float> AudioType;
 
 /**
  * Frame should be created after the header is set.
@@ -26,6 +32,8 @@ public:
 
     static int getBitPerFrame();
     static int getFrameLength();
+    static int getHeaderLength();
+    static const float *getHeader();
 
 private:
 

@@ -15,7 +15,7 @@
 template <typename Type>
 class RingBuffer
 {
-    static_assert(std::is_integral<Type>::value, "Integral type required.");
+    static_assert(std::is_floating_point<Type>::value, "FP type required.");
 
 public:
     RingBuffer() {};
