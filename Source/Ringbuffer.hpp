@@ -55,6 +55,31 @@ public:
         fillCount -= len;
     }
 
+    void peek(Type *data, std::size_t len)
+    {
+        if (fillCount < len)
+            std::cerr << "Ring Buffer Underflow\n";
+
+        if ((uint16_t)(tail + len) < tail)
+        {
+            memcpy(data, buffer + tail, sizeof(Type) * (UINT16_MAX - tail));
+            memcpy(data + (UINT16_MAX - tail), buffer, sizeof(Type) * (uint16_t)(tail + len));
+        }
+        else
+            memcpy(data, buffer + tail, sizeof(Type) * len);
+    }
+
+    int pop()
+    {
+        if (fillCount <= 0)
+            std::cerr << "Ring Buffer Underflow\n";
+        
+        int ret = buffer[tail];
+        tail += 1;
+        fillCount -= 1;
+        return ret;
+    }
+
     void reset()
     {
         head = 0;
@@ -75,6 +100,11 @@ public:
     std::size_t size() const
     {
         return fillCount;
+    }
+
+    std::size_t avail() const
+    {
+        return CAPACITY - fillCount;
     }
 
 private:

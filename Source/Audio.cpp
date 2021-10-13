@@ -46,15 +46,15 @@ void AudioDevice::beginTransmit()
     if (curState & RECEIVING)
     {
         receiver.reset();
-        isReceiving = true;
-
-        outputData.resize(inputData.size());
         outputData.clear();
+
+        isReceiving = true;
     }
 }
 
 void AudioDevice::hiResTimerCallback() 
 {   
+    //std::cout << "timer callback" << newLine;
     const ScopedLock sl(lock);
 
     if (isSending)
@@ -67,12 +67,19 @@ void AudioDevice::hiResTimerCallback()
             pendingFrames.front().addToBuffer(sender);
             pendingFrames.pop_front();
         }
-
     }
 
     if (isReceiving)
     {
-        // todo: Analyse header and demodulation
+        if (demodulator.isGettingBit())
+        {
+            float *buffer = (float *)malloc(sizeof(float) * Frame::getBitLength());
+            receiver.read(buffer, Frame::getBitLength());
+            demodulator.demodulate(buffer, outputData);
+            free(buffer);
+        }
+        else
+            demodulator.checkHeader(receiver);
     }
 
     if (!isSending && !isReceiving)
@@ -121,8 +128,8 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
         else
         {
             std::cout << "No enough space to receive" << newLine;
-            std::size_t size = receiver.size();
-            receiver.write(inputChannelData[0], size);
+            std::size_t avail = receiver.avail();
+            receiver.write(inputChannelData[0], avail);
             isReceiving = false;
         }
     }
@@ -148,11 +155,11 @@ AudioIO::~AudioIO()
 
 void AudioIO::startTransmit()
 {
-    audioDevice->setDeviceState(AudioDevice::SENDING);
+    audioDevice->setDeviceState(AudioDevice::BOTH);
     audioDevice->setSendData(inputBuffer);
 
-    Frame::setFrameProperties(5000, 48000, 1000);
-    Frame::generateHeader();
+    Frame::setFrameProperties(1000, 48000, 1000);
+    Frame::frameInit();
 
     audioDeviceManager.addAudioCallback(audioDevice.get());
     audioDevice->beginTransmit();

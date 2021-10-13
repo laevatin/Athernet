@@ -7,6 +7,7 @@
 #include <list>
 #include "Frame.h"
 #include "Ringbuffer.hpp"
+#include "Demodulator.h"
 
 #define PI acos(-1)
 #define PENDING_QUEUE_SIZE 10
@@ -45,14 +46,18 @@ public:
     void audioDeviceIOCallback(const float** inputChannelData, int numInputChannels,
         float** outputChannelData, int numOutputChannels, int numSamples) override;
 
-private:
+protected:
     DataType inputData, outputData;
-    int inputPos, outputPos;
+    int inputPos;
+
+private:
     CriticalSection lock;
     RingBuffer<float> sender, receiver;
     std::list<Frame> pendingFrames;
 
     const double sampleRate = 48000;
+
+    Demodulator demodulator;
 
     /* Send by default */
     enum state curState = SENDING;

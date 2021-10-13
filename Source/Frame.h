@@ -4,6 +4,7 @@
 #define __FRAME_H__
 
 #include <JuceHeader.h>
+#include <vector>
 #include "Ringbuffer.hpp"
 
 #define PI acos(-1)
@@ -27,28 +28,39 @@ public:
 
     void addToBuffer(RingBuffer<float> &buffer) const;
 
-    static void generateHeader();
+    static void frameInit();
+
     static void setFrameProperties(int bitLen, int frameLen, int freq);
+    static int8_t Frame::demodulate(const float *samples);
 
     static int getBitPerFrame();
     static int getFrameLength();
     static int getHeaderLength();
+    static int getBitLength();
+
     static const float *getHeader();
 
 private:
 
-    void modulate();
+    void modulate(const DataType &data, int start);
     void addHeader();
+    void addSound(const AudioType &src);
+
+    static AudioType generateSound(int freq, int length, float initPhase);
+    static void generateHeader();
 
     AudioType frameAudio;
+    int audioPos = 0;
     
     static int bitLen;
     static int headerLen;
     static int frameLen;
     static int freq;
     static int bitPerFrame;
+    constexpr static int sampleRate = 48000;
 
     static AudioType header;
+    static std::vector<AudioType> modulateSound;
 
 };
 

@@ -3,12 +3,12 @@
 #ifndef __DEMODULATOR_H__
 #define __DEMODULATOR_H__
 
-#include "Audio.h"
-#include "Frame.h"
+#include <JuceHeader.h>
+#include "Demodulator.h"
 #include "Accumulator.h"
 #include "mkl.h"
 
-#define HEADER_BUFFER 2000
+using namespace juce;
 
 typedef Array<int8_t> DataType;
 typedef AudioBuffer<float> AudioType;
@@ -19,15 +19,16 @@ public:
     Demodulator();
     ~Demodulator();
 
-    bool checkHeader();
+    void checkHeader(RingBuffer<float> &receiver);
+    void demodulate(const float *samples, DataType &dataOut);
+    bool isGettingBit();
 
 private:
     Accumulator<float> power;
 
-    AudioType headerBuffer;
+    int frameCountdown;
     int headerPos = -1;
-
-    friend class AudioDevice;
+    bool status;
 };
 
 #endif

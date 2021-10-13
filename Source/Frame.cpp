@@ -1,10 +1,13 @@
 #include "Frame.h"
+#include "mkl.h"
 
 int Frame::bitLen;
 int Frame::headerLen;
 int Frame::frameLen;
 int Frame::freq;
 int Frame::bitPerFrame;
+
+std::vector<AudioType> Frame::modulateSound;
 
 AudioType Frame::header;
 
@@ -13,7 +16,7 @@ Frame::Frame(const DataType &data, int start)
     frameAudio.setSize(1, frameLen);
 
     addHeader();
-    modulate();
+    modulate(data, start);
 }
 
 Frame::~Frame()
@@ -57,6 +60,18 @@ void Frame::generateHeader()
         Frame::header.setSample(0, i, sin(2 * PI * omega[i]));
 }
 
+AudioType Frame::generateSound(int freq, int length, float initPhase)
+{
+    AudioType sound;
+    sound.setSize(1, length);
+    auto soundPointer = sound.getWritePointer(0);
+
+    for (int i = 0; i < length; i++)
+        soundPointer[i] = sin(i * 2 * PI * ((float)freq / (float)sampleRate) + initPhase);
+    
+    return std::move(sound);
+}
+
 void Frame::setFrameProperties(int bitLen, int frameLen, int freq)
 {
     Frame::bitLen = bitLen;
@@ -80,30 +95,66 @@ int Frame::getHeaderLength()
     return Frame::headerLen;
 }
 
+int Frame::getBitLength()
+{
+    return Frame::bitLen;
+}
+
 const float *Frame::getHeader()
 {
     return header.getReadPointer(0);
 }
 
-void Frame::modulate() 
+void Frame::modulate(const DataType &data, int start) 
 {
-    // float dPhasePerSample = 2 * PI * ((float)freq / (float)sampleRate);
-    // float dPhasePerSampleHeader = 2 * PI * ((float)headerFreq / (float)sampleRate);
+    //for (int i = start; i < start + bitPerFrame; i++)
+    //{
+    //    /* gets 0 if i is out of bound */
+    //    if (data[i] == 1) 
+    //        addSound(Frame::modulateSound[0]);
+    //    else 
+    //        addSound(Frame::modulateSound[1]);
+    //}
+    for (int i = 0; i < frameLen; i++)
+        frameAudio.setSample(0, i, 0);
 
-    // cos0Sound.setSize(1, bitLength);
-    // cosPISound.setSize(1, bitLength);
-    // headerSound.setSize(1, headerLength);
+}
 
-    // for (int i = 0; i < bitLength; i++) 
-    // {
-    //     cos0Sound.setSample(0, i, cos(dPhasePerSample * i));
-    //     cosPISound.setSample(0, i, cos(dPhasePerSample * i + PI));
-    // }
+/* consume bitLen samples, `samples` should contain at least bitLen data */
+int8_t Frame::demodulate(const float *samples)
+{
+    float data = cblas_sdot(bitLen, samples, 1, modulateSound[0].getReadPointer(0), 1);
+    const float thres1 = 0.5;
+    const float thres0 = -0.5;
 
-    // for (int i = 0; i < headerLength; i++) 
-    //     headerSound.setSample(0, i, cos(dPhasePerSampleHeader * i));
-    for (int i = 0; i < frameLen; i++) 
-        frameAudio.addSample(0, i, 0);
+    std::cout << data << std::endl;
+
+    if (data > thres1)
+        return 1;
+    else if (data < thres0)
+        return 0;
+}
+
+void Frame::frameInit()
+{
+    for (int f = 800; f <= 6400; f *= 2)
+    {
+        modulateSound.emplace_back(generateSound(f, bitLen, 0));
+        modulateSound.emplace_back(generateSound(f, bitLen, PI));
+    }
+
+    generateHeader();
+}
+
+void Frame::addSound(const AudioType &src)
+{
+    if (src.getNumSamples() + audioPos > frameAudio.getNumSamples())
+    {
+        std::cout << "ERROR: frameAudio is full" << newLine;
+        return;
+    }
+    frameAudio.copyFrom(0, audioPos, src, 0, 0, src.getNumSamples());
+    audioPos += src.getNumSamples();
 }
 
 void Frame::addHeader()
