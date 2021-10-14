@@ -63,20 +63,23 @@ public:
             std::cerr << "Peek out of bound\n";
         
         uint16_t newTail = tail + offset;
+        T ret = T(0);
 
         if ((uint16_t)(newTail + len) < newTail)
         {
-            func((int)UINT16_MAX + 1 - (int)newTail, data, buffer + newTail);
-            func((int)((uint16_t)(newTail + len)), data + (UINT16_MAX + 1 - newTail), buffer);
+            ret += func((int)UINT16_MAX + 1 - (int)newTail, data, buffer + newTail);
+            ret += func((int)((uint16_t)(newTail + len)), data + (UINT16_MAX + 1 - newTail), buffer);
         }
         else
-            func((int)len, data, buffer + newTail);
+            ret += func((int)len, data, buffer + newTail);
+
+        return ret;
     }
 
     void discard(std::size_t len)
     {
         if (fillCount < len)
-            std::cerr << "Ring Buffer Underflow\n";
+            std::cerr << "discard: Ring Buffer Underflow\n";
 
         tail += len;
         fillCount -= len;

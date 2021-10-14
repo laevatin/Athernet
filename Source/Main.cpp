@@ -9,6 +9,8 @@
 #include <bitset>
 #include <fstream>
 
+
+extern std::ofstream debug_file;
 #define PI acos(-1)
 
 void getInputFromFile(Array<int8_t> &input, const std::string &path)
@@ -40,9 +42,9 @@ int main(int argc, char* argv[])
     
     Array<int8_t> input;
     getInputFromFile(input, "C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Source\\input.in");
-    for (auto elem : input)
-        std::cout << (int)elem << " ";
-    std::cout << newLine;
+    //for (auto elem : input)
+    //    std::cout << (int)elem << " ";
+    //std::cout << newLine;
 
     audioIO.write(input);
     while (getchar()) 
@@ -53,6 +55,8 @@ int main(int argc, char* argv[])
         //std::cout << newLine;
         audioIO.startTransmit();
     }
+
+    debug_file.close();
 
     return 0;
 }

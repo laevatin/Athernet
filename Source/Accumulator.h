@@ -15,6 +15,7 @@ struct Accumulator
 {
     T sum;
     std::vector<T> samples;
+    T max;
     int index;
     int size;
 
@@ -33,10 +34,12 @@ struct Accumulator
         sum -= samples[index];
         sum += sample;
         samples[index++] = sample;
+        for (int i = 0; i < size; i++)
+            max = std::max(max, samples[i]);
+            
         if (index >= size) 
             index = 0;
     }
-
 };
 
 #endif

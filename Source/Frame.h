@@ -30,7 +30,7 @@ public:
 
     static void frameInit();
 
-    static void setFrameProperties(int bitLen, int frameLen, int freq);
+    static void setFrameProperties(int bitLen, int frameLen);
     static int8_t Frame::demodulate(const float *samples);
 
     static int getBitPerFrame();
@@ -39,6 +39,7 @@ public:
     static int getBitLength();
 
     static const float *getHeader();
+    constexpr static int sampleRate = 48000;
 
 private:
 
@@ -55,9 +56,7 @@ private:
     static int bitLen;
     static int headerLen;
     static int frameLen;
-    static int freq;
     static int bitPerFrame;
-    constexpr static int sampleRate = 48000;
 
     static AudioType header;
     static std::vector<AudioType> modulateSound;

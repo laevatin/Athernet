@@ -4,8 +4,8 @@
 #define __DEMODULATOR_H__
 
 #include <JuceHeader.h>
-#include "Demodulator.h"
 #include "Accumulator.h"
+#include "Ringbuffer.hpp"
 #include "mkl.h"
 
 using namespace juce;
@@ -19,16 +19,25 @@ public:
     Demodulator();
     ~Demodulator();
 
-    void checkHeader(RingBuffer<float> &receiver);
-    void demodulate(const float *samples, DataType &dataOut);
+    void checkHeader();
+    void demodulate(DataType &dataOut);
+    bool isTimeout();
     bool isGettingBit();
+    RingBuffer<float> demodulatorBuffer;
 
 private:
-    Accumulator<float> power;
+    std::vector<float> dotproducts;
+    std::function<float(int, const float *, const float *)> mkl_dot;
 
-    int frameCountdown;
-    int headerPos = -1;
+    float *bitBuffer;
+    int headerOffset = 0;
+    int prevMaxPos = -1;
+    float prevMax = 0.0f;
+    int frameCountdown = 0;
+    int stopCountdown;
     bool status;
+
+    void resetState();
 };
 
 #endif

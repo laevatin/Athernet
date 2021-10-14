@@ -8,6 +8,8 @@
 #include "Frame.h"
 #include "Ringbuffer.hpp"
 #include "Demodulator.h"
+#include <condition_variable>
+#include <mutex>
 
 #define PI acos(-1)
 #define PENDING_QUEUE_SIZE 10
@@ -48,7 +50,7 @@ public:
 
 protected:
     DataType inputData, outputData;
-    int inputPos;
+    int inputPos = 0;
 
 private:
     CriticalSection lock;

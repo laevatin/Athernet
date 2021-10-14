@@ -1,5 +1,8 @@
 #include "Audio.h"
 
+static std::condition_variable cv;
+static std::mutex cv_m;
+
 AudioDevice::AudioDevice() 
 {}
 
@@ -15,16 +18,14 @@ void AudioDevice::setSendData(DataType &input)
 
 void AudioDevice::beginTransmit()
 {
-    startTimer(50);
+    startTimer(20);
 
     const ScopedLock sl(lock);
-
     if (curState & SENDING)
     {
         if (inputData.isEmpty())
         {
             std::cerr << "No Data!" << newLine;
-            stopTimer();
             return;
         }
 
@@ -41,13 +42,12 @@ void AudioDevice::beginTransmit()
         }
         
         isSending = true;
-    }    
+    }
     
     if (curState & RECEIVING)
     {
         receiver.reset();
         outputData.clear();
-
         isReceiving = true;
     }
 }
@@ -55,35 +55,49 @@ void AudioDevice::beginTransmit()
 void AudioDevice::hiResTimerCallback() 
 {   
     //std::cout << "timer callback" << newLine;
-    const ScopedLock sl(lock);
-
     if (isSending)
     {
         while (inputPos < inputData.size() && pendingFrames.size() < PENDING_QUEUE_SIZE) 
             createNextFrame();
         
+        lock.enter();
         while (sender.hasEnoughSpace(Frame::getFrameLength()) && pendingFrames.size() > 0)
         {
             pendingFrames.front().addToBuffer(sender);
             pendingFrames.pop_front();
         }
+        lock.exit();
     }
 
     if (isReceiving)
     {
-        if (demodulator.isGettingBit())
+        std::size_t len = receiver.size();
+        float *buffer = (float *)malloc(sizeof(float) * len);
+
+        lock.enter();
+        if (demodulator.demodulatorBuffer.hasEnoughSpace(len))
         {
-            float *buffer = (float *)malloc(sizeof(float) * Frame::getBitLength());
-            receiver.read(buffer, Frame::getBitLength());
-            demodulator.demodulate(buffer, outputData);
-            free(buffer);
+            receiver.read(buffer, len);
+            demodulator.demodulatorBuffer.write(buffer, len);
         }
-        else
-            demodulator.checkHeader(receiver);
+        lock.exit();
+
+        free(buffer);
+
+        demodulator.demodulate(outputData);
+        if (demodulator.isTimeout())
+        {
+            isReceiving = false;
+            std::cout << "Receiving timed out" << newLine;
+        }
     }
 
     if (!isSending && !isReceiving)
+    {
         stopTimer();
+        std::cout << "Finishing...\n";
+        cv.notify_all();
+    }
 }
 
 void AudioDevice::audioDeviceAboutToStart(AudioIODevice* device)
@@ -127,7 +141,7 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
             receiver.write(inputChannelData[0], numSamples);
         else
         {
-            std::cout << "No enough space to receive" << newLine;
+            std::cerr << "No enough space to receive." << newLine;
             std::size_t avail = receiver.avail();
             receiver.write(inputChannelData[0], avail);
             isReceiving = false;
@@ -155,14 +169,20 @@ AudioIO::~AudioIO()
 
 void AudioIO::startTransmit()
 {
+    std::cout << "selected mode: " << AudioDevice::BOTH << "\n"
+              << "start transmitting data...\n";
+
     audioDevice->setDeviceState(AudioDevice::BOTH);
     audioDevice->setSendData(inputBuffer);
 
-    Frame::setFrameProperties(1000, 48000, 1000);
+    Frame::setFrameProperties(200, 48000);
     Frame::frameInit();
 
     audioDeviceManager.addAudioCallback(audioDevice.get());
     audioDevice->beginTransmit();
+
+    std::unique_lock<std::mutex> cv_lk(cv_m);
+    cv.wait(cv_lk);
 }
 
 void AudioIO::write(const DataType &data) 

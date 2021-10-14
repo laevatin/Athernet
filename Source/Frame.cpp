@@ -1,11 +1,13 @@
 #include "Frame.h"
 #include "mkl.h"
+#include <fstream>
 
 int Frame::bitLen;
 int Frame::headerLen;
 int Frame::frameLen;
-int Frame::freq;
 int Frame::bitPerFrame;
+
+std::ofstream debug_file;
 
 std::vector<AudioType> Frame::modulateSound;
 
@@ -72,12 +74,10 @@ AudioType Frame::generateSound(int freq, int length, float initPhase)
     return std::move(sound);
 }
 
-void Frame::setFrameProperties(int bitLen, int frameLen, int freq)
+void Frame::setFrameProperties(int bitLen, int frameLen)
 {
     Frame::bitLen = bitLen;
     Frame::frameLen = frameLen;
-    Frame::freq = freq;
-    Frame::bitPerFrame = (frameLen - headerLen) / bitLen;
 }
 
 int Frame::getBitPerFrame()
@@ -107,32 +107,32 @@ const float *Frame::getHeader()
 
 void Frame::modulate(const DataType &data, int start) 
 {
-    //for (int i = start; i < start + bitPerFrame; i++)
-    //{
-    //    /* gets 0 if i is out of bound */
-    //    if (data[i] == 1) 
-    //        addSound(Frame::modulateSound[0]);
-    //    else 
-    //        addSound(Frame::modulateSound[1]);
-    //}
-    for (int i = 0; i < frameLen; i++)
-        frameAudio.setSample(0, i, 0);
+    for (int i = start; i < start + bitPerFrame; i++)
+    {
+      /* gets 0 if i is out of bound */
+      if (data[i] == 1) 
+          addSound(Frame::modulateSound[0]);
+      else 
+          addSound(Frame::modulateSound[1]);
+    }
 
+    // for (int i = headerLen; i < frameLen; i++)
+    //     frameAudio.setSample(0, i, 0);
 }
 
 /* consume bitLen samples, `samples` should contain at least bitLen data */
 int8_t Frame::demodulate(const float *samples)
 {
     float data = cblas_sdot(bitLen, samples, 1, modulateSound[0].getReadPointer(0), 1);
-    const float thres1 = 0.5;
-    const float thres0 = -0.5;
+    // const float thres1 = 0.5;
+    // const float thres0 = -0.5;
 
-    std::cout << data << std::endl;
-
-    if (data > thres1)
-        return 1;
-    else if (data < thres0)
-        return 0;
+    std::cout << data << "\n";
+    // if (data > thres1)
+    //     return 1;
+    // else if (data < thres0)
+    //     return 0;
+    return 0;
 }
 
 void Frame::frameInit()
@@ -143,14 +143,16 @@ void Frame::frameInit()
         modulateSound.emplace_back(generateSound(f, bitLen, PI));
     }
 
+    debug_file.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Source\\debug_out.out");
     generateHeader();
+    Frame::bitPerFrame = (frameLen - headerLen) / bitLen;
 }
 
 void Frame::addSound(const AudioType &src)
 {
     if (src.getNumSamples() + audioPos > frameAudio.getNumSamples())
     {
-        std::cout << "ERROR: frameAudio is full" << newLine;
+        std::cerr << "ERROR: frameAudio is full" << newLine;
         return;
     }
     frameAudio.copyFrom(0, audioPos, src, 0, 0, src.getNumSamples());
@@ -160,4 +162,5 @@ void Frame::addSound(const AudioType &src)
 void Frame::addHeader()
 {
     frameAudio.copyFrom(0, 0, Frame::header, 0, 0, Frame::headerLen);
+    audioPos += headerLen;
 }
