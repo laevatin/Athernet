@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <cstring>
 #include <iostream>
+#include <functional>
 
 #define CAPACITY 65536
 
@@ -28,8 +29,8 @@ public:
 
         if ((uint16_t)(head + len) < head)
         {
-            memcpy(buffer + head, data, sizeof(Type) * (UINT16_MAX - head));
-            memcpy(buffer, data + (UINT16_MAX - head), sizeof(Type) * (uint16_t)(head + len));
+            memcpy(buffer + head, data, sizeof(Type) * (UINT16_MAX + 1 - head));
+            memcpy(buffer, data + (UINT16_MAX + 1 - head), sizeof(Type) * (uint16_t)(head + len));
         }
         else
             memcpy(buffer + head, data, sizeof(Type) * len);
@@ -45,8 +46,8 @@ public:
 
         if ((uint16_t)(tail + len) < tail)
         {
-            memcpy(data, buffer + tail, sizeof(Type) * (UINT16_MAX - tail));
-            memcpy(data + (UINT16_MAX - tail), buffer, sizeof(Type) * (uint16_t)(tail + len));
+            memcpy(data, buffer + tail, sizeof(Type) * (UINT16_MAX + 1 - tail));
+            memcpy(data + (UINT16_MAX + 1 - tail), buffer, sizeof(Type) * (uint16_t)(tail + len));
         }
         else
             memcpy(data, buffer + tail, sizeof(Type) * len);
@@ -55,18 +56,30 @@ public:
         fillCount -= len;
     }
 
-    void peek(Type *data, std::size_t len)
+    template <typename T>
+    T peek(std::function<T(int, const Type *, const Type *)> func, Type *data, std::size_t len, int offset)
+    {
+        if (fillCount < len + offset)
+            std::cerr << "Peek out of bound\n";
+        
+        uint16_t newTail = tail + offset;
+
+        if ((uint16_t)(newTail + len) < newTail)
+        {
+            func((int)UINT16_MAX + 1 - (int)newTail, data, buffer + newTail);
+            func((int)((uint16_t)(newTail + len)), data + (UINT16_MAX + 1 - newTail), buffer);
+        }
+        else
+            func((int)len, data, buffer + newTail);
+    }
+
+    void discard(std::size_t len)
     {
         if (fillCount < len)
             std::cerr << "Ring Buffer Underflow\n";
 
-        if ((uint16_t)(tail + len) < tail)
-        {
-            memcpy(data, buffer + tail, sizeof(Type) * (UINT16_MAX - tail));
-            memcpy(data + (UINT16_MAX - tail), buffer, sizeof(Type) * (uint16_t)(tail + len));
-        }
-        else
-            memcpy(data, buffer + tail, sizeof(Type) * len);
+        tail += len;
+        fillCount -= len;
     }
 
     int pop()
@@ -113,6 +126,5 @@ private:
     uint16_t tail = 0;
     std::size_t fillCount = 0;
 };
-
 
 #endif  
