@@ -57,7 +57,7 @@ public:
     }
 
     template <typename T>
-    T peek(std::function<T(int, const Type *, const Type *)> func, Type *data, std::size_t len, int offset)
+    T peek(std::function<T(int, const Type *, const Type *)> func, const Type *data, std::size_t len, int offset)
     {
         if (fillCount < len + offset)
             std::cerr << "Peek out of bound\n";
