@@ -4,7 +4,6 @@ def create_input(filepath, datasize):
     np.random.seed()
     file = open(filepath, "w")
     data = np.random.randint(2, size=datasize).tolist()
-    # print(data)
     for i in range(datasize):
         file.write(str(data[i]))
     file.close()
@@ -20,4 +19,4 @@ def file_diff(a, b):
     input_file.close()
     output_file.close()
 
-create_input("input.in", 100)
+file_diff("input10000.in", "output10000.out")
