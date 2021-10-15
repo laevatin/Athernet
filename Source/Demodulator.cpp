@@ -1,5 +1,5 @@
-#include "Audio.h"
 #include "Frame.h"
+#include "Audio.h"
 #include "Demodulator.h"
 #include <fstream>
 
@@ -25,29 +25,27 @@ void Demodulator::checkHeader()
     for (; headerOffset + headerLen < demodulatorBuffer.size() && stopCountdown >= 0; headerOffset++)
     {
         float dot = demodulatorBuffer.peek(mkl_dot, header, (std::size_t)headerLen, headerOffset);
-        //debug_file << dot << "\n";
-        //std::cout << dot << "\n";
+         debug_file << dot << "\n";
         dotproducts.push_back(dot);
         stopCountdown -= 1;
     }
     
     for (; offsetStart < headerOffset; offsetStart++)
     {
-        if (dotproducts[offsetStart] > prevMax && dotproducts[offsetStart] > 0.5)
+        if (dotproducts[offsetStart] > prevMax && dotproducts[offsetStart] > 3)
         {
             prevMax = dotproducts[offsetStart];
             prevMaxPos = offsetStart;
         }
-        if (prevMaxPos != -1 && offsetStart - prevMaxPos > 200)
+        if (prevMaxPos != -1 && offsetStart - prevMaxPos > 500)
         {
-            std::cout << "header found at: " << prevMaxPos << std::endl;
+            std::cout << "\nheader found at: " << prevMaxPos << std::endl;
             /* Clean out the mess */
             dotproducts.clear();
             demodulatorBuffer.discard((std::size_t)prevMaxPos + Frame::getHeaderLength());
             resetState();
             status = true;
         }
-
     }
 }
 
@@ -64,18 +62,16 @@ void Demodulator::resetState()
 void Demodulator::demodulate(DataType &dataOut)
 {   
     int bitLen = Frame::getBitLength();
-    if (!status || frameCountdown <= 2)
+    if (!status)
         checkHeader();
     
     while (status && demodulatorBuffer.hasEnoughElem((std::size_t)bitLen))
     {
         demodulatorBuffer.read(bitBuffer, bitLen);
         Frame::demodulate(bitBuffer, dataOut);
-        frameCountdown -= 1;
-        if (frameCountdown == 0)
+        frameCountdown -= BAND_WIDTH;
+        if (frameCountdown <= 0)
             status = false;
-        if (frameCountdown <= 2)
-            checkHeader();
     }
 }
 
@@ -87,6 +83,14 @@ bool Demodulator::isTimeout()
 bool Demodulator::isGettingBit()
 {
     return status;
+}
+
+void Demodulator::clear()
+{
+    resetState();
+    dotproducts.clear();
+    demodulatorBuffer.reset();
+    status = false;
 }
 
 Demodulator::~Demodulator()

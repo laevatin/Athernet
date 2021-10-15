@@ -7,6 +7,7 @@
 #include <vector>
 #include "Ringbuffer.hpp"
 
+#define BAND_WIDTH 2
 #define PI acos(-1)
 
 using namespace juce;

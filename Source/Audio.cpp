@@ -18,8 +18,6 @@ void AudioDevice::setSendData(DataType &input)
 
 void AudioDevice::beginTransmit()
 {
-    startTimer(10);
-
     const ScopedLock sl(lock);
     if (curState & SENDING)
     {
@@ -31,6 +29,7 @@ void AudioDevice::beginTransmit()
 
         inputPos = 0;
         sender.reset();
+        pendingFrames.clear();
 
         while (inputPos < inputData.size() && pendingFrames.size() < PENDING_QUEUE_SIZE) 
             createNextFrame();
@@ -48,13 +47,15 @@ void AudioDevice::beginTransmit()
     {
         receiver.reset();
         outputData.clear();
+        demodulator.clear();
+
         isReceiving = true;
     }
+    startTimer(10);
 }
 
 void AudioDevice::hiResTimerCallback() 
 {   
-    //std::cout << "timer callback" << newLine;
     if (isSending)
     {
         while (inputPos < inputData.size() && pendingFrames.size() < PENDING_QUEUE_SIZE) 
@@ -120,7 +121,7 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
             sender.read(outputChannelData[0], numSamples);
         else 
         {
-            std::cout << "No enough audio to send." << newLine;
+            // std::cout << "\nNo enough audio to send.\n";
             std::size_t size = sender.size();
             sender.read(outputChannelData[0], size);
             zeromem(outputChannelData[0] + size, ((size_t)numSamples - size) * sizeof(float));
@@ -180,7 +181,7 @@ void AudioIO::startTransmit()
     audioDevice->setDeviceState(AudioDevice::BOTH);
     audioDevice->setSendData(inputBuffer);
 
-    Frame::setFrameProperties(200, 10440);
+    Frame::setFrameProperties(100, 10490);
     Frame::frameInit();
 
     audioDeviceManager.addAudioCallback(audioDevice.get());

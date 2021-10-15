@@ -2,8 +2,6 @@
 #include "mkl.h"
 #include <fstream>
 
-#define BAND_WIDTH 2
-
 int Frame::bitLen;
 int Frame::headerLen;
 int Frame::frameLen;
@@ -71,7 +69,7 @@ AudioType Frame::generateSound(int freq, int length, float initPhase)
     auto soundPointer = sound.getWritePointer(0);
 
     for (int i = 0; i < length; i++)
-        soundPointer[i] = sin(i * 2 * PI * ((float)freq / (float)sampleRate) + initPhase);
+        soundPointer[i] = sin((float)i * 2 * PI * ((float)freq / (float)sampleRate) + initPhase);
     
     return std::move(sound);
 }
@@ -109,16 +107,16 @@ const float *Frame::getHeader()
 
 void Frame::modulate(const DataType &data, int start) 
 {
-    int bandwidth = 2;
-    for (int i = start; i < start + bitPerFrame; i += bandwidth)
+    for (int i = start; i < start + bitPerFrame; i += BAND_WIDTH)
     {
         /* gets 0 if i is out of bound */
         int8_t composed = data[i];
         composed = composed | (data[i + 1] << 1);
-        //std::cout << (int)composed << newLine;
+        std::cout << (int)composed << " ";
+
         addSound(modulateSound[composed]);
     }
-
+	std::cout << newLine;
     // for (int i = headerLen; i < frameLen; i++)
     //     frameAudio.setSample(0, i, 0);
 }
@@ -141,13 +139,13 @@ void Frame::demodulate(const float *samples, DataType &out)
             max = data[i];
             maxi = i;
         }
-    std::cout << maxi << "\n";
+    std::cout << maxi << " ";
     if (maxi == 0 || maxi == 2)
         out.add((int8_t)0);
     else
         out.add((int8_t)1);
 
-    if (maxi == 1 || maxi == 3)
+    if (maxi == 2 || maxi == 3)
         out.add((int8_t)1);
     else
         out.add((int8_t)0);

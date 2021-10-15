@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
     
     Array<int8_t> input;
     Array<int8_t> output;
-    getInputFromFile(input, "C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Source\\input.in");
+    getInputFromFile(input, "C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Source\\input10000.in");
     //for (auto elem : input)
     //    std::cout << (int)elem << " ";
     //std::cout << newLine;

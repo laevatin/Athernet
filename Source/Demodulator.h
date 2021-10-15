@@ -21,6 +21,7 @@ public:
 
     void checkHeader();
     void demodulate(DataType &dataOut);
+    void clear();
     bool isTimeout();
     bool isGettingBit();
     RingBuffer<float> demodulatorBuffer;
