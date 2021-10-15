@@ -175,13 +175,13 @@ AudioIO::~AudioIO()
 
 void AudioIO::startTransmit()
 {
-    std::cout << "selected mode: " << AudioDevice::BOTH << "\n"
+    std::cout << "selected mode: " << AudioDevice::RECEIVING << "\n"
               << "start transmitting data...\n";
 
-    audioDevice->setDeviceState(AudioDevice::BOTH);
+    audioDevice->setDeviceState(AudioDevice::RECEIVING);
     audioDevice->setSendData(inputBuffer);
 
-    Frame::setFrameProperties(80, 4490);
+    Frame::setFrameProperties(50, 5460);
     Frame::frameInit();
 
     audioDeviceManager.addAudioCallback(audioDevice.get());

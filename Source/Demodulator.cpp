@@ -44,7 +44,7 @@ void Demodulator::checkHeader()
     for (; offsetStart < headerOffset; offsetStart++)
     {
         int frac = dotproducts[offsetStart] / powers[offsetStart];
-        if (frac > 3.0f && powers[offsetStart] > 1.0f && frac > prevMax)
+        if (frac > 2.0f && powers[offsetStart] > 1.0f && frac > prevMax)
         {
             prevMax = frac;
             prevMaxPos = offsetStart;
