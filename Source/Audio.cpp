@@ -181,7 +181,7 @@ void AudioIO::startTransmit()
     audioDevice->setDeviceState(AudioDevice::BOTH);
     audioDevice->setSendData(inputBuffer);
 
-    Frame::setFrameProperties(100, 10490);
+    Frame::setFrameProperties(80, 4490);
     Frame::frameInit();
 
     audioDeviceManager.addAudioCallback(audioDevice.get());

@@ -38,8 +38,8 @@ void Frame::generateHeader()
 {
     // generate the header
     constexpr int headerLen = 440;
-    float startFreq = 2000;
-    float endFreq = 10000;
+    float startFreq = 6000;
+    float endFreq = 16000;
 
     float f_p[headerLen];
     float omega[headerLen];
