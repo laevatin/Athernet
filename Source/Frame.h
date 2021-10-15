@@ -31,7 +31,7 @@ public:
     static void frameInit();
 
     static void setFrameProperties(int bitLen, int frameLen);
-    static int8_t Frame::demodulate(const float *samples);
+    static void Frame::demodulate(const float *samples, DataType &out);
 
     static int getBitPerFrame();
     static int getFrameLength();

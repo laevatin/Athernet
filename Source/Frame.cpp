@@ -2,6 +2,8 @@
 #include "mkl.h"
 #include <fstream>
 
+#define BAND_WIDTH 2
+
 int Frame::bitLen;
 int Frame::headerLen;
 int Frame::frameLen;
@@ -107,13 +109,14 @@ const float *Frame::getHeader()
 
 void Frame::modulate(const DataType &data, int start) 
 {
-    for (int i = start; i < start + bitPerFrame; i++)
+    int bandwidth = 2;
+    for (int i = start; i < start + bitPerFrame; i += bandwidth)
     {
-      /* gets 0 if i is out of bound */
-      if (data[i] == 1) 
-          addSound(Frame::modulateSound[0]);
-      else 
-          addSound(Frame::modulateSound[1]);
+        /* gets 0 if i is out of bound */
+        int8_t composed = data[i];
+        composed = composed | (data[i + 1] << 1);
+        //std::cout << (int)composed << newLine;
+        addSound(modulateSound[composed]);
     }
 
     // for (int i = headerLen; i < frameLen; i++)
@@ -121,31 +124,65 @@ void Frame::modulate(const DataType &data, int start)
 }
 
 /* consume bitLen samples, `samples` should contain at least bitLen data */
-int8_t Frame::demodulate(const float *samples)
+void Frame::demodulate(const float *samples, DataType &out)
 {
-    float data = cblas_sdot(bitLen, samples, 1, modulateSound[0].getReadPointer(0), 1);
+    float data[4];
+    data[0] = cblas_sdot(bitLen, samples, 1, modulateSound[0].getReadPointer(0), 1);
+    data[1] = cblas_sdot(bitLen, samples, 1, modulateSound[1].getReadPointer(0), 1);
+    data[2] = cblas_sdot(bitLen, samples, 1, modulateSound[2].getReadPointer(0), 1);
+    data[3] = cblas_sdot(bitLen, samples, 1, modulateSound[3].getReadPointer(0), 1);
     // const float thres1 = 0.5;
     // const float thres0 = -0.5;
+    float max = 0;
+    int maxi = -1;
+    for (int i = 0; i < 4; i++)
+        if (data[i] > max)
+        {
+            max = data[i];
+            maxi = i;
+        }
+    std::cout << maxi << "\n";
+    if (maxi == 0 || maxi == 2)
+        out.add((int8_t)0);
+    else
+        out.add((int8_t)1);
 
-    std::cout << data << "\n";
-    // if (data > thres1)
-    //     return 1;
-    // else if (data < thres0)
-    //     return 0;
-    return 0;
+    if (maxi == 1 || maxi == 3)
+        out.add((int8_t)1);
+    else
+        out.add((int8_t)0);
 }
 
 void Frame::frameInit()
 {
-    for (int f = 800; f <= 6400; f *= 2)
-    {
-        modulateSound.emplace_back(generateSound(f, bitLen, 0));
-        modulateSound.emplace_back(generateSound(f, bitLen, PI));
-    }
+    int base = 5600;
+    AudioType audio1 = generateSound(base, bitLen, 0);
+    AudioType audio2 = generateSound(base, bitLen, PI);
+    AudioType audio3 = generateSound(base * 2, bitLen, 0);
+    AudioType audio4 = generateSound(base * 2, bitLen, PI);
 
-    debug_file.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Source\\debug_out.out");
+    AudioType tmp;
+    tmp.setSize(1, bitLen);
+    for (int i = 0; i < bitLen; i++)
+        tmp.setSample(0, i, audio1.getSample(0, i) + audio3.getSample(0, i));
+    modulateSound.push_back(tmp);
+    for (int i = 0; i < bitLen; i++)
+        tmp.setSample(0, i, audio1.getSample(0, i) + audio4.getSample(0, i));
+    modulateSound.push_back(tmp);
+    for (int i = 0; i < bitLen; i++)
+        tmp.setSample(0, i, audio2.getSample(0, i) + audio3.getSample(0, i));
+    modulateSound.push_back(tmp);
+    for (int i = 0; i < bitLen; i++)
+        tmp.setSample(0, i, audio2.getSample(0, i) + audio4.getSample(0, i));
+    modulateSound.push_back(tmp);
+    // for (int f = 2843; f <= 6400; f *= 2)
+    // {
+    //     modulateSound.emplace_back(generateSound(f, bitLen, 0));
+    //     modulateSound.emplace_back(generateSound(f, bitLen, PI));
+    // }
+
     generateHeader();
-    Frame::bitPerFrame = (frameLen - headerLen) / bitLen;
+    Frame::bitPerFrame = (frameLen - headerLen) / bitLen * BAND_WIDTH;
 }
 
 void Frame::addSound(const AudioType &src)

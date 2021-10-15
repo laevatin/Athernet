@@ -41,10 +41,12 @@ int main(int argc, char* argv[])
     AudioIO audioIO;
     
     Array<int8_t> input;
+    Array<int8_t> output;
     getInputFromFile(input, "C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Source\\input.in");
     //for (auto elem : input)
     //    std::cout << (int)elem << " ";
     //std::cout << newLine;
+    debug_file.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Source\\debug_out.out");
 
     audioIO.write(input);
     while (getchar()) 
@@ -54,6 +56,11 @@ int main(int argc, char* argv[])
         //    std::cout << audioIO.getOutput(i) << " ";
         //std::cout << newLine;
         audioIO.startTransmit();
+        audioIO.read(output);
+        for (int i = 0; i < output.size(); i++)
+            std::cout << (int)output[i];
+
+        audioIO.write(input);
     }
 
     debug_file.close();

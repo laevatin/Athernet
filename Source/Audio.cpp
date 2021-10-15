@@ -18,7 +18,7 @@ void AudioDevice::setSendData(DataType &input)
 
 void AudioDevice::beginTransmit()
 {
-    startTimer(20);
+    startTimer(10);
 
     const ScopedLock sl(lock);
     if (curState & SENDING)
@@ -155,6 +155,11 @@ void AudioDevice::createNextFrame()
     inputPos += Frame::getBitPerFrame();
 }
 
+DataType&& AudioDevice::getRecvData()
+{
+    return std::move(outputData);
+}
+
 AudioIO::AudioIO()
 {
     audioDeviceManager.initialiseWithDefaultDevices(1, 1);
@@ -175,7 +180,7 @@ void AudioIO::startTransmit()
     audioDevice->setDeviceState(AudioDevice::BOTH);
     audioDevice->setSendData(inputBuffer);
 
-    Frame::setFrameProperties(200, 48000);
+    Frame::setFrameProperties(200, 10440);
     Frame::frameInit();
 
     audioDeviceManager.addAudioCallback(audioDevice.get());
@@ -192,5 +197,5 @@ void AudioIO::write(const DataType &data)
 
 void AudioIO::read(DataType &data)
 {
-    data = std::move(outputBuffer);
+    data = audioDevice->getRecvData();
 }

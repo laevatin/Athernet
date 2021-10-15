@@ -10,6 +10,7 @@ extern std::ofstream debug_file;
 Demodulator::Demodulator()
     : status(false),
     stopCountdown(RECV_TIMEOUT * Frame::sampleRate),
+    frameCountdown(0),
     mkl_dot(std::bind(cblas_sdot, std::placeholders::_1, std::placeholders::_2, 1, std::placeholders::_3, 1))
 {
     bitBuffer = (float *)malloc(sizeof(float) * Frame::getBitLength());
@@ -24,7 +25,8 @@ void Demodulator::checkHeader()
     for (; headerOffset + headerLen < demodulatorBuffer.size() && stopCountdown >= 0; headerOffset++)
     {
         float dot = demodulatorBuffer.peek(mkl_dot, header, (std::size_t)headerLen, headerOffset);
-        debug_file << dot << "\n";
+        //debug_file << dot << "\n";
+        //std::cout << dot << "\n";
         dotproducts.push_back(dot);
         stopCountdown -= 1;
     }
@@ -62,13 +64,13 @@ void Demodulator::resetState()
 void Demodulator::demodulate(DataType &dataOut)
 {   
     int bitLen = Frame::getBitLength();
-    if (frameCountdown <= 2)
+    if (!status || frameCountdown <= 2)
         checkHeader();
     
     while (status && demodulatorBuffer.hasEnoughElem((std::size_t)bitLen))
     {
         demodulatorBuffer.read(bitBuffer, bitLen);
-        dataOut.add(Frame::demodulate(bitBuffer));
+        Frame::demodulate(bitBuffer, dataOut);
         frameCountdown -= 1;
         if (frameCountdown == 0)
             status = false;

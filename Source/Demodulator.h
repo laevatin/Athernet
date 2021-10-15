@@ -33,7 +33,7 @@ private:
     int headerOffset = 0;
     int prevMaxPos = -1;
     float prevMax = 0.0f;
-    int frameCountdown = 0;
+    int frameCountdown;
     int stopCountdown;
     bool status;
 

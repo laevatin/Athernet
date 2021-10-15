@@ -40,6 +40,8 @@ public:
 
     void setSendData(DataType &input);
 
+    DataType&& getRecvData();
+
     //==============================================================================
     void audioDeviceAboutToStart(AudioIODevice* device) override;
 
