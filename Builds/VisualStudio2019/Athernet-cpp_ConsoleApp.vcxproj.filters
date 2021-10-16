@@ -438,6 +438,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\Config.cpp">
+      <Filter>Athernet-cpp\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Modulator.cpp">
+      <Filter>Athernet-cpp\Source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\Demodulator.cpp">
       <Filter>Athernet-cpp\Source</Filter>
     </ClCompile>
@@ -2414,6 +2420,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\Config.h">
+      <Filter>Athernet-cpp\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Modulator.h">
+      <Filter>Athernet-cpp\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\Accumulator.h">
       <Filter>Athernet-cpp\Source</Filter>
     </ClInclude>

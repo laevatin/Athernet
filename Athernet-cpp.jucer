@@ -5,6 +5,10 @@
               compilerFlagSchemes="NewScheme" cppLanguageStandard="17">
   <MAINGROUP id="qncXkF" name="Athernet-cpp">
     <GROUP id="{B965A200-6802-14F0-61F8-1D128E044BDD}" name="Source">
+      <FILE id="hSM8m7" name="Config.cpp" compile="1" resource="0" file="Source/Config.cpp"/>
+      <FILE id="Rw5qKc" name="Config.h" compile="0" resource="0" file="Source/Config.h"/>
+      <FILE id="YQsmQR" name="Modulator.cpp" compile="1" resource="0" file="Source/Modulator.cpp"/>
+      <FILE id="LdfVme" name="Modulator.h" compile="0" resource="0" file="Source/Modulator.h"/>
       <FILE id="ymYdbt" name="Accumulator.h" compile="0" resource="0" file="Source/Accumulator.h"/>
       <FILE id="KqNODK" name="Demodulator.cpp" compile="1" resource="0" file="Source/Demodulator.cpp"/>
       <FILE id="W7g0Iq" name="Demodulator.h" compile="0" resource="0" file="Source/Demodulator.h"/>

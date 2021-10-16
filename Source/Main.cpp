@@ -42,16 +42,12 @@ int main(int argc, char* argv[])
     
     Array<int8_t> input;
     Array<int8_t> output;
-    getInputFromFile(input, "C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Source\\input10000.in");
-    //for (auto elem : input)
-    //    std::cout << (int)elem << " ";
-    //std::cout << newLine;
-    
+    getInputFromFile(input, "C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\input10000.in");
 
     audioIO.write(input);
     while (getchar()) 
     {
-        debug_file.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Source\\output10000.out");
+        debug_file.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\output10000.out");
         //std::cout << "output: ";
         //for (int i = 0; i < input.size(); i++)
         //    std::cout << audioIO.getOutput(i) << " ";

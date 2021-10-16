@@ -12,7 +12,6 @@
 #include <mutex>
 
 #define PI acos(-1)
-#define PENDING_QUEUE_SIZE 10
 
 using namespace juce;
 
@@ -58,8 +57,6 @@ private:
     CriticalSection lock;
     RingBuffer<float> sender, receiver;
     std::list<Frame> pendingFrames;
-
-    const double sampleRate = 48000;
 
     Demodulator demodulator;
 

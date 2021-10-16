@@ -32,7 +32,6 @@ private:
     std::function<float(int, const float *, const float *)> mkl_dot;
     std::function<float(int, const float*, const float*)> power;
 
-    float *bitBuffer;
     int headerOffset = 0;
     int prevMaxPos = -1;
     float prevMax = 0.0f;

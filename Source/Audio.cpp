@@ -1,4 +1,5 @@
 #include "Audio.h"
+#include "Config.h"
 
 static std::condition_variable cv;
 static std::mutex cv_m;
@@ -31,10 +32,10 @@ void AudioDevice::beginTransmit()
         sender.reset();
         pendingFrames.clear();
 
-        while (inputPos < inputData.size() && pendingFrames.size() < PENDING_QUEUE_SIZE) 
+        while (inputPos < inputData.size() && pendingFrames.size() < Config::PENDING_QUEUE_SIZE) 
             createNextFrame();
         
-        while (sender.hasEnoughSpace(Frame::getFrameLength()) && pendingFrames.size() > 0)
+        while (sender.hasEnoughSpace(Config::FRAME_LENGTH) && pendingFrames.size() > 0)
         {
             pendingFrames.front().addToBuffer(sender);
             pendingFrames.pop_front();
@@ -51,18 +52,18 @@ void AudioDevice::beginTransmit()
 
         isReceiving = true;
     }
-    startTimer(10);
+    startTimer(20);
 }
 
 void AudioDevice::hiResTimerCallback() 
 {   
     if (isSending)
     {
-        while (inputPos < inputData.size() && pendingFrames.size() < PENDING_QUEUE_SIZE) 
+        while (inputPos < inputData.size() && pendingFrames.size() < Config::PENDING_QUEUE_SIZE) 
             createNextFrame();
         
         lock.enter();
-        while (sender.hasEnoughSpace(Frame::getFrameLength()) && pendingFrames.size() > 0)
+        while (sender.hasEnoughSpace(Config::FRAME_LENGTH) && pendingFrames.size() > 0)
         {
             pendingFrames.front().addToBuffer(sender);
             pendingFrames.pop_front();
@@ -73,7 +74,7 @@ void AudioDevice::hiResTimerCallback()
     if (isReceiving)
     {
         std::size_t len = receiver.size();
-        float *buffer = (float *)malloc(sizeof(float) * len);
+        float *buffer = new float[len];
 
         lock.enter();
         if (demodulator.demodulatorBuffer.hasEnoughSpace(len))
@@ -83,7 +84,7 @@ void AudioDevice::hiResTimerCallback()
         }
         lock.exit();
 
-        free(buffer);
+        delete [] buffer;
 
         demodulator.demodulate(outputData);
         if (demodulator.isTimeout())
@@ -121,7 +122,6 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
             sender.read(outputChannelData[0], numSamples);
         else 
         {
-            // std::cout << "\nNo enough audio to send.\n";
             std::size_t size = sender.size();
             sender.read(outputChannelData[0], size);
             zeromem(outputChannelData[0] + size, ((size_t)numSamples - size) * sizeof(float));
@@ -130,7 +130,6 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
     }
     else
     {
-        // We need to clear the output buffers, in case they're full of junk..
         for (int i = 0; i < numOutputChannels; ++i)
             if (outputChannelData[i] != nullptr)
                 zeromem(outputChannelData[i], (size_t)numSamples * sizeof(float));
@@ -153,7 +152,7 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
 void AudioDevice::createNextFrame()
 {
     pendingFrames.emplace_back(inputData, inputPos);
-    inputPos += Frame::getBitPerFrame();
+    inputPos += Config::BIT_PER_FRAME;
 }
 
 DataType&& AudioDevice::getRecvData()
@@ -175,14 +174,11 @@ AudioIO::~AudioIO()
 
 void AudioIO::startTransmit()
 {
-    std::cout << "selected mode: " << AudioDevice::RECEIVING << "\n"
+    std::cout << "selected mode: " << Config::STATE << "\n"
               << "start transmitting data...\n";
 
-    audioDevice->setDeviceState(AudioDevice::RECEIVING);
+    audioDevice->setDeviceState(Config::STATE);
     audioDevice->setSendData(inputBuffer);
-
-    Frame::setFrameProperties(50, 5460);
-    Frame::frameInit();
 
     audioDeviceManager.addAudioCallback(audioDevice.get());
     audioDevice->beginTransmit();
