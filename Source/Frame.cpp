@@ -13,12 +13,20 @@ Frame::Frame(const DataType &data, int start)
     modulate(data, start);
 }
 
+Frame::Frame()
+{
+    frameAudio.setSize(1, Config::FRAME_LENGTH);
+    DataType data;
+    data.resize(Config::BIT_PER_FRAME);
+    modulate(data, 0);
+}
+
 Frame::~Frame()
 {}
 
 void Frame::addToBuffer(RingBuffer<float> &buffer) const
 {
-    buffer.write(frameAudio.getReadPointer(0), Config::FRAME_LENGTH);
+    buffer.write(frameAudio.getReadPointer(0), frameAudio.getNumSamples());
 }
 
 void Frame::modulate(const DataType &data, int start) 
@@ -26,7 +34,7 @@ void Frame::modulate(const DataType &data, int start)
     for (int i = start; i < start + Config::BIT_PER_FRAME; i += Config::BAND_WIDTH)
     {
         /* gets 0 if i is out of bound */
-        int8_t composed = data[i];
+        uint8_t composed = data[i];
         composed = composed | (data[i + 1] << 1);
         std::cout << (int)composed << " ";
 

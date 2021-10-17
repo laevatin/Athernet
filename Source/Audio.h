@@ -15,8 +15,10 @@
 
 using namespace juce;
 
-typedef Array<int8_t> DataType;
+typedef Array<uint8_t> DataType;
 typedef AudioBuffer<float> AudioType;
+
+class Codec;
 
 class AudioDevice : public AudioIODeviceCallback,
     private HighResolutionTimer
@@ -30,6 +32,7 @@ public:
     };
 
     AudioDevice();
+    ~AudioDevice();
 
     void beginTransmit();
 
@@ -39,7 +42,7 @@ public:
 
     void setSendData(DataType &input);
 
-    DataType&& getRecvData();
+    DataType getRecvData();
 
     //==============================================================================
     void audioDeviceAboutToStart(AudioIODevice* device) override;
@@ -59,6 +62,7 @@ private:
     std::list<Frame> pendingFrames;
 
     Demodulator demodulator;
+    Codec *codec;
 
     /* Send by default */
     enum state curState = SENDING;

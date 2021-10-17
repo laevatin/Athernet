@@ -436,6 +436,9 @@
     <Filter Include="JUCE Library Code">
       <UniqueIdentifier>{7ED5A90E-41AF-A1EF-659B-37CEEAB9BA61}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Athernet-cpp\Source\lib">
+      <UniqueIdentifier>{5b9e9db4-fee5-41d5-bdc3-0e70a530bbce}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\Config.cpp">
@@ -2417,6 +2420,9 @@
     </ClCompile>
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_gui_extra.cpp">
       <Filter>JUCE Library Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Codec.cpp">
+      <Filter>Athernet-cpp\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -4804,6 +4810,78 @@
     </ClInclude>
     <ClInclude Include="..\..\JuceLibraryCode\JuceHeader.h">
       <Filter>JUCE Library Code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Codec.h">
+      <Filter>Athernet-cpp\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_crc.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_ecc_traits.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_erasure_channel.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_error_processes.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_fileio.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_galois_field.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_galois_field_element.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_galois_field_polynomial.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_galois_utilities.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_bitio.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_block.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_codec_validator.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_decoder.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_encoder.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_file_decoder.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_file_encoder.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_file_interleaver.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_general_codec.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_interleaving.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_product_code.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_speed_evaluator.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_sequential_root_generator_polynomial_creator.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\lib\schifra_utilities.hpp">
+      <Filter>Athernet-cpp\Source\lib</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

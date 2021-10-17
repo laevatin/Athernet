@@ -7,7 +7,7 @@
 #include <vector>
 #include "Audio.h"
 
-typedef juce::Array<int8_t> DataType;
+typedef juce::Array<uint8_t> DataType;
 typedef juce::AudioBuffer<float> AudioType;
 
 /* Configuration of the physical layer. */
@@ -21,21 +21,21 @@ public:
         initAudio();
     }
 
-    constexpr static int SAMPLE_RATE = 48000;
+    constexpr static int SAMPLE_RATE        = 48000;
 
-    constexpr static int HEADER_LENGTH = 440;
+    constexpr static int HEADER_LENGTH      = 440;
 
-    constexpr static int BIT_LENGTH = 200;
-    constexpr static int FRAME_LENGTH = 10490;
-    constexpr static int BIT_PER_FRAME = 100;
+    constexpr static int BIT_LENGTH         = 12;
+    constexpr static int FRAME_LENGTH       = 5250;
+    constexpr static int BIT_PER_FRAME      = 800;
 
-    constexpr static int BAND_WIDTH = 2;
+    constexpr static int BAND_WIDTH         = 2;
 
-    constexpr static int RECV_TIMEOUT = 1;
+    constexpr static int RECV_TIMEOUT       = 1;
 
-    constexpr static int PENDING_QUEUE_SIZE = 10;
+    constexpr static int PENDING_QUEUE_SIZE = 20;
 
-    constexpr static enum AudioDevice::state STATE = AudioDevice::state::RECEIVING;
+    constexpr static enum AudioDevice::state STATE = AudioDevice::state::BOTH;
 
     static AudioType header;
     static std::vector<AudioType> modulateSound;

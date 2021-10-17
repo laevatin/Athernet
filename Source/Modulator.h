@@ -4,6 +4,7 @@
 #define __MODULATOR_H__
 
 #include "Frame.h"
+#include <JuceHeader.h>
 
 class Modulator {
 

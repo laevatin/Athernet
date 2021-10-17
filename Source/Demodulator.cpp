@@ -1,6 +1,7 @@
 #include "Frame.h"
 #include "Audio.h"
 #include "Demodulator.h"
+#include "Modulator.h"
 #include <fstream>
 #include "Config.h"
 #include "Modulator.h"
@@ -32,7 +33,7 @@ void Demodulator::checkHeader()
     {
         float dot = demodulatorBuffer.peek(mkl_dot, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
         float rec_power = demodulatorBuffer.peek(power, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
-        
+        //debug_file << dot << "\t" << rec_power << "\n";
         dotproducts.push_back(dot);
         powers.push_back(rec_power);
         stopCountdown -= 1;
@@ -41,14 +42,14 @@ void Demodulator::checkHeader()
     for (; offsetStart < headerOffset; offsetStart++)
     {
         int frac = dotproducts[offsetStart] / powers[offsetStart];
-        if (frac > 1.0f && powers[offsetStart] > 1.0f && frac > prevMax)
+        if (frac > 3.0f && powers[offsetStart] > 0.3f && frac > prevMax)
         {
             prevMax = frac;
             prevMaxPos = offsetStart;
         }
         if (prevMaxPos != -1 && offsetStart - prevMaxPos > 500)
         {
-            std::cout << "\nheader found at: " << prevMaxPos << std::endl;
+            std::cout << "header found at: " << prevMaxPos << std::endl;
             /* Clean out the mess */
             dotproducts.clear();
             powers.clear();

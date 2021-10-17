@@ -10,7 +10,7 @@ void Config::initPreamble()
 {
     // generate the header
     float startFreq = 6000;
-    float endFreq = 16000;
+    float endFreq   = 16000;
 
     float f_p[HEADER_LENGTH];
     float omega[HEADER_LENGTH];

@@ -11,7 +11,7 @@
 
 using namespace juce;
 
-typedef Array<int8_t> DataType;
+typedef Array<uint8_t> DataType;
 typedef AudioBuffer<float> AudioType;
 
 /**
@@ -21,6 +21,7 @@ typedef AudioBuffer<float> AudioType;
 class Frame 
 {
 public:
+    Frame();
     Frame(const DataType &data, int start);
     ~Frame();
 

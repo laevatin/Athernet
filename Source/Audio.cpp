@@ -1,11 +1,22 @@
 #include "Audio.h"
 #include "Config.h"
+#include "Codec.h"
+#include <fstream>
 
 static std::condition_variable cv;
 static std::mutex cv_m;
 
+static DataType tester;
+
 AudioDevice::AudioDevice() 
-{}
+{
+    codec = new Codec();
+}
+
+AudioDevice::~AudioDevice()
+{
+    delete codec;
+}
 
 void AudioDevice::setDeviceState(enum state s)
 {
@@ -14,7 +25,32 @@ void AudioDevice::setDeviceState(enum state s)
 
 void AudioDevice::setSendData(DataType &input)
 {
-    inputData = std::move(input);
+    DataType byteArray;
+    byteArray.resize(input.size() / 8 + 1);
+
+    for (int i = 0; i < input.size(); i += 8) {
+        uint8_t val = 0;
+        for (int j = 0; j < 8; j++)
+            val |= input[i + j] << ((i + j) % 8);
+        byteArray.set(i / 8, val);  
+    }
+
+    DataType encoded = codec->encode(byteArray);
+
+    std::ofstream rawinput;
+    rawinput.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\input10000r.in");
+
+    inputData.resize(encoded.size() * 8);
+
+    for (int i = 0; i < inputData.size(); i++) {
+        inputData.set(i, ((1 << (i % 8)) & (encoded[i / 8])) >> (i % 8));
+    }
+
+    for (int i = 0; i < inputData.size(); i++)
+        rawinput << (int)inputData[i];
+    rawinput.close();
+
+    tester = inputData;
 }
 
 void AudioDevice::beginTransmit()
@@ -27,6 +63,9 @@ void AudioDevice::beginTransmit()
             std::cerr << "No Data!" << newLine;
             return;
         }
+
+        /* warm-up */
+        pendingFrames.emplace_back();
 
         inputPos = 0;
         sender.reset();
@@ -155,9 +194,36 @@ void AudioDevice::createNextFrame()
     inputPos += Config::BIT_PER_FRAME;
 }
 
-DataType&& AudioDevice::getRecvData()
+DataType AudioDevice::getRecvData()
 {
-    return std::move(outputData);
+    DataType byteArray;
+    /*outputData = tester;*/
+    std::ofstream rawoutput;
+    rawoutput.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\output10000r.out");
+
+    for (int i = 0; i < outputData.size(); i++)
+        rawoutput << (int)outputData[i];
+    rawoutput.close();
+
+    byteArray.resize(outputData.size() / 8 + 1);
+
+    for (int i = 0; i < outputData.size(); i += 8) {
+        uint8_t val = 0;
+        for (int j = 0; j < 8; j++)
+            val |= outputData[i + j] << ((i + j) % 8);
+        byteArray.set(i / 8, val);  
+    }
+
+    DataType decoded = codec->decode(byteArray);
+    DataType bitArray;
+
+    bitArray.resize(decoded.size() * 8);
+
+    for (int i = 0; i < outputData.size(); i++) {
+        bitArray.set(i, ((1 << (i % 8)) & (decoded[i / 8])) >> (i % 8));
+    }
+
+    return std::move(bitArray);
 }
 
 AudioIO::AudioIO()

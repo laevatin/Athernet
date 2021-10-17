@@ -7,7 +7,7 @@ void Modulator::modulate(const DataType &data, int start, Frame &frame)
     for (int i = start; i < start + Config::BIT_PER_FRAME; i += Config::BAND_WIDTH)
     {
         /* gets 0 if i is out of bound */
-        int8_t composed = data[i];
+        uint8_t composed = data[i];
         composed = composed | (data[i + 1] << 1);
         std::cout << (int)composed << " ";
 
@@ -37,12 +37,12 @@ void Modulator::demodulate(const float *samples, DataType &out)
 
     // std::cout << maxi << "\n";
     if (maxi == 0 || maxi == 2)
-        out.add((int8_t)0);
+        out.add((uint8_t)0);
     else
-        out.add((int8_t)1);
+        out.add((uint8_t)1);
 
     if (maxi == 2 || maxi == 3)
-        out.add((int8_t)1);
+        out.add((uint8_t)1);
     else
-        out.add((int8_t)0);
+        out.add((uint8_t)0);
 }
