@@ -1,11 +1,48 @@
-/*
-  ==============================================================================
-
-    Modulator.cpp
-    Created: 16 Oct 2021 4:55:46pm
-    Author:  16322
-
-  ==============================================================================
-*/
-
 #include "Modulator.h"
+#include "Config.h"
+#include "mkl.h"
+
+static void modulate(const DataType &data, int start, Frame &frame)
+{
+    for (int i = start; i < start + Config::BIT_PER_FRAME; i += Config::BAND_WIDTH)
+    {
+        /* gets 0 if i is out of bound */
+        int8_t composed = data[i];
+        composed = composed | (data[i + 1] << 1);
+        std::cout << (int)composed << " ";
+
+        frame.addSound(Config::modulateSound[composed]);
+    }
+	std::cout << newLine;
+}
+
+/* consume Config::BIT_LENGTH samples, `samples` should contain at least Config::BIT_LENGTH data */
+static void demodulate(const float *samples, DataType &out)
+{
+    float data[4];
+    data[0] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[0].getReadPointer(0), 1);
+    data[1] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[1].getReadPointer(0), 1);
+    data[2] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[2].getReadPointer(0), 1);
+    data[3] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[3].getReadPointer(0), 1);
+
+    float max = 0;
+    int maxi = -1;
+
+    for (int i = 0; i < 4; i++)
+        if (data[i] > max)
+        {
+            max = data[i];
+            maxi = i;
+        }
+
+    // std::cout << maxi << "\n";
+    if (maxi == 0 || maxi == 2)
+        out.add((int8_t)0);
+    else
+        out.add((int8_t)1);
+
+    if (maxi == 2 || maxi == 3)
+        out.add((int8_t)1);
+    else
+        out.add((int8_t)0);
+}

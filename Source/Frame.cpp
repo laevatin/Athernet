@@ -33,39 +33,6 @@ void Frame::modulate(const DataType &data, int start)
         addSound(Config::modulateSound[composed]);
     }
 	std::cout << newLine;
-    // for (int i = headerLen; i < frameLen; i++)
-    //     frameAudio.setSample(0, i, 0);
-}
-
-/* consume Config::BIT_LENGTH samples, `samples` should contain at least Config::BIT_LENGTH data */
-void Frame::demodulate(const float *samples, DataType &out)
-{
-    float data[4];
-    data[0] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[0].getReadPointer(0), 1);
-    data[1] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[1].getReadPointer(0), 1);
-    data[2] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[2].getReadPointer(0), 1);
-    data[3] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[3].getReadPointer(0), 1);
-
-    float max = 0;
-    int maxi = -1;
-
-    for (int i = 0; i < 4; i++)
-        if (data[i] > max)
-        {
-            max = data[i];
-            maxi = i;
-        }
-
-    // std::cout << maxi << "\n";
-    if (maxi == 0 || maxi == 2)
-        out.add((int8_t)0);
-    else
-        out.add((int8_t)1);
-
-    if (maxi == 2 || maxi == 3)
-        out.add((int8_t)1);
-    else
-        out.add((int8_t)0);
 }
 
 void Frame::addSound(const AudioType &src)

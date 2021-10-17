@@ -25,14 +25,12 @@ public:
     ~Frame();
 
     void addToBuffer(RingBuffer<float> &buffer) const;
-
-    static void Frame::demodulate(const float *samples, DataType &out);
+    void addSound(const AudioType &src);
 
 private:
 
     void modulate(const DataType &data, int start);
     void addHeader();
-    void addSound(const AudioType &src);
 
     AudioType frameAudio;
     int audioPos = 0;
