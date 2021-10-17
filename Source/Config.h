@@ -25,8 +25,8 @@ public:
 
     constexpr static int HEADER_LENGTH = 440;
 
-    constexpr static int BIT_LENGTH = 100;
-    constexpr static int FRAME_LENGTH = 5490;
+    constexpr static int BIT_LENGTH = 200;
+    constexpr static int FRAME_LENGTH = 10490;
     constexpr static int BIT_PER_FRAME = 100;
 
     constexpr static int BAND_WIDTH = 2;
@@ -35,7 +35,7 @@ public:
 
     constexpr static int PENDING_QUEUE_SIZE = 10;
 
-    constexpr static enum AudioDevice::state STATE = AudioDevice::state::BOTH;
+    constexpr static enum AudioDevice::state STATE = AudioDevice::state::RECEIVING;
 
     static AudioType header;
     static std::vector<AudioType> modulateSound;

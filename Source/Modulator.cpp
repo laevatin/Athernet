@@ -2,7 +2,7 @@
 #include "Config.h"
 #include "mkl.h"
 
-static void modulate(const DataType &data, int start, Frame &frame)
+void Modulator::modulate(const DataType &data, int start, Frame &frame)
 {
     for (int i = start; i < start + Config::BIT_PER_FRAME; i += Config::BAND_WIDTH)
     {
@@ -17,7 +17,7 @@ static void modulate(const DataType &data, int start, Frame &frame)
 }
 
 /* consume Config::BIT_LENGTH samples, `samples` should contain at least Config::BIT_LENGTH data */
-static void demodulate(const float *samples, DataType &out)
+void Modulator::demodulate(const float *samples, DataType &out)
 {
     float data[4];
     data[0] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[0].getReadPointer(0), 1);

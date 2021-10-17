@@ -3,6 +3,7 @@
 #include "Demodulator.h"
 #include <fstream>
 #include "Config.h"
+#include "Modulator.h"
 
 extern std::ofstream debug_file;
 
@@ -40,7 +41,7 @@ void Demodulator::checkHeader()
     for (; offsetStart < headerOffset; offsetStart++)
     {
         int frac = dotproducts[offsetStart] / powers[offsetStart];
-        if (frac > 1.2f && powers[offsetStart] > 1.0f && frac > prevMax)
+        if (frac > 1.0f && powers[offsetStart] > 1.0f && frac > prevMax)
         {
             prevMax = frac;
             prevMaxPos = offsetStart;
@@ -77,7 +78,7 @@ void Demodulator::demodulate(DataType &dataOut)
     while (status && demodulatorBuffer.hasEnoughElem((std::size_t)Config::BIT_LENGTH))
     {
         demodulatorBuffer.read(buffer, Config::BIT_LENGTH);
-        Frame::demodulate(buffer, dataOut);
+        Modulator::demodulate(buffer, dataOut);
         frameCountdown -= Config::BAND_WIDTH;
         if (frameCountdown <= 0)
             status = false;
