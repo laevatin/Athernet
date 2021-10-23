@@ -16,6 +16,10 @@ def file_diff(a, b):
 
     correct_num = np.sum(input_arr == output_arr)
     print("All Data Correct Rate: ", correct_num / input_arr.size * 100, "%", sep='')
+    for i in range(len(input_str)):
+        if input_str[i] != output_str[i]:
+            print("at pos {}, input {}, output {}".format(i, input_str[i], output_str[i]))
+
     input_file.close()
     output_file.close()
 
