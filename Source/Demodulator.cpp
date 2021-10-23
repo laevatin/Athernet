@@ -33,7 +33,7 @@ void Demodulator::checkHeader()
     {
         float dot = demodulatorBuffer.peek(mkl_dot, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
         float rec_power = demodulatorBuffer.peek(power, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
-        //debug_file << dot << "\t" << rec_power << "\n";
+        debug_file << dot << "\t" << rec_power << "\n";
         dotproducts.push_back(dot);
         powers.push_back(rec_power);
         stopCountdown -= 1;
@@ -42,9 +42,9 @@ void Demodulator::checkHeader()
     for (; offsetStart < headerOffset; offsetStart++)
     {
         int frac = dotproducts[offsetStart] / powers[offsetStart];
-        if (frac > 3.0f && powers[offsetStart] > 0.3f && frac > prevMax)
+        if (dotproducts[offsetStart] > 3.0f && dotproducts[offsetStart] > prevMax)
         {
-            prevMax = frac;
+            prevMax = dotproducts[offsetStart];
             prevMaxPos = offsetStart;
         }
         if (prevMaxPos != -1 && offsetStart - prevMaxPos > 500)
@@ -70,19 +70,17 @@ void Demodulator::resetState()
     stopCountdown = Config::RECV_TIMEOUT * Config::SAMPLE_RATE;
 }
 
-void Demodulator::demodulate(DataType &dataOut)
+void Demodulator::demodulate(std::list<Frame> &received)
 {   
-    float buffer[Config::BIT_LENGTH];
+    float buffer[Config::SAMPLE_PER_FRAME];
     if (!status)
         checkHeader();
     
-    while (status && demodulatorBuffer.hasEnoughElem((std::size_t)Config::BIT_LENGTH))
+    if (status && demodulatorBuffer.hasEnoughElem((std::size_t)Config::SAMPLE_PER_FRAME))
     {
-        demodulatorBuffer.read(buffer, Config::BIT_LENGTH);
-        Modulator::demodulate(buffer, dataOut);
-        frameCountdown -= Config::BAND_WIDTH;
-        if (frameCountdown <= 0)
-            status = false;
+        demodulatorBuffer.read(buffer, Config::SAMPLE_PER_FRAME);
+        received.emplace_back((const float *)buffer);
+        status = false;
     }
 }
 

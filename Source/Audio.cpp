@@ -8,44 +8,13 @@ static std::mutex cv_m;
 
 static DataType tester;
 
-static DataType bitToByte(const DataType &bitArray)
-{
-    DataType byteArray;
-    byteArray.resize(bitArray.size() / 8 + 1);
-
-    for (int i = 0; i < bitArray.size(); i += 8) 
-    {
-        uint8_t val = 0;
-        for (int j = 0; j < 8; j++)
-            val |= bitArray[i + j] << ((i + j) % 8);
-        byteArray.set(i / 8, val);  
-    }
-
-    return std::move(byteArray);
-}
-
-static DataType byteToBit(const DataType &byteArray)
-{
-    DataType bitArray;
-
-    bitArray.resize(byteArray.size() * 8);
-    for (int i = 0; i < bitArray.size(); i++) 
-    {
-        bitArray.set(i, ((1 << (i % 8)) & (byteArray[i / 8])) >> (i % 8));
-    }
-
-    return std::move(bitArray);
-}
+Codec AudioDevice::codec;
 
 AudioDevice::AudioDevice() 
-{
-    codec = new Codec();
-}
+{}
 
 AudioDevice::~AudioDevice()
-{
-    delete codec;
-}
+{}
 
 void AudioDevice::setDeviceState(enum state s)
 {
@@ -54,19 +23,7 @@ void AudioDevice::setDeviceState(enum state s)
 
 void AudioDevice::setSendData(DataType &input)
 {
-    DataType byteArray = bitToByte(input);
-    DataType encoded = codec->encode(byteArray);
-
-    std::ofstream rawinput;
-    rawinput.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\input10000r.in");
-
-    inputData = byteToBit(encoded);
-
-    for (int i = 0; i < inputData.size(); i++)
-        rawinput << (int)inputData[i];
-    rawinput.close();
-
-    tester = inputData;
+    inputData = input;
 }
 
 void AudioDevice::beginTransmit()
@@ -80,12 +37,13 @@ void AudioDevice::beginTransmit()
             return;
         }
 
-        /* warm-up */
-        pendingFrames.emplace_back();
-
         inputPos = 0;
         sender.reset();
         pendingFrames.clear();
+        receivedFrames.clear();
+
+        /* warm-up */
+        pendingFrames.emplace_back();
 
         while (inputPos < inputData.size() && pendingFrames.size() < Config::PENDING_QUEUE_SIZE) 
             createNextFrame();
@@ -107,7 +65,7 @@ void AudioDevice::beginTransmit()
 
         isReceiving = true;
     }
-    startTimer(20);
+    startTimer(10);
 }
 
 void AudioDevice::hiResTimerCallback() 
@@ -141,7 +99,7 @@ void AudioDevice::hiResTimerCallback()
 
         delete [] buffer;
 
-        demodulator.demodulate(outputData);
+        demodulator.demodulate(receivedFrames);
         if (demodulator.isTimeout())
         {
             isReceiving = false;
@@ -212,19 +170,12 @@ void AudioDevice::createNextFrame()
 
 DataType AudioDevice::getRecvData()
 {
-    outputData = tester;
-    std::ofstream rawoutput;
-    rawoutput.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\output10000r.out");
-    DataType byteArray = bitToByte(outputData);
-
-    for (int i = 0; i < outputData.size(); i++)
-        rawoutput << (int)outputData[i];
-    rawoutput.close();
-
-    DataType decoded = codec->decode(byteArray);
-    DataType bitArray = byteToBit(decoded);
-
-    return std::move(bitArray);
+    for (auto &&frame : receivedFrames)
+    {
+        frame.getData(outputData);
+    }
+    receivedFrames.clear();
+    return std::move(outputData);
 }
 
 AudioIO::AudioIO()

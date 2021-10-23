@@ -41,7 +41,10 @@ public:
     ~Codec();
 
     DataType encode(const DataType &in);
+    DataType encodeBlock(const DataType &in, int start);
+
     DataType decode(const DataType &in);
+    DataType decodeBlock(const DataType &in, int start);
 
     /* Reed Solomon Code Parameters */
     constexpr static std::size_t code_length = 72;

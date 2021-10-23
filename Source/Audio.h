@@ -10,6 +10,7 @@
 #include "Demodulator.h"
 #include <condition_variable>
 #include <mutex>
+#include "Codec.h"
 
 #define PI acos(-1)
 
@@ -51,6 +52,7 @@ public:
 
     void audioDeviceIOCallback(const float** inputChannelData, int numInputChannels,
         float** outputChannelData, int numOutputChannels, int numSamples) override;
+    static Codec codec;
 
 protected:
     DataType inputData, outputData;
@@ -60,9 +62,9 @@ private:
     CriticalSection lock;
     RingBuffer<float> sender, receiver;
     std::list<Frame> pendingFrames;
+    std::list<Frame> receivedFrames;
 
     Demodulator demodulator;
-    Codec *codec;
 
     /* Send by default */
     enum state curState = SENDING;

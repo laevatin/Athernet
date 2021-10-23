@@ -22,18 +22,27 @@ class Frame
 {
 public:
     Frame();
+
+    /* Encode the frame and modulate. */
     Frame(const DataType &data, int start);
+
+    /* Demodulate and decode the frame. 
+     `audio` should contain at least SAMPLE_PER_FRAME samples */
+    Frame(const float *audio);
+
     ~Frame();
 
     void addToBuffer(RingBuffer<float> &buffer) const;
     void addSound(const AudioType &src);
+    void getData(DataType &out);
 
 private:
 
-    void modulate(const DataType &data, int start);
     void addHeader();
 
     AudioType frameAudio;
+    DataType frameData; 
+
     int audioPos = 0;
 };
 

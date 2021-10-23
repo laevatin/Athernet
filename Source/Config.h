@@ -21,17 +21,21 @@ public:
         initAudio();
     }
 
-    constexpr static int SAMPLE_RATE        = 48000;
+    constexpr static int SAMPLE_RATE   = 48000;
 
-    constexpr static int HEADER_LENGTH      = 440;
+    constexpr static int HEADER_LENGTH = 440;
 
-    constexpr static int BIT_LENGTH         = 12;
-    constexpr static int FRAME_LENGTH       = 5250;
-    constexpr static int BIT_PER_FRAME      = 800;
+    constexpr static int BIT_LENGTH    = 32;
 
-    constexpr static int BAND_WIDTH         = 2;
+    constexpr static int DATA_PER_FRAME = 8 * 62;
+    constexpr static int BIT_PER_FRAME  = 8 * 72;
 
-    constexpr static int RECV_TIMEOUT       = 1;
+    constexpr static int BAND_WIDTH   = 2;
+
+    constexpr static int SAMPLE_PER_FRAME = BIT_PER_FRAME * BIT_LENGTH / BAND_WIDTH;
+    constexpr static int FRAME_LENGTH     = SAMPLE_PER_FRAME + HEADER_LENGTH + 10;
+
+    constexpr static int RECV_TIMEOUT = 1;
 
     constexpr static int PENDING_QUEUE_SIZE = 20;
 

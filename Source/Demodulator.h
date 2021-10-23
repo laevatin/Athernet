@@ -20,7 +20,7 @@ public:
     ~Demodulator();
 
     void checkHeader();
-    void demodulate(DataType &dataOut);
+    void demodulate(std::list<Frame> &received);
     void clear();
     bool isTimeout();
     bool isGettingBit();
