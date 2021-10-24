@@ -1,26 +1,34 @@
 #include "MAC/MACLayer.h"
+#include "MAC/Serde.h"
+
 #include <chrono>
+#include <memory>
 
 using namespace std::chrono_literals;
 
-MACLayer::MACLayer(const DataType &input)
-    : rxstate(RxState::IDLE),
-    txstate(TxState::IDLE),
-    running(true)
-{
-    inputData = input;
-    MACThread = new std::thread([this](){ MACThreadTransStart(); });
-}
-
-MACLayer::MACLayer()
-    : rxstate(RxState::IDLE),
-    txstate(TxState::IDLE),
-    running(true)
-{
-    MACThread = new std::thread([this](){ MACThreadRecvStart(); });
-}
+MACLayer::MACLayer(std::shared_ptr<AudioDevice> audioDevice)
+    : running(true),
+    audioDevice(audioDevice)
+{}
 
 MACLayer::~MACLayer()
+{}
+
+void MACLayer::stopMACThread()
+{
+    running = false;
+}
+
+// ----------------------------------------------------------------------------
+
+MACLayerReceiver::MACLayerReceiver(std::shared_ptr<AudioDevice> audioDevice)
+    : MACLayer(audioDevice),
+    rxstate(MACLayerReceiver::IDLE)
+{
+    MACThread = new std::thread([this]() { MACThreadRecvStart(); });
+}
+
+MACLayerReceiver::~MACLayerReceiver()
 {
     if (MACThread != nullptr)
     {
@@ -29,10 +37,38 @@ MACLayer::~MACLayer()
     }
 }
 
-void MACLayer::MACThreadTransStart()
+void MACLayerReceiver::MACThreadRecvStart()
 {
     while (running)
     {
+               
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+MACLayerTransmitter::MACLayerTransmitter(const DataType &input, std::shared_ptr<AudioDevice> audioDevice)
+    : MACLayer(audioDevice),
+    txstate(MACLayerTransmitter::IDLE)
+{
+    inputData = input;
+    MACThread = new std::thread([this]() { MACThreadTransStart(); });
+}
+
+MACLayerTransmitter::~MACLayerTransmitter()
+{
+    if (MACThread != nullptr)
+    {
+        MACThread->join();
+        delete MACThread;
+    }
+}
+
+void MACLayerTransmitter::MACThreadTransStart()
+{
+    while (running)
+    {
+
         // sendframe
         // if queue not full && data remaining
         //   createMACFrame
@@ -43,21 +79,3 @@ void MACLayer::MACThreadTransStart()
     }
     
 }
-
-void MACLayer::MACThreadRecvStart()
-{
-    while (running)
-    {
-        // sendframe
-        // if (cv.wait_until(now+100ms, send_data))
-        //           
-    }
-}
-
-void MACLayer::stopMACThread()
-{
-    running = false;
-}
-
-// MACLayer::
-
