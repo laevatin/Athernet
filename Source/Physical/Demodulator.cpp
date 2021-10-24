@@ -1,10 +1,9 @@
-#include "Frame.h"
-#include "Audio.h"
-#include "Demodulator.h"
-#include "Modulator.h"
+#include "Physical/Frame.h"
+#include "Physical/Audio.h"
+#include "Physical/Demodulator.h"
+#include "Physical/Modulator.h"
 #include <fstream>
 #include "Config.h"
-#include "Modulator.h"
 
 extern std::ofstream debug_file;
 

@@ -2,22 +2,35 @@
 
 <JUCERPROJECT id="WQZVj5" name="Athernet-cpp" projectType="consoleapp" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              compilerFlagSchemes="NewScheme" cppLanguageStandard="17">
+              compilerFlagSchemes="NewScheme" cppLanguageStandard="17" headerPath="..\..\Include&#10;">
   <MAINGROUP id="qncXkF" name="Athernet-cpp">
+    <GROUP id="{63E937E2-2125-F6F7-7546-45DBF7ED9FA1}" name="Include">
+      <GROUP id="{E597B1AB-690F-023E-273C-483118948409}" name="MAC"/>
+      <GROUP id="{E2AFAEC3-8EC8-EED8-68FB-678EC7811792}" name="Physical">
+        <FILE id="OtvU5J" name="Audio.h" compile="0" resource="0" file="Include/Physical/Audio.h"/>
+        <FILE id="pdvdc7" name="Codec.h" compile="0" resource="0" file="Include/Physical/Codec.h"/>
+        <FILE id="TtjbiA" name="Demodulator.h" compile="0" resource="0" file="Include/Physical/Demodulator.h"/>
+        <FILE id="Bxvw9J" name="Frame.h" compile="0" resource="0" file="Include/Physical/Frame.h"/>
+        <FILE id="rGEMk7" name="Modulator.h" compile="0" resource="0" file="Include/Physical/Modulator.h"/>
+      </GROUP>
+      <GROUP id="{2AAFC933-0AE4-0213-D7E4-FCBE3C3E74BA}" name="Utils">
+        <FILE id="A5KYdQ" name="Accumulator.h" compile="0" resource="0" file="Include/Utils/Accumulator.h"/>
+        <FILE id="WXOGRR" name="IOFunctions.hpp" compile="0" resource="0" file="Include/Utils/IOFunctions.hpp"/>
+        <FILE id="OdisjR" name="Ringbuffer.hpp" compile="0" resource="0" file="Include/Utils/Ringbuffer.hpp"/>
+      </GROUP>
+      <FILE id="aXOBX1" name="Config.h" compile="0" resource="0" file="Include/Config.h"/>
+    </GROUP>
     <GROUP id="{B965A200-6802-14F0-61F8-1D128E044BDD}" name="Source">
+      <GROUP id="{5E64186D-BB7F-2B8F-2849-DB4DF0A449E4}" name="MAC"/>
+      <GROUP id="{FE4895C6-983A-6044-B1C1-6A095568E775}" name="Physical">
+        <FILE id="hetPTa" name="Audio.cpp" compile="1" resource="0" file="Source/Physical/Audio.cpp"/>
+        <FILE id="rBgm7Q" name="Codec.cpp" compile="1" resource="0" file="Source/Physical/Codec.cpp"/>
+        <FILE id="CRJRoF" name="Demodulator.cpp" compile="1" resource="0" file="Source/Physical/Demodulator.cpp"/>
+        <FILE id="gqRsNU" name="Frame.cpp" compile="1" resource="0" file="Source/Physical/Frame.cpp"/>
+        <FILE id="P8znCn" name="Modulator.cpp" compile="1" resource="0" file="Source/Physical/Modulator.cpp"/>
+      </GROUP>
       <FILE id="hSM8m7" name="Config.cpp" compile="1" resource="0" file="Source/Config.cpp"/>
-      <FILE id="Rw5qKc" name="Config.h" compile="0" resource="0" file="Source/Config.h"/>
-      <FILE id="YQsmQR" name="Modulator.cpp" compile="1" resource="0" file="Source/Modulator.cpp"/>
-      <FILE id="LdfVme" name="Modulator.h" compile="0" resource="0" file="Source/Modulator.h"/>
-      <FILE id="ymYdbt" name="Accumulator.h" compile="0" resource="0" file="Source/Accumulator.h"/>
-      <FILE id="KqNODK" name="Demodulator.cpp" compile="1" resource="0" file="Source/Demodulator.cpp"/>
-      <FILE id="W7g0Iq" name="Demodulator.h" compile="0" resource="0" file="Source/Demodulator.h"/>
-      <FILE id="nJroVr" name="Frame.cpp" compile="1" resource="0" file="Source/Frame.cpp"/>
-      <FILE id="G5PHfv" name="Frame.h" compile="0" resource="0" file="Source/Frame.h"/>
-      <FILE id="oFfc86" name="Audio.cpp" compile="1" resource="0" file="Source/Audio.cpp"/>
-      <FILE id="nOKBuq" name="Audio.h" compile="0" resource="0" file="Source/Audio.h"/>
       <FILE id="mGU128" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
-      <FILE id="ADMfgt" name="Ringbuffer.hpp" compile="0" resource="0" file="Source/Ringbuffer.hpp"/>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_ASIO="1" JUCE_WASAPI="0"

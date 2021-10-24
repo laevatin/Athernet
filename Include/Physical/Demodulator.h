@@ -4,9 +4,10 @@
 #define __DEMODULATOR_H__
 
 #include <JuceHeader.h>
-#include "Accumulator.h"
-#include "Ringbuffer.hpp"
+#include "Utils/Ringbuffer.hpp"
 #include "mkl.h"
+
+class Frame;
 
 using namespace juce;
 

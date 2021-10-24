@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="Athernet-cpp\Include\Physical">
+      <UniqueIdentifier>{F8C94DD8-0845-51E0-D10A-8052D94197E8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Athernet-cpp\Include\Utils">
+      <UniqueIdentifier>{AC8809FD-0FE3-28A9-DE38-D9944C491081}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Athernet-cpp\Include">
+      <UniqueIdentifier>{16BD8E5C-FA06-DD1B-82CA-E0F3D71392AF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Athernet-cpp\Source\Physical">
+      <UniqueIdentifier>{8AA19385-CFA5-FDCB-A8CB-F44252A3EA5E}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Athernet-cpp\Source">
       <UniqueIdentifier>{7EC4788F-F79F-BFE7-D873-FB8CD96F13A4}</UniqueIdentifier>
     </Filter>
@@ -436,24 +448,24 @@
     <Filter Include="JUCE Library Code">
       <UniqueIdentifier>{7ED5A90E-41AF-A1EF-659B-37CEEAB9BA61}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Athernet-cpp\Source\lib">
-      <UniqueIdentifier>{5b9e9db4-fee5-41d5-bdc3-0e70a530bbce}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\Physical\Audio.cpp">
+      <Filter>Athernet-cpp\Source\Physical</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Physical\Codec.cpp">
+      <Filter>Athernet-cpp\Source\Physical</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Physical\Demodulator.cpp">
+      <Filter>Athernet-cpp\Source\Physical</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Physical\Frame.cpp">
+      <Filter>Athernet-cpp\Source\Physical</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Physical\Modulator.cpp">
+      <Filter>Athernet-cpp\Source\Physical</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\Config.cpp">
-      <Filter>Athernet-cpp\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\Modulator.cpp">
-      <Filter>Athernet-cpp\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\Demodulator.cpp">
-      <Filter>Athernet-cpp\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\Frame.cpp">
-      <Filter>Athernet-cpp\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\Audio.cpp">
       <Filter>Athernet-cpp\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Main.cpp">
@@ -2421,31 +2433,34 @@
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_gui_extra.cpp">
       <Filter>JUCE Library Code</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Codec.cpp">
-      <Filter>Athernet-cpp\Source</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\Config.h">
-      <Filter>Athernet-cpp\Source</Filter>
+    <ClInclude Include="..\..\Include\Physical\Audio.h">
+      <Filter>Athernet-cpp\Include\Physical</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\Modulator.h">
-      <Filter>Athernet-cpp\Source</Filter>
+    <ClInclude Include="..\..\Include\Physical\Codec.h">
+      <Filter>Athernet-cpp\Include\Physical</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\Accumulator.h">
-      <Filter>Athernet-cpp\Source</Filter>
+    <ClInclude Include="..\..\Include\Physical\Demodulator.h">
+      <Filter>Athernet-cpp\Include\Physical</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\Demodulator.h">
-      <Filter>Athernet-cpp\Source</Filter>
+    <ClInclude Include="..\..\Include\Physical\Frame.h">
+      <Filter>Athernet-cpp\Include\Physical</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\Frame.h">
-      <Filter>Athernet-cpp\Source</Filter>
+    <ClInclude Include="..\..\Include\Physical\Modulator.h">
+      <Filter>Athernet-cpp\Include\Physical</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\Audio.h">
-      <Filter>Athernet-cpp\Source</Filter>
+    <ClInclude Include="..\..\Include\Utils\Accumulator.h">
+      <Filter>Athernet-cpp\Include\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\Ringbuffer.hpp">
-      <Filter>Athernet-cpp\Source</Filter>
+    <ClInclude Include="..\..\Include\Utils\IOFunctions.hpp">
+      <Filter>Athernet-cpp\Include\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Include\Utils\Ringbuffer.hpp">
+      <Filter>Athernet-cpp\Include\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Include\Config.h">
+      <Filter>Athernet-cpp\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\JUCE\modules\juce_audio_basics\audio_play_head\juce_AudioPlayHead.h">
       <Filter>JUCE Modules\juce_audio_basics\audio_play_head</Filter>
@@ -4810,78 +4825,6 @@
     </ClInclude>
     <ClInclude Include="..\..\JuceLibraryCode\JuceHeader.h">
       <Filter>JUCE Library Code</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Codec.h">
-      <Filter>Athernet-cpp\Source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_crc.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_ecc_traits.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_erasure_channel.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_error_processes.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_fileio.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_galois_field.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_galois_field_element.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_galois_field_polynomial.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_galois_utilities.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_bitio.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_block.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_codec_validator.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_decoder.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_encoder.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_file_decoder.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_file_encoder.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_file_interleaver.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_general_codec.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_interleaving.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_product_code.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_reed_solomon_speed_evaluator.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_sequential_root_generator_polynomial_creator.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\lib\schifra_utilities.hpp">
-      <Filter>Athernet-cpp\Source\lib</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

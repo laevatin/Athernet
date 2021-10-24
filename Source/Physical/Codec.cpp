@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-#include "Codec.h"
+#include "Physical/Codec.h"
 
 #include "lib/schifra_galois_field.hpp"
 #include "lib/schifra_galois_field_polynomial.hpp"

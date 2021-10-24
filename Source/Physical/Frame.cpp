@@ -1,9 +1,10 @@
-#include "Frame.h"
+#include "Physical/Frame.h"
+#include "Physical/Codec.h"
+#include "Physical/Modulator.h"
 #include "mkl.h"
 #include <fstream>
 #include "Config.h"
-#include "Codec.h"
-#include "Modulator.h"
+
 
 std::ofstream debug_file;
 

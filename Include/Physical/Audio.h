@@ -4,13 +4,14 @@
 #define __AUDIO_H__
 
 #include <JuceHeader.h>
-#include <list>
-#include "Frame.h"
-#include "Ringbuffer.hpp"
-#include "Demodulator.h"
 #include <condition_variable>
 #include <mutex>
-#include "Codec.h"
+#include <list>
+
+#include "Utils/Ringbuffer.hpp"
+#include "Physical/Demodulator.h"
+#include "Physical/Frame.h"
+#include "Physical/Codec.h"
 
 #define PI acos(-1)
 

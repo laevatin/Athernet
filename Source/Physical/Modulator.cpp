@@ -1,4 +1,4 @@
-#include "Modulator.h"
+#include "Physical/Modulator.h"
 #include "Config.h"
 #include "mkl.h"
 
@@ -9,7 +9,7 @@ void Modulator::modulate(const DataType &data, int start, Frame &frame)
         /* gets 0 if i is out of bound */
         uint8_t composed = data[i];
         composed = composed | (data[i + 1] << 1);
-        std::cout << (int)composed << " ";
+        std::cout << (int)data[i] << (int)data[i + 1];
 
         frame.addSound(Config::modulateSound[composed]);
     }

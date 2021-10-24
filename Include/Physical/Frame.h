@@ -5,7 +5,7 @@
 
 #include <JuceHeader.h>
 #include <vector>
-#include "Ringbuffer.hpp"
+#include "Utils/Ringbuffer.hpp"
 
 #define PI acos(-1)
 

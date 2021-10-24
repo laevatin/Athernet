@@ -1,10 +1,4 @@
-/*
-  ==============================================================================
-    This file contains the basic startup code for a JUCE application.
-  ==============================================================================
-*/
-
-#include "Audio.h"
+#include "Physical/Audio.h"
 #include <objbase.h>
 #include <bitset>
 #include <fstream>
