@@ -1,41 +1,12 @@
 #include "Physical/Frame.h"
 #include "Physical/Codec.h"
 #include "Physical/Modulator.h"
+#include "Utils/IOFunctions.hpp"
 #include "mkl.h"
 #include <fstream>
 #include "Config.h"
 
-
 std::ofstream debug_file;
-
-static DataType bitToByte(const DataType &bitArray)
-{
-    DataType byteArray;
-    byteArray.resize(bitArray.size() / 8);
-
-    for (int i = 0; i < bitArray.size(); i += 8) 
-    {
-        uint8_t val = 0;
-        for (int j = 0; j < 8; j++)
-            val |= bitArray[i + j] << ((i + j) % 8);
-        byteArray.set(i / 8, val);  
-    }
-
-    return std::move(byteArray);
-}
-
-static DataType byteToBit(const DataType &byteArray)
-{
-    DataType bitArray;
-
-    bitArray.resize(byteArray.size() * 8);
-    for (int i = 0; i < bitArray.size(); i++) 
-    {
-        bitArray.set(i, ((1 << (i % 8)) & (byteArray[i / 8])) >> (i % 8));
-    }
-
-    return std::move(bitArray);
-}
 
 Frame::Frame(const DataType &data, int start)
 {
