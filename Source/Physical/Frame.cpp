@@ -41,7 +41,10 @@ Frame::Frame(const float *audio)
     frameData = byteToBit(AudioDevice::codec.decodeBlock(bitToByte(out), 0));
 }
 
-Frame::~Frame()
+Frame::Frame(Frame &&other)
+    : frameAudio(std::move(other.frameAudio)),
+    frameData(std::move(other.frameData)),
+    audioPos(std::exchange(other.audioPos, 0))
 {}
 
 void Frame::addToBuffer(RingBuffer<float> &buffer) const

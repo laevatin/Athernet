@@ -30,7 +30,10 @@ public:
      `audio` should contain at least SAMPLE_PER_FRAME samples */
     Frame(const float *audio);
 
-    ~Frame();
+    ~Frame() = default;
+
+    /* Move constructor */
+    Frame(Frame &&other);
 
     void addToBuffer(RingBuffer<float> &buffer) const;
     void addSound(const AudioType &src);
