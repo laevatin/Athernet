@@ -25,6 +25,7 @@ public:
 
     /* Encode the frame and modulate. */
     Frame(const DataType &data, int start);
+    Frame(const uint8_t *data);
 
     /* Demodulate and decode the frame. 
      `audio` should contain at least SAMPLE_PER_FRAME samples */
@@ -37,10 +38,10 @@ public:
 
     void addToBuffer(RingBuffer<float> &buffer) const;
     void addSound(const AudioType &src);
-    void getData(DataType &out);
+    void getData(DataType &out) const;
+    void getData(uint8_t *out) const;
 
-private:
-
+protected:
     void addHeader();
 
     AudioType frameAudio;
@@ -48,5 +49,7 @@ private:
 
     int audioPos = 0;
 };
+
+
 
 #endif

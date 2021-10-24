@@ -21,7 +21,6 @@ struct MACFrame
 class MACFrameFactory
 {
 public:    
-
     MACFrameFactory();
     ~MACFrameFactory();
 
@@ -31,16 +30,13 @@ public:
     /* Create an ack frame */
     MACFrame *createACKFrame(uint8_t id);
 
+    /* Create an empty frame */
+    MACFrame *createEmpty();
+
     /* Resource management */
     void destoryFrame(MACFrame *frame);
 
 private:
-    constexpr static uint8_t ACK = 0xAC;
-    constexpr static uint8_t DATA = 0xDA;
-
-    constexpr static uint8_t SENDER = 0xED;
-    constexpr static uint8_t RECEIVER = 0xCE;
-
     uint8_t nextid;
 };
 

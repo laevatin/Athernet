@@ -15,16 +15,23 @@ Frame::Frame(const DataType &data, int start)
     addHeader();
     
     DataType encoded = byteToBit(AudioDevice::codec.encodeBlock(bitToByte(data), start));
-    Modulator::modulate(encoded, 0, *this);
+    Modulator::modulate(encoded, 0, Config::BIT_PER_FRAME, *this);
 }
 
-Frame::Frame()
+Frame::Frame(const uint8_t *pdata)
 {
     frameAudio.setSize(1, Config::FRAME_LENGTH);
     DataType data;
-    data.resize(Config::BIT_PER_FRAME);
-    Modulator::modulate(data, 0, *this);
+    data.addArray(pdata, Config::BIT_PER_FRAME / 8);
+
+    addHeader();
+    
+    DataType encoded = byteToBit(AudioDevice::codec.encodeBlock(data, 0));
+    Modulator::modulate(encoded, 0, Config::BIT_PER_FRAME, *this);
 }
+
+Frame::Frame()
+{}
 
 Frame::Frame(const float *audio)
 {
@@ -69,7 +76,12 @@ void Frame::addHeader()
     audioPos += Config::HEADER_LENGTH;
 }
 
-void Frame::getData(DataType &out)
+void Frame::getData(DataType &out) const
 {
     out.addArray(frameData);
+}
+
+void Frame::getData(uint8_t *out) const
+{
+    memcpy(out, frameData.getRawDataPointer(), frameData.size());
 }
