@@ -9,7 +9,7 @@
 class Modulator {
 
 public:
-    static void modulate(const DataType& data, int start, Frame& frame);
+    static void modulate(const DataType& data, int start, int length, Frame& frame);
 
     static void demodulate(const float *samples, DataType &out);
 

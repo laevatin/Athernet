@@ -2,9 +2,9 @@
 #include "Config.h"
 #include "mkl.h"
 
-void Modulator::modulate(const DataType &data, int start, Frame &frame)
+void Modulator::modulate(const DataType &data, int start, int length, Frame &frame)
 {
-    for (int i = start; i < start + Config::BIT_PER_FRAME; i += Config::BAND_WIDTH)
+    for (int i = start; i < start + length; i += Config::BAND_WIDTH)
     {
         /* gets 0 if i is out of bound */
         uint8_t composed = data[i];
