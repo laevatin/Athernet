@@ -14,7 +14,7 @@ struct MACFrame
     uint8_t len;
     uint8_t id;
 
-    uint8_t data[Config::DATA_PER_FRAME / 8 - 5];
+    uint8_t data[Config::MACDATA_PER_FRAME];
 };
 
 

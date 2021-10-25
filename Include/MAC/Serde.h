@@ -33,9 +33,9 @@ inline Frame convertFrame(MACFrame *macframe)
     }
 }
 
-inline void convertMACFrame(const Frame &phy, MACFrame *macframe)
+inline void convertMACFrame(const Frame &phy, MACFrame *macFrame)
 {
-    uint8_t *serialized = serialize(macframe);
+    uint8_t *serialized = serialize(macFrame);
     phy.getData(serialized);
 }
 

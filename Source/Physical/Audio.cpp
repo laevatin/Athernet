@@ -3,64 +3,33 @@
 #include "Config.h"
 #include <fstream>
 
-static std::condition_variable cv;
+static std::condition_variable finishcv;
 static std::mutex cv_m;
 
 static DataType tester;
 
 Codec AudioDevice::codec;
 
-AudioDevice::AudioDevice() 
+AudioDevice::AudioDevice(enum AudioIO::state s) 
+    : deviceState(s)
 {}
 
 AudioDevice::~AudioDevice()
 {}
 
-void AudioDevice::setDeviceState(enum state s)
-{
-    curState = s;
-}
-
-void AudioDevice::setSendData(DataType &input)
-{
-    inputData = input;
-}
-
 void AudioDevice::beginTransmit()
 {
     const ScopedLock sl(lock);
-    if (curState & SENDING)
+    if (deviceState & AudioIO::SENDING)
     {
-        if (inputData.isEmpty())
-        {
-            std::cerr << "No Data!" << newLine;
-            return;
-        }
-
-        inputPos = 0;
         sender.reset();
-        pendingFrames.clear();
-        receivedFrames.clear();
 
-        /* warm-up */
-        pendingFrames.emplace_back();
-
-        while (inputPos < inputData.size() && pendingFrames.size() < Config::PENDING_QUEUE_SIZE) 
-            createNextFrame();
-        
-        while (sender.hasEnoughSpace(Config::FRAME_LENGTH) && pendingFrames.size() > 0)
-        {
-            pendingFrames.front().addToBuffer(sender);
-            pendingFrames.pop_front();
-        }
-        
         isSending = true;
     }
     
-    if (curState & RECEIVING)
+    if (deviceState & AudioIO::RECEIVING)
     {
         receiver.reset();
-        outputData.clear();
         demodulator.clear();
 
         isReceiving = true;
@@ -72,16 +41,7 @@ void AudioDevice::hiResTimerCallback()
 {   
     if (isSending)
     {
-        while (inputPos < inputData.size() && pendingFrames.size() < Config::PENDING_QUEUE_SIZE) 
-            createNextFrame();
-        
-        lock.enter();
-        while (sender.hasEnoughSpace(Config::FRAME_LENGTH) && pendingFrames.size() > 0)
-        {
-            pendingFrames.front().addToBuffer(sender);
-            pendingFrames.pop_front();
-        }
-        lock.exit();
+        // check ack
     }
 
     if (isReceiving)
@@ -99,20 +59,27 @@ void AudioDevice::hiResTimerCallback()
 
         delete [] buffer;
 
-        demodulator.demodulate(receivedFrames);
-        if (demodulator.isTimeout())
-        {
-            isReceiving = false;
-            std::cout << "Receiving timed out" << newLine;
-        }
+        // check header
+        // need a new timeout
+        // if (demodulator.isTimeout())
+        // {
+            // isReceiving = false;
+            // std::cout << "Receiving timed out" << newLine;
+        // }
     }
 
     if (!isSending && !isReceiving)
     {
         stopTimer();
         std::cout << "Finishing...\n";
-        cv.notify_all();
+        finishcv.notify_one();
     }
+}
+
+void AudioDevice::sendFrame(const Frame &frame)
+{
+    ScopedLock sl(lock);
+    frame.addToBuffer(sender);
 }
 
 void AudioDevice::audioDeviceAboutToStart(AudioIODevice* device)
@@ -162,26 +129,10 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
     }
 }
 
-void AudioDevice::createNextFrame()
-{
-    pendingFrames.emplace_back(inputData, inputPos);
-    inputPos += Config::BIT_PER_FRAME;
-}
-
-DataType AudioDevice::getRecvData()
-{
-    for (auto &&frame : receivedFrames)
-    {
-        frame.getData(outputData);
-    }
-    receivedFrames.clear();
-    return std::move(outputData);
-}
-
 AudioIO::AudioIO()
 {
     audioDeviceManager.initialiseWithDefaultDevices(1, 1);
-    audioDevice.reset(new AudioDevice());
+    audioDevice.reset(new AudioDevice(Config::STATE));
 }
 
 AudioIO::~AudioIO()
@@ -195,14 +146,29 @@ void AudioIO::startTransmit()
     std::cout << "selected mode: " << Config::STATE << "\n"
               << "start transmitting data...\n";
 
-    audioDevice->setDeviceState(Config::STATE);
-    audioDevice->setSendData(inputBuffer);
+    if (Config::STATE & RECEIVING)
+        macReceiver.reset(new MACLayerReceiver(audioDevice));    
+
+    if (Config::STATE & SENDING)
+        macTransmitter.reset(new MACLayerTransmitter(inputBuffer, audioDevice));
 
     audioDeviceManager.addAudioCallback(audioDevice.get());
     audioDevice->beginTransmit();
 
     std::unique_lock<std::mutex> cv_lk(cv_m);
-    cv.wait(cv_lk);
+    finishcv.wait(cv_lk);
+
+    if (Config::STATE & RECEIVING)
+    {
+        macReceiver->stopMACThread();
+        macReceiver.release();
+    }
+
+    if (Config::STATE & SENDING)
+    {
+        macTransmitter->stopMACThread();
+        macTransmitter.release();
+    }
 }
 
 void AudioIO::write(const DataType &data) 
@@ -212,5 +178,5 @@ void AudioIO::write(const DataType &data)
 
 void AudioIO::read(DataType &data)
 {
-    data = audioDevice->getRecvData();
+    // read from maclayer
 }
