@@ -5,10 +5,13 @@
 
 #include <JuceHeader.h>
 #include <vector>
+#include <chrono>
 #include "Physical/Audio.h"
 
 typedef juce::Array<uint8_t> DataType;
 typedef juce::AudioBuffer<float> AudioType;
+
+using namespace std::chrono_literals;
 
 /* Configuration of the physical layer. */
 class Config {
@@ -30,6 +33,8 @@ public:
     constexpr static int DATA_PER_FRAME = 8 * 62;
     constexpr static int BIT_PER_FRAME  = 8 * 72;
 
+    constexpr static int MACDATA_PER_FRAME = DATA_PER_FRAME / 8 - 5;
+
     constexpr static int BIT_PER_ACK  = 40;
 
     constexpr static int BAND_WIDTH   = 2;
@@ -43,6 +48,8 @@ public:
 
     constexpr static uint8_t SENDER = 0xED;
     constexpr static uint8_t RECEIVER = 0xCE;
+
+    constexpr static auto ACK_TIMEOUT = 100ms;
 
     constexpr static int RECV_TIMEOUT = 1;
 
