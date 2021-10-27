@@ -14,31 +14,31 @@ using namespace juce;
 typedef Array<uint8_t> DataType;
 typedef AudioBuffer<float> AudioType;
 
-class Demodulator 
+class FrameDetector
 {
 public:
-    Demodulator();
-    ~Demodulator();
+    FrameDetector();
+    ~FrameDetector();
 
     void checkHeader();
-    void demodulate(std::list<Frame> &received);
+    Frame detectAndGet();
+
     void clear();
     bool isTimeout();
-    bool isGettingBit();
-    RingBuffer<float> demodulatorBuffer;
+    RingBuffer<float> detectorBuffer;
 
 private:
     std::vector<float> dotproducts;
     std::vector<float> powers;
     std::function<float(int, const float *, const float *)> mkl_dot;
-    std::function<float(int, const float*, const float*)> power;
+    std::function<float(int, const float *, const float *)> power;
 
     int headerOffset = 0;
     int prevMaxPos = -1;
     float prevMax = 0.0f;
     int frameCountdown;
     int stopCountdown;
-    bool status;
+    bool found;
 
     void resetState();
 };

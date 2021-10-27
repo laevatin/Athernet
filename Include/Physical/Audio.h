@@ -9,7 +9,7 @@
 #include <list>
 
 #include "Utils/Ringbuffer.hpp"
-#include "Physical/Demodulator.h"
+#include "Physical/FrameDetector.h"
 #include "Physical/Frame.h"
 #include "Physical/Codec.h"
 
@@ -82,7 +82,7 @@ private:
     CriticalSection lock;
     RingBuffer<float> sender, receiver;
 
-    Demodulator demodulator;
+    FrameDetector frameDetector;
 
     /* Send by default */
     enum AudioIO::state deviceState = AudioIO::SENDING;

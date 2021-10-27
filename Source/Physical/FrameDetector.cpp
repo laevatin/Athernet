@@ -1,6 +1,6 @@
 #include "Physical/Frame.h"
 #include "Physical/Audio.h"
-#include "Physical/Demodulator.h"
+#include "Physical/FrameDetector.h"
 #include "Physical/Modulator.h"
 #include <fstream>
 #include "Config.h"
@@ -15,23 +15,22 @@ float recent_power(int N, const float *x)
     return sum;
 }
 
-Demodulator::Demodulator()
-    : status(false),
+FrameDetector::FrameDetector()
+    : found(false),
     stopCountdown(Config::RECV_TIMEOUT * Config::SAMPLE_RATE),
-    frameCountdown(0),
     mkl_dot(std::bind(cblas_sdot, std::placeholders::_1, std::placeholders::_2, 1, std::placeholders::_3, 1)),
     power([](int N, const float* dummy, const float* data) { return recent_power(N, data); })
 {}
 
-void Demodulator::checkHeader()
+void FrameDetector::checkHeader()
 {
     const float *header = Config::header.getReadPointer(0);
     int offsetStart = headerOffset;
     
-    for (; headerOffset + Config::HEADER_LENGTH < demodulatorBuffer.size() && stopCountdown >= 0; headerOffset++)
+    for (; headerOffset + Config::HEADER_LENGTH < detectorBuffer.size() && stopCountdown >= 0; headerOffset++)
     {
-        float dot = demodulatorBuffer.peek(mkl_dot, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
-        float rec_power = demodulatorBuffer.peek(power, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
+        float dot = detectorBuffer.peek(mkl_dot, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
+        float rec_power = detectorBuffer.peek(power, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
         debug_file << dot << "\t" << rec_power << "\n";
         dotproducts.push_back(dot);
         powers.push_back(rec_power);
@@ -52,55 +51,58 @@ void Demodulator::checkHeader()
             /* Clean out the mess */
             dotproducts.clear();
             powers.clear();
-            demodulatorBuffer.discard((std::size_t)prevMaxPos + Config::HEADER_LENGTH);
+            detectorBuffer.discard((std::size_t)prevMaxPos + Config::HEADER_LENGTH);
             resetState();
-            status = true;
+            found = true;
         }
+    }
+
+    if (prevMaxPos == -1 && headerOffset >= Config::SAMPLE_RATE)
+    {
+        detectorBuffer.discard(Config::SAMPLE_RATE / 2);
+        headerOffset -= (Config::SAMPLE_RATE / 2);
     }
 }
 
-void Demodulator::resetState()
+void FrameDetector::resetState()
 {
     /* Reset the state */
     headerOffset = 0;
     prevMaxPos = -1;
     prevMax = 0.0f;
-    frameCountdown = Config::BIT_PER_FRAME;
     stopCountdown = Config::RECV_TIMEOUT * Config::SAMPLE_RATE;
 }
 
-void Demodulator::demodulate(std::list<Frame> &received)
+Frame FrameDetector::detectAndGet()
 {   
     float buffer[Config::SAMPLE_PER_FRAME];
-    if (!status)
+    if (!found)
         checkHeader();
     
-    if (status && demodulatorBuffer.hasEnoughElem((std::size_t)Config::SAMPLE_PER_FRAME))
+    if (found && detectorBuffer.hasEnoughElem((std::size_t)Config::SAMPLE_PER_FRAME))
     {
-        demodulatorBuffer.read(buffer, Config::SAMPLE_PER_FRAME);
-        received.emplace_back((const float *)buffer);
-        status = false;
+        detectorBuffer.read(buffer, Config::SAMPLE_PER_FRAME);
+        
+        // received.emplace_back((const float *)buffer);
+        
+        
+        found = false;
     }
 }
 
-bool Demodulator::isTimeout()
+bool FrameDetector::isTimeout()
 {
     return stopCountdown <= 0;
 }
 
-bool Demodulator::isGettingBit()
-{
-    return status;
-}
-
-void Demodulator::clear()
+void FrameDetector::clear()
 {
     resetState();
     powers.clear();
     dotproducts.clear();
-    demodulatorBuffer.reset();
-    status = false;
+    detectorBuffer.reset();
+    found = false;
 }
 
-Demodulator::~Demodulator()
+FrameDetector::~FrameDetector()
 {}
