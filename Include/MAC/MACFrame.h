@@ -6,21 +6,24 @@
 #include <JuceHeader.h>
 #include "Config.h"
 
-struct MACFrame
+struct MACHeader
 {
     uint8_t dest;
     uint8_t src;
     uint8_t type;
     uint8_t len;
     uint8_t id;
+};
 
+struct MACFrame
+{
+    struct MACHeader header;
     uint8_t data[Config::MACDATA_PER_FRAME];
 };
 
-
 class MACFrameFactory
 {
-public:    
+public:
     MACFrameFactory();
     ~MACFrameFactory();
 
