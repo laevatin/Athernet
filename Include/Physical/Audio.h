@@ -46,8 +46,6 @@ private:
     AudioDeviceManager audioDeviceManager;
 
     std::shared_ptr<AudioDevice> audioDevice;
-    std::unique_ptr<MACLayerReceiver> macReceiver;
-    std::unique_ptr<MACLayerTransmitter> macTransmitter;
 
     DataType inputBuffer;
     DataType outputBuffer;
@@ -81,6 +79,7 @@ public:
 private:
     CriticalSection lock;
     RingBuffer<float> sender, receiver;
+    std::list<Frame> received;
 
     FrameDetector frameDetector;
 

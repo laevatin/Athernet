@@ -1,6 +1,7 @@
 #include "Physical/Audio.h"
 #include "Physical/Codec.h"
 #include "Config.h"
+#include "MACManager.h"
 #include <fstream>
 
 static std::condition_variable finishcv;
@@ -30,7 +31,7 @@ void AudioDevice::beginTransmit()
     if (deviceState & AudioIO::RECEIVING)
     {
         receiver.reset();
-        demodulator.clear();
+        frameDetector.clear();
 
         isReceiving = true;
     }
@@ -39,25 +40,35 @@ void AudioDevice::beginTransmit()
 
 void AudioDevice::hiResTimerCallback() 
 {   
-    if (isSending)
-    {
-        // check ack
-    }
-
-    if (isReceiving)
+    if (isSending || isReceiving)
     {
         std::size_t len = receiver.size();
         float *buffer = new float[len];
 
         lock.enter();
-        if (demodulator.demodulatorBuffer.hasEnoughSpace(len))
+        if (frameDetector.detectorBuffer.hasEnoughSpace(len))
         {
             receiver.read(buffer, len);
-            demodulator.demodulatorBuffer.write(buffer, len);
+            frameDetector.detectorBuffer.write(buffer, len);
         }
         lock.exit();
 
+        frameDetector.detectAndGet(received);
+        
+        if (!received.empty())
+        {
+            if (received.front().isACK()) 
+            {
+                // CALL MAClayerTransmitter
+            }
+            else 
+            {
+                // CALL MAClayerReceiver
+            }
+        }
+
         delete [] buffer;
+    }
 
         // check header
         // need a new timeout
@@ -66,7 +77,6 @@ void AudioDevice::hiResTimerCallback()
             // isReceiving = false;
             // std::cout << "Receiving timed out" << newLine;
         // }
-    }
 
     if (!isSending && !isReceiving)
     {
@@ -143,14 +153,19 @@ AudioIO::~AudioIO()
 
 void AudioIO::startTransmit()
 {
+    std::unique_ptr<MACLayerReceiver> macReceiver;
+    std::unique_ptr<MACLayerTransmitter> macTransmitter;
+
     std::cout << "selected mode: " << Config::STATE << "\n"
               << "start transmitting data...\n";
-
+    
     if (Config::STATE & RECEIVING)
         macReceiver.reset(new MACLayerReceiver(audioDevice));    
 
     if (Config::STATE & SENDING)
         macTransmitter.reset(new MACLayerTransmitter(inputBuffer, audioDevice));
+
+    MACManager::initialize(std::move(macReceiver), std::move(macTransmitter));
 
     audioDeviceManager.addAudioCallback(audioDevice.get());
     audioDevice->beginTransmit();
@@ -158,17 +173,7 @@ void AudioIO::startTransmit()
     std::unique_lock<std::mutex> cv_lk(cv_m);
     finishcv.wait(cv_lk);
 
-    if (Config::STATE & RECEIVING)
-    {
-        macReceiver->stopMACThread();
-        macReceiver.release();
-    }
-
-    if (Config::STATE & SENDING)
-    {
-        macTransmitter->stopMACThread();
-        macTransmitter.release();
-    }
+    MACManager::destroy();
 }
 
 void AudioIO::write(const DataType &data) 

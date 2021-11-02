@@ -6,7 +6,7 @@
 #include "Physical/Audio.h"
 
 /* Here `inline` hints the linker to choose arbitary one definition. */
-inline void __bitToByte(const DataType &bitArray, DataType &byteArray)
+static void __bitToByte(const DataType &bitArray, DataType &byteArray)
 {
     for (int i = 0; i < bitArray.size(); i += 8) 
     {
@@ -25,7 +25,7 @@ inline DataType bitToByte(const DataType &bitArray)
     return std::move(byteArray);
 }
 
-inline DataType __byteToBit(DataType &bitArray,const DataType &byteArray)
+static DataType __byteToBit(DataType &bitArray,const DataType &byteArray)
 {
     bitArray.resize(byteArray.size() * 8);
     for (int i = 0; i < bitArray.size(); i++) 
