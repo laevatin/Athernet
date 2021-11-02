@@ -37,14 +37,15 @@ Frame::Frame(MACHeader *macHeader, const float *audio)
     std::cout << "\n";    
 
     out.addArray(bitToByte(tmp));
-    frameData = AudioDevice::codec.decodeBlock(out, 0);
+    m_isGood = AudioDevice::codec.decodeBlock(out, frameData, 0);
 }
 
 Frame::Frame(Frame &&other)
     : frameAudio(std::move(other.frameAudio)),
     frameData(std::move(other.frameData)),
-    audioPos(std::exchange(other.audioPos, 0)),
-    isACK(std::exchange(other.isACK, false))
+    m_audioPos(std::exchange(other.m_audioPos, 0)),
+    m_isACK(std::exchange(other.m_isACK, false)),
+    m_isGood(std::exchange(other.m_isGood, false))
 {}
 
 void Frame::addToBuffer(RingBuffer<float> &buffer) const
@@ -54,19 +55,19 @@ void Frame::addToBuffer(RingBuffer<float> &buffer) const
 
 void Frame::addSound(const AudioType &src)
 {
-    if (src.getNumSamples() + audioPos > frameAudio.getNumSamples())
+    if (src.getNumSamples() + m_audioPos > frameAudio.getNumSamples())
     {
         std::cerr << "ERROR: frameAudio is full" << newLine;
         return;
     }
-    frameAudio.copyFrom(0, audioPos, src, 0, 0, src.getNumSamples());
-    audioPos += src.getNumSamples();
+    frameAudio.copyFrom(0, m_audioPos, src, 0, 0, src.getNumSamples());
+    m_audioPos += src.getNumSamples();
 }
 
 void Frame::addHeader()
 {
     frameAudio.copyFrom(0, 0, Config::header, 0, 0, Config::HEADER_LENGTH);
-    audioPos += Config::HEADER_LENGTH;
+    m_audioPos += Config::HEADER_LENGTH;
 }
 
 void Frame::getData(DataType &out) const
@@ -77,4 +78,14 @@ void Frame::getData(DataType &out) const
 void Frame::getData(uint8_t *out) const
 {
     memcpy(out, frameData.getRawDataPointer(), frameData.size());
+}
+
+bool Frame::isGoodFrame() const
+{
+    return m_isGood;
+}
+
+bool Frame::isACK() const
+{
+    return m_isACK;
 }

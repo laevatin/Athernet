@@ -40,6 +40,8 @@ public:
     void addSound(const AudioType &src);
     void getData(DataType &out) const;
     void getData(uint8_t *out) const;
+    bool isGoodFrame() const;
+    bool isACK() const;
 
 protected:
     void addHeader();
@@ -48,9 +50,10 @@ protected:
 
     /* frameData is byte array */
     DataType frameData; 
-    bool isACK = false;
+    bool m_isACK = false;
+    bool m_isGood = false;
 
-    int audioPos = 0;
+    int m_audioPos = 0;
 };
 
 
