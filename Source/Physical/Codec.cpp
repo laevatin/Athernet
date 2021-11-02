@@ -84,10 +84,10 @@ DataType Codec::encodeBlock(const DataType &in, int start)
     return std::move(out);
 }
 
-DataType Codec::decode(const DataType &in)
+bool Codec::decode(const DataType &in, DataType &out)
 {
-    DataType out;
     auto* pointer = in.getRawDataPointer();
+    bool success = false;
 
     for (int i = 0; i < in.size(); i += code_length)
     {
@@ -96,7 +96,7 @@ DataType Codec::decode(const DataType &in)
         for (int j = 0; j < code_length; j++)
             block[j] = in[i + j];
         
-        if (!decoder->decode(block))
+        if (!(success = decoder->decode(block)))
         {
             std::cout << "Error - Critical decoding failure! "
                         << "Msg: " << block.error_as_string()  << std::endl;
@@ -106,20 +106,20 @@ DataType Codec::decode(const DataType &in)
             out.add((uint8_t) block.data[k]);
     }
 
-    return std::move(out);
+    return success;
 }
 
-DataType Codec::decodeBlock(const DataType &in, int start)
+bool Codec::decodeBlock(const DataType &in, DataType &out, int start)
 {
-    DataType out;
     auto* pointer = in.getRawDataPointer();
+    bool success = false;
 
     schifra::reed_solomon::block<code_length,fec_length> block;
 
     for (int j = 0; j < code_length; j++)
         block[j] = in[start + j];
     
-    if (!decoder->decode(block))
+    if (!(success = decoder->decode(block)))
     {
         std::cout << "Error - Critical decoding failure! "
                     << "Msg: " << block.error_as_string()  << std::endl;
@@ -128,7 +128,7 @@ DataType Codec::decodeBlock(const DataType &in, int start)
     for (int k = 0; k < data_length; k++)
         out.add((uint8_t) block.data[k]);
 
-    return std::move(out);
+    return success;
 }
 
 Codec::~Codec()
