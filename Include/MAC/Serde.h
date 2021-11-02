@@ -22,9 +22,9 @@ inline MACFrame *deserialize(uint8_t *data)
 inline Frame convertFrame(MACFrame *macframe)
 {        
     uint8_t *serialized = serialize(macframe);
-    if (macframe->type == Config::ACK)
+    if (macframe->header.type == Config::ACK)
         return ACK(serialized);
-    else if (macframe->type == Config::DATA)
+    else if (macframe->header.type == Config::DATA)
         return Frame(serialized);
     else 
     {
@@ -37,6 +37,11 @@ inline void convertMACFrame(const Frame &phy, MACFrame *macFrame)
 {
     uint8_t *serialized = serialize(macFrame);
     phy.getData(serialized);
+}
+
+inline MACHeader *headerView(uint8_t *data)
+{
+    return reinterpret_cast<MACHeader *>(data);
 }
 
 #endif

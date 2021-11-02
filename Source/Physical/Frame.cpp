@@ -1,6 +1,7 @@
 #include "Physical/Frame.h"
 #include "Physical/Codec.h"
 #include "Physical/Modulator.h"
+#include "MAC/MACFrame.h"
 #include "Utils/IOFunctions.hpp"
 #include "mkl.h"
 #include <fstream>
@@ -8,15 +9,15 @@
 
 std::ofstream debug_file;
 
-Frame::Frame(const DataType &data, int start)
-{
-    frameAudio.setSize(1, Config::FRAME_LENGTH);
+// Frame::Frame(const DataType &data, int start)
+// {
+//     frameAudio.setSize(1, Config::FRAME_LENGTH);
 
-    addHeader();
+//     addHeader();
     
-    DataType encoded = byteToBit(AudioDevice::codec.encodeBlock(bitToByte(data), start));
-    Modulator::modulate(encoded, 0, Config::BIT_PER_FRAME, *this);
-}
+//     DataType encoded = byteToBit(AudioDevice::codec.encodeBlock(bitToByte(data), start));
+//     Modulator::modulate(encoded, 0, Config::BIT_PER_FRAME, *this);
+// }
 
 Frame::Frame(const uint8_t *pdata)
 {
@@ -33,25 +34,27 @@ Frame::Frame(const uint8_t *pdata)
 Frame::Frame()
 {}
 
-Frame::Frame(const float *audio)
+Frame::Frame(MACHeader *macHeader, const float *audio)
 {
-    DataType out;
-    for (int i = 0; i < Config::SAMPLE_PER_FRAME; i += Config::BIT_LENGTH)
-    {
-        Modulator::demodulate(audio + i, out);
-    }
-    for (int i = 0; i < Config::BIT_PER_FRAME; i += 1)
-    {
-        std::cout << (int)out[i];
-    }
-    std::cout << "\n";
-    frameData = byteToBit(AudioDevice::codec.decodeBlock(bitToByte(out), 0));
+    DataType out, tmp;
+    uint8_t *macHeader_uint8 = reinterpret_cast<uint8_t *>(macHeader);
+    out.addArray(macHeader_uint8, Config::MACHEADER_LENGTH / 8);
+
+    for (int i = 0; i < (Config::BIT_PER_FRAME - Config::MACHEADER_LENGTH) * Config::BIT_LENGTH; i += Config::BIT_LENGTH)
+        Modulator::demodulate(audio + i, tmp);
+    for (int i = 0; i < Config::BIT_PER_FRAME - Config::MACHEADER_LENGTH; i += 1)
+        std::cout << (int)tmp[i];
+    std::cout << "\n";    
+
+    out.addArray(bitToByte(tmp));
+    frameData = AudioDevice::codec.decodeBlock(out, 0);
 }
 
 Frame::Frame(Frame &&other)
     : frameAudio(std::move(other.frameAudio)),
     frameData(std::move(other.frameData)),
-    audioPos(std::exchange(other.audioPos, 0))
+    audioPos(std::exchange(other.audioPos, 0)),
+    isACK(std::exchange(other.isACK, false))
 {}
 
 void Frame::addToBuffer(RingBuffer<float> &buffer) const

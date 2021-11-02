@@ -33,7 +33,8 @@ public:
     constexpr static int DATA_PER_FRAME = 8 * 62;
     constexpr static int BIT_PER_FRAME  = 8 * 72;
 
-    constexpr static int MACDATA_PER_FRAME = DATA_PER_FRAME / 8 - 5;
+    constexpr static int MACHEADER_LENGTH = sizeof(MACHeader) * 8;
+    constexpr static int MACDATA_PER_FRAME = DATA_PER_FRAME / 8 - MACHEADER_LENGTH / 8;
 
     constexpr static int BIT_PER_ACK  = 40;
 

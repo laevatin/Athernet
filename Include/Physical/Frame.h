@@ -6,6 +6,7 @@
 #include <JuceHeader.h>
 #include <vector>
 #include "Utils/Ringbuffer.hpp"
+#include "MAC/MACFrame.h"
 
 #define PI acos(-1)
 
@@ -25,11 +26,11 @@ public:
 
     /* Encode the frame and modulate. */
     Frame(const DataType &data, int start);
-    Frame(const uint8_t *data);
+    Frame(const uint8_t *pdata);
 
     /* Demodulate and decode the frame. 
-     `audio` should contain at least SAMPLE_PER_FRAME samples */
-    Frame(const float *audio);
+     `audio` should contain at least (Config::BIT_PER_FRAME - Config::MACHEADER_LENGTH) * Config::BIT_LENGTH samples */
+    Frame(MACHeader *macHeader, const float *audio);
 
     ~Frame() = default;
 
@@ -45,7 +46,10 @@ protected:
     void addHeader();
 
     AudioType frameAudio;
+
+    /* frameData is byte array */
     DataType frameData; 
+    bool isACK = false;
 
     int audioPos = 0;
 };
