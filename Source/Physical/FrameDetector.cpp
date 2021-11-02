@@ -1,9 +1,9 @@
-#include "Physical/Frame.h"
 #include "Physical/Audio.h"
 #include "Physical/FrameDetector.h"
 #include "Physical/Modulator.h"
 #include <fstream>
 #include "Config.h"
+#include "Utils/IOFunctions.hpp"
 
 extern std::ofstream debug_file;
 
@@ -16,7 +16,7 @@ float recent_power(int N, const float *x)
 }
 
 FrameDetector::FrameDetector()
-    : found(false),
+    : m_state(CK_HEADER),
     stopCountdown(Config::RECV_TIMEOUT * Config::SAMPLE_RATE),
     mkl_dot(std::bind(cblas_sdot, std::placeholders::_1, std::placeholders::_2, 1, std::placeholders::_3, 1)),
     power([](int N, const float* dummy, const float* data) { return recent_power(N, data); })
@@ -53,7 +53,7 @@ void FrameDetector::checkHeader()
             powers.clear();
             detectorBuffer.discard((std::size_t)prevMaxPos + Config::HEADER_LENGTH);
             resetState();
-            found = true;
+            m_state = FD_HEADER;
         }
     }
 
@@ -73,21 +73,46 @@ void FrameDetector::resetState()
     stopCountdown = Config::RECV_TIMEOUT * Config::SAMPLE_RATE;
 }
 
-Frame FrameDetector::detectAndGet()
-{   
-    float buffer[Config::SAMPLE_PER_FRAME];
-    if (!found)
+void FrameDetector::detectAndGet(std::list<Frame> &received)
+{
+    float buffer[Config::BIT_PER_FRAME * Config::BIT_LENGTH];
+
+    if (m_state == CK_HEADER)
         checkHeader();
-    
-    if (found && detectorBuffer.hasEnoughElem((std::size_t)Config::SAMPLE_PER_FRAME))
+
+    if (m_state == FD_HEADER && detectorBuffer.hasEnoughElem((std::size_t)Config::MACHEADER_LENGTH * Config::BIT_LENGTH))
     {
-        detectorBuffer.read(buffer, Config::SAMPLE_PER_FRAME);
-        
+        detectorBuffer.read(buffer, Config::MACHEADER_LENGTH * Config::BIT_LENGTH);
         // received.emplace_back((const float *)buffer);
-        
-        
-        found = false;
+        DataType frameHeader = getMACHeader(buffer);
+        MACHeader *macHeader = headerView(frameHeader.getRawDataPointer());
+        if (macHeader->type == Config::ACK && MACLayerTransmitter::checkACK(macHeader))
+        {
+            received.emplace_back(macHeader);
+            m_state = CK_HEADER;
+        }
+        else if (macHeader->type == Config::DATA && MACLayerReceiver::checkFrame(macHeader))
+        {
+            m_curHeader = macHeader;
+            m_state = GET_DATA;
+        }
     }
+
+    if (m_state == GET_DATA)
+    {
+        constexpr int remaining = (Config::BIT_PER_FRAME - Config::MACHEADER_LENGTH) * Config::BIT_LENGTH;
+        detectorBuffer.read(buffer, remaining);
+        received.emplace_back(m_curHeader, buffer);
+        m_state = CK_HEADER;
+    }
+}
+
+DataType FrameDetector::getMACHeader(const float *samples)
+{
+    DataType bitArray;
+    for (int i = 0; i < Config::MACHEADER_LENGTH * Config::BIT_LENGTH / Config::BAND_WIDTH; i += Config::BIT_LENGTH)
+        Modulator::demodulate(samples + i, bitArray);
+    return bitToByte(bitArray);
 }
 
 bool FrameDetector::isTimeout()
@@ -101,7 +126,7 @@ void FrameDetector::clear()
     powers.clear();
     dotproducts.clear();
     detectorBuffer.reset();
-    found = false;
+    m_state = CK_HEADER;
 }
 
 FrameDetector::~FrameDetector()

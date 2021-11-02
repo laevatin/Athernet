@@ -25,7 +25,6 @@ public:
     Frame();
 
     /* Encode the frame and modulate. */
-    Frame(const DataType &data, int start);
     Frame(const uint8_t *pdata);
 
     /* Demodulate and decode the frame. 

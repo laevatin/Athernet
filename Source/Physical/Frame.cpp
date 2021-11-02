@@ -9,16 +9,6 @@
 
 std::ofstream debug_file;
 
-// Frame::Frame(const DataType &data, int start)
-// {
-//     frameAudio.setSize(1, Config::FRAME_LENGTH);
-
-//     addHeader();
-    
-//     DataType encoded = byteToBit(AudioDevice::codec.encodeBlock(bitToByte(data), start));
-//     Modulator::modulate(encoded, 0, Config::BIT_PER_FRAME, *this);
-// }
-
 Frame::Frame(const uint8_t *pdata)
 {
     frameAudio.setSize(1, Config::FRAME_LENGTH);

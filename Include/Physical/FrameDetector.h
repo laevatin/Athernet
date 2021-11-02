@@ -5,9 +5,9 @@
 
 #include <JuceHeader.h>
 #include "Utils/Ringbuffer.hpp"
+#include "MAC/Serde.h"
 #include "mkl.h"
-
-class Frame;
+#include "Physical/Frame.h"
 
 using namespace juce;
 
@@ -21,7 +21,7 @@ public:
     ~FrameDetector();
 
     void checkHeader();
-    Frame detectAndGet();
+    void detectAndGet(std::list<Frame> &received);
 
     void clear();
     bool isTimeout();
@@ -33,14 +33,21 @@ private:
     std::function<float(int, const float *, const float *)> mkl_dot;
     std::function<float(int, const float *, const float *)> power;
 
+    enum state {
+        CK_HEADER,
+        FD_HEADER,
+        GET_DATA
+    } m_state;
+
     int headerOffset = 0;
     int prevMaxPos = -1;
     float prevMax = 0.0f;
     int frameCountdown;
     int stopCountdown;
-    bool found;
+    MACHeader *m_curHeader = NULL;
 
     void resetState();
+    DataType getMACHeader(const float *samples);
 };
 
 #endif
