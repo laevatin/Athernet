@@ -5,12 +5,18 @@
               compilerFlagSchemes="NewScheme" cppLanguageStandard="17" headerPath="..\..\Include&#10;">
   <MAINGROUP id="qncXkF" name="Athernet-cpp">
     <GROUP id="{63E937E2-2125-F6F7-7546-45DBF7ED9FA1}" name="Include">
-      <GROUP id="{E597B1AB-690F-023E-273C-483118948409}" name="MAC"/>
+      <GROUP id="{E597B1AB-690F-023E-273C-483118948409}" name="MAC">
+        <FILE id="RKg6m3" name="ACK.h" compile="0" resource="0" file="Include/MAC/ACK.h"/>
+        <FILE id="TdIymT" name="MACFrame.h" compile="0" resource="0" file="Include/MAC/MACFrame.h"/>
+        <FILE id="nihHGa" name="MACLayer.h" compile="0" resource="0" file="Include/MAC/MACLayer.h"/>
+        <FILE id="RmQwhn" name="MACManager.h" compile="0" resource="0" file="Include/MAC/MACManager.h"/>
+        <FILE id="GISukk" name="Serde.h" compile="0" resource="0" file="Include/MAC/Serde.h"/>
+      </GROUP>
       <GROUP id="{E2AFAEC3-8EC8-EED8-68FB-678EC7811792}" name="Physical">
         <FILE id="OtvU5J" name="Audio.h" compile="0" resource="0" file="Include/Physical/Audio.h"/>
         <FILE id="pdvdc7" name="Codec.h" compile="0" resource="0" file="Include/Physical/Codec.h"/>
-        <FILE id="TtjbiA" name="Demodulator.h" compile="0" resource="0" file="Include/Physical/Demodulator.h"/>
         <FILE id="Bxvw9J" name="Frame.h" compile="0" resource="0" file="Include/Physical/Frame.h"/>
+        <FILE id="TMn4PH" name="FrameDetector.h" compile="0" resource="0" file="Include/Physical/FrameDetector.h"/>
         <FILE id="rGEMk7" name="Modulator.h" compile="0" resource="0" file="Include/Physical/Modulator.h"/>
       </GROUP>
       <GROUP id="{2AAFC933-0AE4-0213-D7E4-FCBE3C3E74BA}" name="Utils">
@@ -21,12 +27,19 @@
       <FILE id="aXOBX1" name="Config.h" compile="0" resource="0" file="Include/Config.h"/>
     </GROUP>
     <GROUP id="{B965A200-6802-14F0-61F8-1D128E044BDD}" name="Source">
-      <GROUP id="{5E64186D-BB7F-2B8F-2849-DB4DF0A449E4}" name="MAC"/>
+      <GROUP id="{5E64186D-BB7F-2B8F-2849-DB4DF0A449E4}" name="MAC">
+        <FILE id="xyC4Ps" name="ACK.cpp" compile="1" resource="0" file="Source/MAC/ACK.cpp"/>
+        <FILE id="amNhuR" name="MACFrame.cpp" compile="1" resource="0" file="Source/MAC/MACFrame.cpp"/>
+        <FILE id="k8MGMh" name="MACLayer.cpp" compile="1" resource="0" file="Source/MAC/MACLayer.cpp"/>
+        <FILE id="kFx9tk" name="MACManager.cpp" compile="1" resource="0" file="Source/MAC/MACManager.cpp"/>
+        <FILE id="WblkZ8" name="Serde.cpp" compile="1" resource="0" file="Source/MAC/Serde.cpp"/>
+      </GROUP>
       <GROUP id="{FE4895C6-983A-6044-B1C1-6A095568E775}" name="Physical">
         <FILE id="hetPTa" name="Audio.cpp" compile="1" resource="0" file="Source/Physical/Audio.cpp"/>
         <FILE id="rBgm7Q" name="Codec.cpp" compile="1" resource="0" file="Source/Physical/Codec.cpp"/>
-        <FILE id="CRJRoF" name="Demodulator.cpp" compile="1" resource="0" file="Source/Physical/Demodulator.cpp"/>
         <FILE id="gqRsNU" name="Frame.cpp" compile="1" resource="0" file="Source/Physical/Frame.cpp"/>
+        <FILE id="oQ9Hgk" name="FrameDetector.cpp" compile="1" resource="0"
+              file="Source/Physical/FrameDetector.cpp"/>
         <FILE id="P8znCn" name="Modulator.cpp" compile="1" resource="0" file="Source/Physical/Modulator.cpp"/>
       </GROUP>
       <FILE id="hSM8m7" name="Config.cpp" compile="1" resource="0" file="Source/Config.cpp"/>

@@ -6,6 +6,9 @@
 #include <JuceHeader.h>
 #include "Config.h"
 
+typedef juce::Array<uint8_t> DataType;
+class Config;
+
 struct MACHeader
 {
     uint8_t dest;

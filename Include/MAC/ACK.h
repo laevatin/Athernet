@@ -4,8 +4,7 @@
 #define __ACK_H__
 
 #include "Physical/Frame.h"
-#include "Config.h"
-#include "MAC/MACFrame.h"
+class MACHeader;
 
 class ACK : public Frame
 {
@@ -15,6 +14,8 @@ public:
 
     /* Receive an ack */
     ACK(MACHeader *header);
+    ACK(ACK&& other);
+
     ~ACK() = default;
 };
 

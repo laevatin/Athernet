@@ -25,7 +25,7 @@ inline DataType bitToByte(const DataType &bitArray)
     return std::move(byteArray);
 }
 
-static DataType __byteToBit(DataType &bitArray,const DataType &byteArray)
+static void __byteToBit(DataType &bitArray,const DataType &byteArray)
 {
     bitArray.resize(byteArray.size() * 8);
     for (int i = 0; i < bitArray.size(); i++) 

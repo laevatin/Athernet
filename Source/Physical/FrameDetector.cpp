@@ -4,6 +4,7 @@
 #include <fstream>
 #include "Config.h"
 #include "Utils/IOFunctions.hpp"
+#include "MAC/ACK.h"
 
 extern std::ofstream debug_file;
 
@@ -88,7 +89,7 @@ void FrameDetector::detectAndGet(std::list<Frame> &received)
         MACHeader *macHeader = headerView(frameHeader.getRawDataPointer());
         if (macHeader->type == Config::ACK && MACLayerTransmitter::checkACK(macHeader))
         {
-            received.emplace_back(macHeader);
+            received.push_back(ACK(macHeader));
             m_state = CK_HEADER;
         }
         else if (macHeader->type == Config::DATA && MACLayerReceiver::checkFrame(macHeader))

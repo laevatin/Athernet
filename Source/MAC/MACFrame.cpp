@@ -38,7 +38,7 @@ MACFrame *MACFrameFactory::createEmpty()
     return frame;
 }
 
-void destoryFrame(MACFrame *frame)
+void MACFrameFactory::destoryFrame(MACFrame *frame)
 {
     delete frame;
 }

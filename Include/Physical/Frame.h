@@ -6,14 +6,14 @@
 #include <JuceHeader.h>
 #include <vector>
 #include "Utils/Ringbuffer.hpp"
-#include "MAC/MACFrame.h"
-
 #define PI acos(-1)
 
 using namespace juce;
 
 typedef Array<uint8_t> DataType;
 typedef AudioBuffer<float> AudioType;
+
+class MACHeader;
 
 /**
  * Data structure for the frames

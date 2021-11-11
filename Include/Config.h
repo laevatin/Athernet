@@ -6,12 +6,18 @@
 #include <JuceHeader.h>
 #include <vector>
 #include <chrono>
-#include "Physical/Audio.h"
 
 typedef juce::Array<uint8_t> DataType;
 typedef juce::AudioBuffer<float> AudioType;
 
 using namespace std::chrono_literals;
+struct MACHeader;
+
+enum state {
+    SENDING = 1,
+    RECEIVING = 2,
+    BOTH = 3
+};
 
 /* Configuration of the physical layer. */
 class Config {
@@ -33,7 +39,7 @@ public:
     constexpr static int DATA_PER_FRAME = 8 * 62;
     constexpr static int BIT_PER_FRAME  = 8 * 72;
 
-    constexpr static int MACHEADER_LENGTH = sizeof(MACHeader) * 8;
+    constexpr static int MACHEADER_LENGTH = 5 * 8; // sizeof(MACHeader)
     constexpr static int MACDATA_PER_FRAME = DATA_PER_FRAME / 8 - MACHEADER_LENGTH / 8;
 
     constexpr static int BIT_PER_ACK  = 40;
@@ -56,7 +62,7 @@ public:
 
     constexpr static int PENDING_QUEUE_SIZE = 20;
 
-    constexpr static enum AudioIO::state STATE = AudioIO::state::BOTH;
+    constexpr static enum state STATE = BOTH;
 
     static AudioType header;
     static std::vector<AudioType> modulateSound;

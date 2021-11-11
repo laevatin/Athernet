@@ -1,4 +1,5 @@
 #include "Config.h"
+#include "Physical/Audio.h"
 
 AudioType Config::header;
 std::vector<AudioType> Config::modulateSound;

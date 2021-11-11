@@ -34,13 +34,6 @@ public:
     void startTransmit();
     void write(const DataType &data);
     void read(DataType &data);
-
-    enum state {
-        SENDING = 1,
-        RECEIVING = 2,
-        BOTH = 3
-    };
-
     
 private:
     AudioDeviceManager audioDeviceManager;
@@ -58,7 +51,7 @@ class AudioDevice : public AudioIODeviceCallback,
     private HighResolutionTimer
 {   
 public:
-    AudioDevice(enum AudioIO::state s);
+    AudioDevice(enum state s);
     ~AudioDevice();
 
     void beginTransmit();
@@ -67,7 +60,6 @@ public:
 
     void sendFrame(const Frame &frame);
 
-    //==============================================================================
     void audioDeviceAboutToStart(AudioIODevice* device) override;
 
     void audioDeviceStopped() override;
@@ -83,8 +75,7 @@ private:
 
     FrameDetector frameDetector;
 
-    /* Send by default */
-    enum AudioIO::state deviceState = AudioIO::SENDING;
+    enum state deviceState = state::SENDING;
 
     bool isSending = false;
     bool isReceiving = false;

@@ -1,8 +1,8 @@
 #include "Physical/Audio.h"
 #include "Physical/Codec.h"
-#include "Config.h"
-#include "MACManager.h"
+#include "MAC/MACManager.h"
 #include <fstream>
+#include "Config.h"
 
 static std::condition_variable finishcv;
 static std::mutex cv_m;
@@ -11,7 +11,7 @@ static DataType tester;
 
 Codec AudioDevice::codec;
 
-AudioDevice::AudioDevice(enum AudioIO::state s) 
+AudioDevice::AudioDevice(enum state s) 
     : deviceState(s)
 {}
 
@@ -21,14 +21,14 @@ AudioDevice::~AudioDevice()
 void AudioDevice::beginTransmit()
 {
     const ScopedLock sl(lock);
-    if (deviceState & AudioIO::SENDING)
+    if (deviceState & SENDING)
     {
         sender.reset();
 
         isSending = true;
     }
     
-    if (deviceState & AudioIO::RECEIVING)
+    if (deviceState & RECEIVING)
     {
         receiver.reset();
         frameDetector.clear();
@@ -57,14 +57,11 @@ void AudioDevice::hiResTimerCallback()
         
         if (!received.empty())
         {
-            if (received.front().isACK()) 
-            {
-                // CALL MAClayerTransmitter
-            }
-            else 
-            {
-                // CALL MAClayerReceiver
-            }
+            if (received.front().isACK() && (deviceState & SENDING)) 
+                MACManager::get().macTransmitter->ACKreceived(std::move(received.front()));
+            else if (!received.front().isACK() && (deviceState & RECEIVING))
+                MACManager::get().macReceiver->frameReceived(std::move(received.front()));
+            received.pop_front();
         }
 
         delete [] buffer;
@@ -173,6 +170,7 @@ void AudioIO::startTransmit()
     std::unique_lock<std::mutex> cv_lk(cv_m);
     finishcv.wait(cv_lk);
 
+    MACManager::get().macReceiver->getOutput(outputBuffer);
     MACManager::destroy();
 }
 
@@ -183,5 +181,5 @@ void AudioIO::write(const DataType &data)
 
 void AudioIO::read(DataType &data)
 {
-    // read from maclayer
+    data = std::move(outputBuffer);
 }

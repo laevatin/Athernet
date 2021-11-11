@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="Athernet-cpp\Include\MAC">
+      <UniqueIdentifier>{46BA6532-481F-0B3E-BD4A-99A337F3EA85}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Athernet-cpp\Include\Physical">
       <UniqueIdentifier>{F8C94DD8-0845-51E0-D10A-8052D94197E8}</UniqueIdentifier>
     </Filter>
@@ -9,6 +12,9 @@
     </Filter>
     <Filter Include="Athernet-cpp\Include">
       <UniqueIdentifier>{16BD8E5C-FA06-DD1B-82CA-E0F3D71392AF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Athernet-cpp\Source\MAC">
+      <UniqueIdentifier>{D2A27831-C1FE-A8C3-B4D3-E7908BC68C91}</UniqueIdentifier>
     </Filter>
     <Filter Include="Athernet-cpp\Source\Physical">
       <UniqueIdentifier>{8AA19385-CFA5-FDCB-A8CB-F44252A3EA5E}</UniqueIdentifier>
@@ -450,16 +456,31 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\MAC\ACK.cpp">
+      <Filter>Athernet-cpp\Source\MAC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\MAC\MACFrame.cpp">
+      <Filter>Athernet-cpp\Source\MAC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\MAC\MACLayer.cpp">
+      <Filter>Athernet-cpp\Source\MAC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\MAC\MACManager.cpp">
+      <Filter>Athernet-cpp\Source\MAC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\MAC\Serde.cpp">
+      <Filter>Athernet-cpp\Source\MAC</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\Physical\Audio.cpp">
       <Filter>Athernet-cpp\Source\Physical</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Physical\Codec.cpp">
       <Filter>Athernet-cpp\Source\Physical</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Physical\Demodulator.cpp">
+    <ClCompile Include="..\..\Source\Physical\Frame.cpp">
       <Filter>Athernet-cpp\Source\Physical</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\Physical\Frame.cpp">
+    <ClCompile Include="..\..\Source\Physical\FrameDetector.cpp">
       <Filter>Athernet-cpp\Source\Physical</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Physical\Modulator.cpp">
@@ -2435,16 +2456,31 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Include\MAC\ACK.h">
+      <Filter>Athernet-cpp\Include\MAC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Include\MAC\MACFrame.h">
+      <Filter>Athernet-cpp\Include\MAC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Include\MAC\MACLayer.h">
+      <Filter>Athernet-cpp\Include\MAC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Include\MAC\MACManager.h">
+      <Filter>Athernet-cpp\Include\MAC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Include\MAC\Serde.h">
+      <Filter>Athernet-cpp\Include\MAC</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Include\Physical\Audio.h">
       <Filter>Athernet-cpp\Include\Physical</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Include\Physical\Codec.h">
       <Filter>Athernet-cpp\Include\Physical</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Include\Physical\Demodulator.h">
+    <ClInclude Include="..\..\Include\Physical\Frame.h">
       <Filter>Athernet-cpp\Include\Physical</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Include\Physical\Frame.h">
+    <ClInclude Include="..\..\Include\Physical\FrameDetector.h">
       <Filter>Athernet-cpp\Include\Physical</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Include\Physical\Modulator.h">

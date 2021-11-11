@@ -7,8 +7,10 @@
 #include <list>
 #include <condition_variable>
 #include <atomic>
-#include "Config.h"
 #include "MAC/MACFrame.h"
+#include "Physical/Frame.h"
+
+class AudioDevice;
 
 class MACLayer
 {
@@ -31,22 +33,24 @@ public:
     explicit MACLayerReceiver(std::shared_ptr<AudioDevice> audioDevice);
     ~MACLayerReceiver();
 
+    void frameReceived(Frame &&frame);
     void stopMACThread() override;
+    void getOutput(DataType &out);
+    static bool checkFrame(const MACHeader *macHeader);
 
 private:
     void MACThreadRecvStart();
     void sendACK(uint8_t id);
-    bool checkFrame(const MACFrame *macFrame);
     
-    std::mutex cv_header_m;
-    std::condition_variable cv_header;
-
     enum RxState {
         IDLE,
         CK_HEADER,
         CK_FRAME,
         SEND_ACK
     };
+
+    std::mutex cv_header_m;
+    std::condition_variable cv_header;
 
     DataType outputData;
     std::list<Frame> receivingQueue;
@@ -63,15 +67,11 @@ public:
     /* This function may called from other thread. */
     void ACKreceived(const Frame &ack);
 
+    static bool checkACK(const MACHeader *macHeader);
 private:
     void MACThreadTransStart();
     void sendFrame();
     void fillQueue();
-
-    bool checkACK(const MACFrame *macFrame);
-
-    std::mutex cv_ack_m;
-    std::condition_variable cv_ack;
 
     enum TxState {
         IDLE,
@@ -79,6 +79,9 @@ private:
         ACK_RECEIVED,
         SEND_DATA
     };
+    
+    std::mutex cv_ack_m;
+    std::condition_variable cv_ack;
 
     std::list<Frame> pendingFrame;
     std::list<uint8_t> pendingID;
