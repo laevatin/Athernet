@@ -11,7 +11,7 @@ static DataType tester;
 
 Codec AudioDevice::codec;
 
-#define TEST_NOPHYS
+//#define TEST_NOPHYS
 
 AudioDevice::AudioDevice(enum state s) 
     : deviceState(s)
@@ -85,12 +85,11 @@ void AudioDevice::hiResTimerCallback()
 
 #ifdef TEST_NOPHYS
     // simulate physical layer
-
     if (isSending && isReceiving)
     {
         lock.enter();
         // std::cout << "SEND" << "\n";
-        int numSamples = 448;
+        int numSamples = 5000;
         float* buffer = new float[numSamples];
         if (sender.hasEnoughElem(numSamples))
             sender.read(buffer, numSamples);
@@ -135,7 +134,6 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
         float** outputChannelData, int numOutputChannels, int numSamples)
 {
     const ScopedLock sl(lock);
-
 #ifndef TEST_NOPHYS
     /* Only use channel 0. */
     if (isSending) 
@@ -147,7 +145,6 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
             std::size_t size = sender.size();
             sender.read(outputChannelData[0], size);
             zeromem(outputChannelData[0] + size, ((size_t)numSamples - size) * sizeof(float));
-            isSending = false;
         }
     }
     else
@@ -185,6 +182,9 @@ void AudioDevice::stopSending()
 AudioIO::AudioIO()
 {
     audioDeviceManager.initialiseWithDefaultDevices(1, 1);
+    AudioDeviceManager::AudioDeviceSetup dev_info = audioDeviceManager.getAudioDeviceSetup();
+    dev_info.sampleRate = 48000;
+    dev_info.bufferSize = 256;
     audioDevice.reset(new AudioDevice(Config::STATE));
 }
 

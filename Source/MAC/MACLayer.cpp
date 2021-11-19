@@ -56,17 +56,17 @@ void MACLayerReceiver::MACThreadRecvStart()
 
         MACFrame macFrame;
         convertMACFrame(receivingQueue.front(), &macFrame);
-        receivingQueue.pop_front();
-        lock.unlock();
-
-        sendACK(macFrame.header.id);
-        outputData.addArray(macFrame.data, macFrame.header.len);
-
-        if (macFrame.header.len < Config::MACDATA_PER_FRAME)
+        if (receivingQueue.front().isGoodFrame())
         {
-            audioDevice->stopReceiving();
-            audioDevice->stopSending();
+            sendACK(macFrame.header.id);
+            outputData.addArray(macFrame.data, macFrame.header.len);
+            if (macFrame.header.len < Config::MACDATA_PER_FRAME)
+            {
+                audioDevice->stopReceiving();
+                audioDevice->stopSending();
+            }
         }
+        receivingQueue.pop_front();
     }
 }
 
@@ -164,6 +164,8 @@ void MACLayerTransmitter::MACThreadTransStart()
 
         if (cv_ack.wait_until(lock, now + Config::ACK_TIMEOUT, [this](){ return txstate == ACK_RECEIVED; }))
         {
+            auto recv = std::chrono::system_clock::now();
+            std::cout << "Time to ACK: " << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << "\n";
             pendingFrame.pop_front();
             pendingID.pop_front();
         }

@@ -32,9 +32,9 @@ public:
 
     constexpr static int SAMPLE_RATE   = 48000;
 
-    constexpr static int HEADER_LENGTH = 440;
+    constexpr static int HEADER_LENGTH = 100;
 
-    constexpr static int BIT_LENGTH    = 32;
+    constexpr static int BIT_LENGTH    = 6;
 
     constexpr static int DATA_PER_FRAME = 8 * 62;
     constexpr static int BIT_PER_FRAME  = 8 * 72;
@@ -56,7 +56,7 @@ public:
     constexpr static uint8_t SENDER = 0xED;
     constexpr static uint8_t RECEIVER = 0xCE;
 
-    constexpr static auto ACK_TIMEOUT = 1s;
+    constexpr static auto ACK_TIMEOUT = 500ms;
 
     constexpr static int RECV_TIMEOUT = 1;
 
