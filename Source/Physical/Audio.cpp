@@ -11,6 +11,8 @@ static DataType tester;
 
 Codec AudioDevice::codec;
 
+#define TEST_NOPHYS
+
 AudioDevice::AudioDevice(enum state s) 
     : deviceState(s)
 {}
@@ -54,7 +56,7 @@ void AudioDevice::hiResTimerCallback()
         lock.exit();
 
         frameDetector.detectAndGet(received);
-        
+
         if (!received.empty())
         {
             if (received.front().isACK() && (deviceState & SENDING)) 
@@ -78,13 +80,45 @@ void AudioDevice::hiResTimerCallback()
     if (!isSending && !isReceiving)
     {
         stopTimer();
-        std::cout << "Finishing...\n";
         finishcv.notify_one();
     }
+
+#ifdef TEST_NOPHYS
+    // simulate physical layer
+
+    if (isSending && isReceiving)
+    {
+        lock.enter();
+        // std::cout << "SEND" << "\n";
+        int numSamples = 448;
+        float* buffer = new float[numSamples];
+        if (sender.hasEnoughElem(numSamples))
+            sender.read(buffer, numSamples);
+        else
+        {
+            std::size_t size = sender.size();
+            sender.read(buffer, size);
+            zeromem(buffer + size, ((size_t)numSamples - size) * sizeof(float));
+        }
+ 
+        if (receiver.hasEnoughSpace(numSamples))
+            receiver.write(buffer, numSamples);
+        else
+        {
+            std::cerr << "No enough space to receive." << newLine;
+            std::size_t avail = receiver.avail();
+            receiver.write(buffer, avail);
+            isReceiving = false;
+        }
+        lock.exit();
+        delete[] buffer;
+    }
+#endif
 }
 
 void AudioDevice::sendFrame(const Frame &frame)
 {
+    // std::cout << "send frame: " << frame.isACK() << " " << frame.isGoodFrame() << "\n";
     ScopedLock sl(lock);
     frame.addToBuffer(sender);
 }
@@ -102,6 +136,7 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
 {
     const ScopedLock sl(lock);
 
+#ifndef TEST_NOPHYS
     /* Only use channel 0. */
     if (isSending) 
     {
@@ -134,6 +169,17 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
             isReceiving = false;
         }
     }
+#endif
+}
+
+void AudioDevice::stopReceiving()
+{
+    isReceiving = false;
+}
+
+void AudioDevice::stopSending()
+{
+    isSending = false;
 }
 
 AudioIO::AudioIO()
@@ -172,6 +218,8 @@ void AudioIO::startTransmit()
 
     MACManager::get().macReceiver->getOutput(outputBuffer);
     MACManager::destroy();
+
+    std::cout << "---------------- Transfer Finished ----------------\n"; 
 }
 
 void AudioIO::write(const DataType &data) 

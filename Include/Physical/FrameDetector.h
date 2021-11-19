@@ -44,7 +44,7 @@ private:
     float prevMax = 0.0f;
     int frameCountdown;
     int stopCountdown;
-    MACHeader *m_curHeader = NULL;
+    DataType frameHeader;
 
     void resetState();
     DataType getMACHeader(const float *samples);

@@ -70,7 +70,6 @@ public:
     static bool checkACK(const MACHeader *macHeader);
 private:
     void MACThreadTransStart();
-    void sendFrame();
     void fillQueue();
 
     enum TxState {

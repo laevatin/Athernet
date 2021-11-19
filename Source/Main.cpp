@@ -1,4 +1,5 @@
 #include "Physical/Audio.h"
+#include "Utils/IOFunctions.hpp"
 #include <objbase.h>
 #include <bitset>
 #include <fstream>
@@ -37,27 +38,30 @@ int main(int argc, char* argv[])
     Array<uint8_t> input;
     Array<uint8_t> output;
     getInputFromFile(input, "C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\input10000.in");
-
+    // for (int i = 0; i < input.size(); i++) {
+    //     std::cout << (int)input[i];
+    //     if (i % (57 * 8) == 0) {
+    //         std::cout << "\n";
+    //     }
+    // }
+    // std::cout << "\n";
+    input = bitToByte(input);
     std::ofstream outputfile;
     audioIO.write(input);
     while (getchar()) 
     {
         outputfile.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\output10000.out");
         debug_file.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\debug.out");
-        //std::cout << "output: ";
-        //for (int i = 0; i < input.size(); i++)
-        //    std::cout << audioIO.getOutput(i) << " ";
-        //std::cout << newLine;
+
         audioIO.startTransmit();
         audioIO.read(output);
-        for (int i = 0; i < 10000; i++)
+        output = byteToBit(output);
+        for (int i = 0; i < output.size(); i++)
             outputfile << (int)output[i];
         outputfile.close();
         debug_file.close();
         audioIO.write(input);
     }
-
-    
 
     return 0;
 }

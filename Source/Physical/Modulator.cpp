@@ -9,11 +9,11 @@ void Modulator::modulate(const DataType &data, int start, int length, Frame &fra
         /* gets 0 if i is out of bound */
         uint8_t composed = data[i];
         composed = composed | (data[i + 1] << 1);
-        std::cout << (int)data[i] << (int)data[i + 1];
+        // std::cout << (int)data[i] << (int)data[i + 1];
 
         frame.addSound(Config::modulateSound[composed]);
     }
-	std::cout << newLine;
+	// std::cout << newLine;
 }
 
 /* consume Config::BIT_LENGTH samples, `samples` should contain at least Config::BIT_LENGTH data */

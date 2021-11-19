@@ -32,7 +32,7 @@ void FrameDetector::checkHeader()
     {
         float dot = detectorBuffer.peek(mkl_dot, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
         float rec_power = detectorBuffer.peek(power, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
-        debug_file << dot << "\t" << rec_power << "\n";
+        // debug_file << dot << "\t" << rec_power << "\n";
         dotproducts.push_back(dot);
         powers.push_back(rec_power);
         stopCountdown -= 1;
@@ -41,14 +41,15 @@ void FrameDetector::checkHeader()
     for (; offsetStart < headerOffset; offsetStart++)
     {
         int frac = dotproducts[offsetStart] / powers[offsetStart];
-        if (dotproducts[offsetStart] > 3.0f && dotproducts[offsetStart] > prevMax)
+        if (dotproducts[offsetStart] > 5.0f && dotproducts[offsetStart] > prevMax)
         {
             prevMax = dotproducts[offsetStart];
             prevMaxPos = offsetStart;
         }
+
         if (prevMaxPos != -1 && offsetStart - prevMaxPos > 500)
         {
-            std::cout << "header found at: " << prevMaxPos << std::endl;
+            // std::cout << "header found at: " << prevMaxPos << std::endl;
             /* Clean out the mess */
             dotproducts.clear();
             powers.clear();
@@ -76,35 +77,43 @@ void FrameDetector::resetState()
 
 void FrameDetector::detectAndGet(std::list<Frame> &received)
 {
-    float buffer[Config::BIT_PER_FRAME * Config::BIT_LENGTH];
+    float buffer[Config::BIT_PER_FRAME * Config::BIT_LENGTH / Config::BAND_WIDTH];
+    static MACHeader *macHeader;
 
     if (m_state == CK_HEADER)
         checkHeader();
 
-    if (m_state == FD_HEADER && detectorBuffer.hasEnoughElem((std::size_t)Config::MACHEADER_LENGTH * Config::BIT_LENGTH))
+    if (m_state == FD_HEADER && detectorBuffer.hasEnoughElem((std::size_t)Config::MACHEADER_LENGTH * Config::BIT_LENGTH / Config::BAND_WIDTH))
     {
-        detectorBuffer.read(buffer, Config::MACHEADER_LENGTH * Config::BIT_LENGTH);
+        detectorBuffer.read(buffer, Config::MACHEADER_LENGTH * Config::BIT_LENGTH / Config::BAND_WIDTH);
         // received.emplace_back((const float *)buffer);
-        DataType frameHeader = getMACHeader(buffer);
-        MACHeader *macHeader = headerView(frameHeader.getRawDataPointer());
+        frameHeader = getMACHeader(buffer);
+        macHeader = headerView(frameHeader.getRawDataPointer());
         if (macHeader->type == Config::ACK && MACLayerTransmitter::checkACK(macHeader))
         {
+            std::cout << "FrameDetector: ACK detected, id: " << (int)macHeader->id << "\n";
             received.push_back(ACK(macHeader));
             m_state = CK_HEADER;
         }
         else if (macHeader->type == Config::DATA && MACLayerReceiver::checkFrame(macHeader))
         {
-            m_curHeader = macHeader;
+            std::cout << "FrameDetector: DATA detected, id: " << (int)macHeader->id 
+                      << " length: " << (int)macHeader->len << "\n";
             m_state = GET_DATA;
         }
+        else
+            m_state = CK_HEADER;
     }
 
     if (m_state == GET_DATA)
     {
-        constexpr int remaining = (Config::BIT_PER_FRAME - Config::MACHEADER_LENGTH) * Config::BIT_LENGTH;
-        detectorBuffer.read(buffer, remaining);
-        received.emplace_back(m_curHeader, buffer);
-        m_state = CK_HEADER;
+        constexpr int remaining = (Config::BIT_PER_FRAME - Config::MACHEADER_LENGTH) * Config::BIT_LENGTH / Config::BAND_WIDTH;
+        // std::cout << "detectorBuffer.size()" << detectorBuffer.size() << "\n";
+        if (detectorBuffer.size() >= remaining) {
+            detectorBuffer.read(buffer, remaining);
+            received.emplace_back(macHeader, buffer);
+            m_state = CK_HEADER;
+        }
     }
 }
 

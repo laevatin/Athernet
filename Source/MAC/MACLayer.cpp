@@ -1,6 +1,7 @@
 #include "MAC/MACLayer.h"
 #include "MAC/Serde.h"
 #include "Physical/Audio.h"
+#include "Utils/IOFunctions.hpp"
 
 #include <chrono>
 #include <memory>
@@ -51,15 +52,21 @@ void MACLayerReceiver::MACThreadRecvStart()
 
         std::unique_lock<std::mutex> lock(cv_header_m);
 
-        cv_header.wait(lock, [this](){return receivingQueue.empty();});
+        cv_header.wait(lock, [this](){return !receivingQueue.empty();});
 
-        MACFrame *macFrame = frameFactory.createEmpty();
-        convertMACFrame(receivingQueue.front(), macFrame);
+        MACFrame macFrame;
+        convertMACFrame(receivingQueue.front(), &macFrame);
         receivingQueue.pop_front();
         lock.unlock();
 
-        sendACK(macFrame->header.id);
-        outputData.addArray(macFrame->data, Config::MACDATA_PER_FRAME);
+        sendACK(macFrame.header.id);
+        outputData.addArray(macFrame.data, macFrame.header.len);
+
+        if (macFrame.header.len < Config::MACDATA_PER_FRAME)
+        {
+            audioDevice->stopReceiving();
+            audioDevice->stopSending();
+        }
     }
 }
 
@@ -122,13 +129,14 @@ MACLayerTransmitter::~MACLayerTransmitter()
 
 void MACLayerTransmitter::ACKreceived(const Frame &ack)
 {
-    MACFrame *macFrame = frameFactory.createEmpty();
-    convertMACFrame(ack, macFrame);
+    MACFrame macFrame;
+    convertMACFrame(ack, &macFrame);
 
-    txstate = ACK_RECEIVED;
-    cv_ack.notify_one();
-
-    frameFactory.destoryFrame(macFrame);
+    if (checkACK(&macFrame.header))
+    {
+        txstate = ACK_RECEIVED;
+        cv_ack.notify_one();
+    }
 }
 
 bool MACLayerTransmitter::checkACK(const MACHeader *macHeader)
@@ -171,6 +179,7 @@ void MACLayerTransmitter::fillQueue()
             length = inputData.size() - inputPos;
 
         MACFrame *macFrame = frameFactory.createDataFrame(inputData, inputPos, length);
+        inputPos += length;
         pendingFrame.push_back(convertFrame(macFrame));
         pendingID.push_back(macFrame->header.id);
         frameFactory.destoryFrame(macFrame);

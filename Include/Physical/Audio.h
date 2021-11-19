@@ -12,7 +12,6 @@
 #include "Physical/FrameDetector.h"
 #include "Physical/Frame.h"
 #include "Physical/Codec.h"
-
 #include "MAC/MACLayer.h"
 
 #define PI acos(-1)
@@ -67,6 +66,10 @@ public:
     void audioDeviceIOCallback(const float** inputChannelData, int numInputChannels,
         float** outputChannelData, int numOutputChannels, int numSamples) override;
     static Codec codec;
+
+    void stopReceiving();
+
+    void stopSending();
 
 private:
     CriticalSection lock;

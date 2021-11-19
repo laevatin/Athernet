@@ -16,9 +16,11 @@ MACFrame *MACFrameFactory::createDataFrame(const DataType &data, int start, int 
 
     frame->header.dest = Config::RECEIVER;
     frame->header.src = Config::SENDER;
+    frame->header.type = Config::DATA;
+    frame->header.len = len;
     frame->header.id = nextid++;
 
-    memcpy(frame->data, pdata, (size_t)len);
+    memcpy(frame->data, pdata + start, (size_t)len * sizeof(uint8_t));
     return frame;
 }
 
@@ -27,6 +29,7 @@ MACFrame *MACFrameFactory::createACKFrame(uint8_t id)
     MACFrame *frame = new MACFrame();
     frame->header.dest = Config::SENDER;
     frame->header.src = Config::RECEIVER;
+    frame->header.type = Config::ACK;
     frame->header.id = id;
     frame->header.len = 0;
     return frame;

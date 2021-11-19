@@ -39,7 +39,7 @@ public:
     constexpr static int DATA_PER_FRAME = 8 * 62;
     constexpr static int BIT_PER_FRAME  = 8 * 72;
 
-    constexpr static int MACHEADER_LENGTH = 5 * 8; // sizeof(MACHeader)
+    constexpr static int MACHEADER_LENGTH = 5 * 8; // sizeof(MACHeader) * 8
     constexpr static int MACDATA_PER_FRAME = DATA_PER_FRAME / 8 - MACHEADER_LENGTH / 8;
 
     constexpr static int BIT_PER_ACK  = 40;
@@ -56,11 +56,11 @@ public:
     constexpr static uint8_t SENDER = 0xED;
     constexpr static uint8_t RECEIVER = 0xCE;
 
-    constexpr static auto ACK_TIMEOUT = 100ms;
+    constexpr static auto ACK_TIMEOUT = 1s;
 
     constexpr static int RECV_TIMEOUT = 1;
 
-    constexpr static int PENDING_QUEUE_SIZE = 20;
+    constexpr static int PENDING_QUEUE_SIZE = 10;
 
     constexpr static enum state STATE = BOTH;
 
