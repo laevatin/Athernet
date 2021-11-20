@@ -34,33 +34,27 @@ void FrameDetector::checkHeader()
         float dot = detectorBuffer.peek(mkl_dot, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
         float rec_power = detectorBuffer.peek(power, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
         //debug_file << dot << "\t" << rec_power << "\n";
-        dotproducts.push_back(dot);
-        powers.push_back(rec_power);
-        stopCountdown -= 1;
-    }
-    
-    for (; offsetStart < headerOffset; offsetStart++)
-    {
-        int frac = dotproducts[offsetStart] / powers[offsetStart];
-        if (dotproducts[offsetStart] > 20.0f && dotproducts[offsetStart] > prevMax)
+
+        if (dot > 5.0f && dot > prevMax)
         {
-            prevMax = dotproducts[offsetStart];
-            prevMaxPos = offsetStart;
+            prevMax = dot;
+            prevMaxPos = headerOffset;
         }
 
-        if (prevMaxPos != -1 && offsetStart - prevMaxPos > 500)
+        if (prevMaxPos != -1 && headerOffset - prevMaxPos > 500)
         {
-            // std::cout << "header found at: " << prevMaxPos << std::endl;
+            std::cout << "header found at: " << prevMaxPos << std::endl;
             /* Clean out the mess */
-            dotproducts.clear();
-            powers.clear();
             detectorBuffer.discard((std::size_t)prevMaxPos + Config::HEADER_LENGTH);
             resetState();
             m_state = FD_HEADER;
+            break;
         }
-    }
 
-    if (prevMaxPos == -1 && headerOffset >= Config::SAMPLE_RATE)
+        stopCountdown -= 1;
+    }
+    
+    if (prevMaxPos == -1 && headerOffset >= Config::SAMPLE_RATE && m_state != FD_HEADER)
     {
         detectorBuffer.discard(Config::SAMPLE_RATE / 2);
         headerOffset -= (Config::SAMPLE_RATE / 2);
@@ -108,9 +102,7 @@ void FrameDetector::detectAndGet(std::list<Frame> &received)
                 m_state = CK_HEADER;
             }
             else 
-            {
                 m_state = GET_DATA;
-            }
         }
         else
             m_state = CK_HEADER;
@@ -145,8 +137,6 @@ bool FrameDetector::isTimeout()
 void FrameDetector::clear()
 {
     resetState();
-    powers.clear();
-    dotproducts.clear();
     detectorBuffer.reset();
     m_state = CK_HEADER;
 }

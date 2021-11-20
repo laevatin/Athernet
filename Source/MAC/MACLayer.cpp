@@ -6,6 +6,8 @@
 #include <chrono>
 #include <memory>
 
+#include <windows.h>
+
 using namespace std::chrono_literals;
 
 MACLayer::MACLayer(std::shared_ptr<AudioDevice> audioDevice)
@@ -146,6 +148,7 @@ void MACLayerTransmitter::MACThreadTransStart()
     while (running && !pendingFrame.empty())
     {
         txstate = SEND_DATA;
+        std::cout << "Send Frame.\n";
         audioDevice->sendFrame(pendingFrame.front());
 
         auto now = std::chrono::system_clock::now();

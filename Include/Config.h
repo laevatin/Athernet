@@ -62,7 +62,7 @@ public:
 
     constexpr static int PENDING_QUEUE_SIZE = 10;
 
-    constexpr static enum state STATE = RECEIVING;
+    constexpr static enum state STATE = BOTH;
 
     static AudioType header;
     static std::vector<AudioType> modulateSound;
