@@ -13,10 +13,12 @@ MACManager::~MACManager()
 {}
 
 void MACManager::initialize(std::unique_ptr<MACLayerReceiver> &&macReceiver, 
-                        std::unique_ptr<MACLayerTransmitter> &&macTransmitter)
+                        std::unique_ptr<MACLayerTransmitter> &&macTransmitter,
+                        std::unique_ptr<CSMASenderQueue> &&csmaSenderQueue)
 {
     get().macReceiver = std::move(macReceiver);
     get().macTransmitter = std::move(macTransmitter);
+    get().csmaSenderQueue = std::move(csmaSenderQueue);
 }
 
 void MACManager::destroy()
@@ -29,5 +31,9 @@ void MACManager::destroy()
     if (get().macTransmitter.get()) {
         get().macTransmitter->stopMACThread();
         get().macTransmitter.release();
+    }
+
+    if (get().csmaSenderQueue.get()) {
+        get().csmaSenderQueue.release();
     }
 }

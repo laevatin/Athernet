@@ -20,10 +20,15 @@ ACK::ACK(MACHeader *header)
 {
     uint8_t *header_uint8 = reinterpret_cast<uint8_t *>(header);
     m_isACK = true;
+    m_id = header->id;
     
     frameData.addArray(header_uint8, Config::MACHEADER_LENGTH / 8);
 }
 
 ACK::ACK(ACK&& other)
     : Frame(std::move(other))
+{}
+
+ACK::ACK(const ACK& other)
+    : Frame(other)
 {}

@@ -35,13 +35,13 @@ Frame::Frame(MACHeader *macHeader, const float *audio)
     uint8_t *macHeader_uint8 = reinterpret_cast<uint8_t *>(macHeader);
     out.addArray(macHeader_uint8, Config::MACHEADER_LENGTH / 8);
     m_dataLength = macHeader->len;
+    m_id = macHeader->id;
 
     for (int i = 0; i < (Config::BIT_PER_FRAME - Config::MACHEADER_LENGTH) * Config::BIT_LENGTH / Config::BAND_WIDTH; i += Config::BIT_LENGTH)
         Modulator::demodulate(audio + i, tmp);
     out.addArray(bitToByte(tmp));
     
-    DataType ooo = byteToBit(out);
-
+    // DataType ooo = byteToBit(out);
     // std::cout << "GETDATA: ";
     // for (int i = 0; i < ooo.size(); i += 1)
     //     std::cout << (int)ooo[i];
@@ -56,7 +56,18 @@ Frame::Frame(Frame &&other)
     m_audioPos(std::exchange(other.m_audioPos, 0)),
     m_isACK(std::exchange(other.m_isACK, false)),
     m_isGood(std::exchange(other.m_isGood, false)), 
-    m_dataLength(std::exchange(other.m_dataLength, 0))
+    m_dataLength(std::exchange(other.m_dataLength, 0)),
+    m_id(std::exchange(other.m_id, 0))
+{}
+
+Frame::Frame(const Frame &other)
+    : frameAudio(other.frameAudio),
+    frameData(other.frameData),
+    m_audioPos(other.m_audioPos),
+    m_isACK(other.m_isACK),
+    m_isGood(other.m_isGood), 
+    m_dataLength(other.m_dataLength),
+    m_id(other.m_id)
 {}
 
 void Frame::addToBuffer(RingBuffer<float> &buffer) const
@@ -104,4 +115,9 @@ const bool Frame::isACK() const
 const uint8_t Frame::dataLength() const 
 {
     return m_dataLength;
+}
+
+const uint8_t Frame::id() const
+{
+    return m_id;
 }

@@ -23,7 +23,6 @@ typedef AudioBuffer<float> AudioType;
 
 class AudioDevice;
 
-//==============================================================================
 class AudioIO
 {
 public:
@@ -50,6 +49,12 @@ class AudioDevice : public AudioIODeviceCallback,
     private HighResolutionTimer
 {   
 public:
+    enum ChannelState 
+    {
+        CN_IDLE, 
+        CN_BUSY,
+    };
+    
     AudioDevice(enum state s);
     ~AudioDevice();
 
@@ -70,6 +75,8 @@ public:
     void stopReceiving();
 
     void stopSending();
+    
+    enum ChannelState getChannelState();
 
 private:
     CriticalSection lock;
@@ -79,6 +86,8 @@ private:
     FrameDetector frameDetector;
 
     enum state deviceState = state::SENDING;
+
+    std::atomic<float> m_avgPower = 0;
 
     bool isSending = false;
     bool isReceiving = false;

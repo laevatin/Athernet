@@ -16,6 +16,8 @@ public:
     ACK(MACHeader *header);
     ACK(ACK&& other);
 
+    ACK(const ACK& other);
+
     ~ACK() = default;
 };
 

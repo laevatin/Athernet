@@ -2,6 +2,7 @@
 #include "MAC/Serde.h"
 #include "Physical/Audio.h"
 #include "Utils/IOFunctions.hpp"
+#include "MAC/MACManager.h"
 
 #include <chrono>
 #include <memory>
@@ -80,18 +81,15 @@ bool MACLayerReceiver::checkFrame(const MACHeader *macHeader)
         return false;
 
     bool success = true;
-    success = success && (macHeader->src  == Config::SENDER)
-                      && (macHeader->dest == Config::RECEIVER)
+    success = success && (macHeader->src  == Config::OTHER)
+                      && (macHeader->dest == Config::SELF)
                       && (macHeader->type == Config::DATA);
     return success;
 }
 
 void MACLayerReceiver::sendACK(uint8_t id)
 {
-    std::cout << "Send ACK: " << (int)id << "\n";
-    MACFrame *macFrame = frameFactory.createACKFrame(id);
-    audioDevice->sendFrame(convertFrame(macFrame));
-    frameFactory.destoryFrame(macFrame);
+    MACManager::get().csmaSenderQueue->sendACKAsync(id);
 }
 
 void MACLayerReceiver::stopMACThread()
@@ -131,7 +129,7 @@ void MACLayerTransmitter::ACKReceived(const Frame &ack)
     MACFrame macFrame;
     convertMACFrame(ack, &macFrame);
 
-    if (macFrame.header.id == pendingID.front()) 
+    if (macFrame.header.id == pendingFrame.front().id()) 
     {
         txstate = ACK_RECEIVED;
         cv_ack.notify_one();
@@ -145,10 +143,10 @@ bool MACLayerTransmitter::checkACK(const MACHeader *macHeader)
 {
     if (Config::STATE & RECEIVING)
         return false;
-        
+
     bool success = true;
-    success = success && (macHeader->src  == Config::RECEIVER)
-                      && (macHeader->dest == Config::SENDER)
+    success = success && (macHeader->src  == Config::OTHER)
+                      && (macHeader->dest == Config::SELF)
                       && (macHeader->type == Config::ACK);
     return success;
 }
@@ -159,8 +157,8 @@ void MACLayerTransmitter::MACThreadTransStart()
     while (running && !pendingFrame.empty())
     {
         txstate = SEND_DATA;
-        std::cout << "Send Frame.\n";
-        audioDevice->sendFrame(pendingFrame.front());
+        /* Send a copy */
+        MACManager::get().csmaSenderQueue->sendDataAsync(Frame(pendingFrame.front()));
 
         auto now = std::chrono::system_clock::now();
 
@@ -171,9 +169,8 @@ void MACLayerTransmitter::MACThreadTransStart()
         if (cv_ack.wait_until(lock, now + Config::ACK_TIMEOUT, [this](){ return txstate == ACK_RECEIVED; }))
         {
             auto recv = std::chrono::system_clock::now();
-            std::cout << "Time to ACK " << (int)pendingID.front() << ":" << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << "\n";
+            std::cout << "Time to ACK " << (int)pendingFrame.front().id() << ":" << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << "\n";
             pendingFrame.pop_front();
-            pendingID.pop_front();
         }
     }
     audioDevice->stopReceiving();
@@ -191,7 +188,86 @@ void MACLayerTransmitter::fillQueue()
         MACFrame *macFrame = frameFactory.createDataFrame(inputData, inputPos, length);
         inputPos += length;
         pendingFrame.push_back(convertFrame(macFrame));
-        pendingID.push_back(macFrame->header.id);
         frameFactory.destoryFrame(macFrame);
+    }
+}
+
+CSMASenderQueue::CSMASenderQueue(std::shared_ptr<AudioDevice> audioDevice)
+    : m_audioDevice(audioDevice)
+{
+    m_senderThread = new std::thread([this]() { senderStart(); });
+}
+
+CSMASenderQueue::~CSMASenderQueue()
+{
+    running = false;
+    if (m_senderThread != nullptr)
+    {
+        m_cv_frame.notify_one();
+        m_senderThread->join();
+        delete m_senderThread;
+    }
+}
+
+void CSMASenderQueue::sendDataAsync(Frame&& frame)
+{
+    if (m_hasDATAid[frame.id()])
+        return;
+    else 
+    {
+        m_queue_m.lock();
+        m_hasDATAid[frame.id()] = true;
+        m_queue.push_back(std::move(frame));
+        m_queue_m.unlock();
+        m_cv_frame.notify_one();
+    }
+}
+
+void CSMASenderQueue::sendACKAsync(uint8_t id)
+{
+    if (m_hasACKid[id])
+        return;
+    else 
+    {
+        MACFrame *macFrame = frameFactory.createACKFrame(id);
+        m_queue_m.lock();
+        m_hasACKid[id] = true;
+        m_queue.push_front(convertFrame(macFrame));
+        m_queue_m.unlock();
+        m_cv_frame.notify_one();
+        frameFactory.destoryFrame(macFrame);
+    }
+}
+
+void CSMASenderQueue::senderStart()
+{
+    while (running) 
+    {
+        std::unique_lock<std::mutex> lock_queue(m_queue_m);
+        m_cv_frame.wait(lock_queue, [this]() { return !m_queue.empty() || !running; } );
+
+        int count = 0;
+        while (!m_queue.empty() && running) 
+        {
+            count++;
+
+            if (m_audioDevice->getChannelState() == AudioDevice::CN_IDLE) 
+            {
+                m_audioDevice->sendFrame(m_queue.front());
+                if (m_queue.front().isACK())
+                    m_hasACKid[m_queue.front().id()] = false;
+                else 
+                    m_hasDATAid[m_queue.front().id()] = false;
+                m_queue.pop_front();                
+                break;
+            }
+
+            lock_queue.unlock();
+            std::cout << "Channel busy, retrying " << count << "\n";
+            if (count >= 10) 
+                count = 10;
+            Sleep(Config::BACKOFF_TSLOT * (int)pow(2, count));
+            lock_queue.lock();
+        }
     }
 }

@@ -19,7 +19,6 @@ float recent_power(int N, const float *x)
 
 FrameDetector::FrameDetector()
     : m_state(CK_HEADER),
-    stopCountdown(Config::RECV_TIMEOUT * Config::SAMPLE_RATE),
     mkl_dot(std::bind(cblas_sdot, std::placeholders::_1, std::placeholders::_2, 1, std::placeholders::_3, 1)),
     power([](int N, const float* dummy, const float* data) { return recent_power(N, data); })
 {}
@@ -32,7 +31,6 @@ void FrameDetector::checkHeader()
     for (; headerOffset + Config::HEADER_LENGTH < detectorBuffer.size(); headerOffset++)
     {
         float dot = detectorBuffer.peek(mkl_dot, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
-        float rec_power = detectorBuffer.peek(power, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
         //debug_file << dot << "\t" << rec_power << "\n";
 
         if (dot > 5.0f && dot > prevMax)
@@ -50,8 +48,6 @@ void FrameDetector::checkHeader()
             m_state = FD_HEADER;
             break;
         }
-
-        stopCountdown -= 1;
     }
     
     if (prevMaxPos == -1 && headerOffset >= Config::SAMPLE_RATE && m_state != FD_HEADER)
@@ -67,7 +63,6 @@ void FrameDetector::resetState()
     headerOffset = 0;
     prevMaxPos = -1;
     prevMax = 0.0f;
-    stopCountdown = Config::RECV_TIMEOUT * Config::SAMPLE_RATE;
 }
 
 void FrameDetector::detectAndGet(std::list<Frame> &received)
@@ -127,11 +122,6 @@ DataType FrameDetector::getMACHeader(const float *samples)
     for (int i = 0; i < Config::MACHEADER_LENGTH * Config::BIT_LENGTH / Config::BAND_WIDTH; i += Config::BIT_LENGTH)
         Modulator::demodulate(samples + i, bitArray);
     return bitToByte(bitArray);
-}
-
-bool FrameDetector::isTimeout()
-{
-    return stopCountdown <= 0;
 }
 
 void FrameDetector::clear()

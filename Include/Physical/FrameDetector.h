@@ -24,7 +24,6 @@ public:
     void detectAndGet(std::list<Frame> &received);
 
     void clear();
-    bool isTimeout();
     RingBuffer<float> detectorBuffer;
 
 private:
@@ -41,7 +40,6 @@ private:
     int prevMaxPos = -1;
     float prevMax = 0.0f;
     int frameCountdown;
-    int stopCountdown;
     DataType frameHeader;
 
     void resetState();

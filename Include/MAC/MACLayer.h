@@ -92,4 +92,30 @@ private:
     int inputPos;
 };
 
+class CSMASenderQueue
+{
+public: 
+    explicit CSMASenderQueue(std::shared_ptr<AudioDevice> audioDevice);
+    ~CSMASenderQueue();
+
+    void sendDataAsync(Frame&& frame);
+    void sendACKAsync(uint8_t id);
+
+private:
+    void senderStart();
+    
+    std::thread *m_senderThread;
+    std::shared_ptr<AudioDevice> m_audioDevice;
+
+    std::mutex m_queue_m;
+    std::list<Frame> m_queue;
+    std::condition_variable m_cv_frame;
+
+    bool m_hasACKid[256];
+    bool m_hasDATAid[256];
+    bool running = true;
+
+    MACFrameFactory frameFactory;
+};
+
 #endif

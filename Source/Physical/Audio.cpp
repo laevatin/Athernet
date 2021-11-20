@@ -1,17 +1,17 @@
 #include "Physical/Audio.h"
 #include "Physical/Codec.h"
 #include "MAC/MACManager.h"
-#include <fstream>
 #include "Config.h"
+
+#include <fstream>
+#include <atomic>
 
 static std::condition_variable finishcv;
 static std::mutex cv_m;
 
-static DataType tester;
-
 Codec AudioDevice::codec;
 
-//#define TEST_NOPHYS
+// #define TEST_NOPHYS
 
 AudioDevice::AudioDevice(enum state s) 
     : deviceState(s)
@@ -158,6 +158,12 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
             isReceiving = false;
             isSending = false;
         }
+
+        // Calculate the recent average power
+        float sumPower = 0;
+        for (int i = numSamples - Config::POWER_AVG_LEN; i < numSamples; i++) 
+            sumPower += inputChannelData[0][i] * inputChannelData[0][i];
+        m_avgPower = sumPower / Config::POWER_AVG_LEN;
     }
     else
     {
@@ -176,6 +182,13 @@ void AudioDevice::stopReceiving()
 void AudioDevice::stopSending()
 {
     isSending = false;
+}
+
+enum AudioDevice::ChannelState AudioDevice::getChannelState() 
+{
+    if (m_avgPower > Config::POWER_THOR)
+        return CN_BUSY;
+    return CN_IDLE;
 }
 
 AudioIO::AudioIO()
@@ -197,6 +210,7 @@ void AudioIO::startTransmit()
 {
     std::unique_ptr<MACLayerReceiver> macReceiver;
     std::unique_ptr<MACLayerTransmitter> macTransmitter;
+    std::unique_ptr<CSMASenderQueue> csmaSenderQueue;
 
     std::cout << "selected mode: " << Config::STATE << "\n"
               << "start transmitting data...\n";
@@ -207,7 +221,9 @@ void AudioIO::startTransmit()
     if (Config::STATE & SENDING)
         macTransmitter.reset(new MACLayerTransmitter(inputBuffer, audioDevice));
 
-    MACManager::initialize(std::move(macReceiver), std::move(macTransmitter));
+    csmaSenderQueue.reset(new CSMASenderQueue(audioDevice));
+
+    MACManager::initialize(std::move(macReceiver), std::move(macTransmitter), std::move(csmaSenderQueue));
 
     audioDeviceManager.addAudioCallback(audioDevice.get());
     audioDevice->beginTransmit();
