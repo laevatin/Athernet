@@ -4,6 +4,7 @@
 #define __CODEC_H__
 
 #include <JuceHeader.h>
+#include "Config.h"
 
 typedef juce::Array<uint8_t> DataType;
 
@@ -47,15 +48,15 @@ public:
     bool decodeBlock(const DataType &in, DataType &out, int start);
 
     /* Reed Solomon Code Parameters */
-    constexpr static std::size_t code_length = 72;
-    constexpr static std::size_t fec_length = 10;
+    constexpr static std::size_t code_length = Config::BIT_PER_FRAME / 8;
+    constexpr static std::size_t fec_length = (Config::BIT_PER_FRAME - Config::DATA_PER_FRAME) / 8;
     constexpr static std::size_t data_length = code_length - fec_length;
 
 private:
     /* Finite Field Parameters */
     constexpr static std::size_t field_descriptor                =   8;
     constexpr static std::size_t generator_polynomial_index      = 120;
-    constexpr static std::size_t generator_polynomial_root_count =  10;
+    constexpr static std::size_t generator_polynomial_root_count =  fec_length;
     
     typedef schifra::reed_solomon::shortened_encoder<code_length, fec_length, data_length> encoder_t;
     typedef schifra::reed_solomon::shortened_decoder<code_length, fec_length, data_length> decoder_t;

@@ -3,8 +3,8 @@
 #ifndef __SERDE_H__
 #define __SERDE_H__
 
-class MACFrame;
-class MACHeader;
+struct MACFrame;
+struct MACHeader;
 class Frame;
 
 typedef unsigned char uint8_t;

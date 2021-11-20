@@ -36,11 +36,11 @@ public:
     void frameReceived(Frame &&frame);
     void stopMACThread() override;
     void getOutput(DataType &out);
+    void sendACK(uint8_t id);
     static bool checkFrame(const MACHeader *macHeader);
 
 private:
     void MACThreadRecvStart();
-    void sendACK(uint8_t id);
     
     enum RxState {
         IDLE,
@@ -65,7 +65,7 @@ public:
     ~MACLayerTransmitter();
 
     /* This function may called from other thread. */
-    void ACKreceived(const Frame &ack);
+    void ACKReceived(const Frame &ack);
 
     static bool checkACK(const MACHeader *macHeader);
 private:

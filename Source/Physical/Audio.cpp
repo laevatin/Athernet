@@ -45,6 +45,8 @@ void AudioDevice::hiResTimerCallback()
     if (isSending || isReceiving)
     {
         std::size_t len = receiver.size();
+        std::size_t maxlen = 12000;
+        len = std::min(len, maxlen);
         float *buffer = new float[len];
 
         lock.enter();
@@ -60,7 +62,7 @@ void AudioDevice::hiResTimerCallback()
         if (!received.empty())
         {
             if (received.front().isACK() && (deviceState & SENDING)) 
-                MACManager::get().macTransmitter->ACKreceived(std::move(received.front()));
+                MACManager::get().macTransmitter->ACKReceived(std::move(received.front()));
             else if (!received.front().isACK() && (deviceState & RECEIVING))
                 MACManager::get().macReceiver->frameReceived(std::move(received.front()));
             received.pop_front();
@@ -117,7 +119,6 @@ void AudioDevice::hiResTimerCallback()
 
 void AudioDevice::sendFrame(const Frame &frame)
 {
-    // std::cout << "send frame: " << frame.isACK() << " " << frame.isGoodFrame() << "\n";
     ScopedLock sl(lock);
     frame.addToBuffer(sender);
 }
@@ -136,7 +137,7 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
     const ScopedLock sl(lock);
 #ifndef TEST_NOPHYS
     /* Only use channel 0. */
-    if (isSending) 
+    if (isSending || isReceiving) 
     {
         if (sender.hasEnoughElem(numSamples)) 
             sender.read(outputChannelData[0], numSamples);
@@ -146,16 +147,7 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
             sender.read(outputChannelData[0], size);
             zeromem(outputChannelData[0] + size, ((size_t)numSamples - size) * sizeof(float));
         }
-    }
-    else
-    {
-        for (int i = 0; i < numOutputChannels; ++i)
-            if (outputChannelData[i] != nullptr)
-                zeromem(outputChannelData[i], (size_t)numSamples * sizeof(float));
-    }
 
-    if (isReceiving) 
-    {
         if (receiver.hasEnoughSpace(numSamples))
             receiver.write(inputChannelData[0], numSamples);
         else
@@ -164,7 +156,14 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
             std::size_t avail = receiver.avail();
             receiver.write(inputChannelData[0], avail);
             isReceiving = false;
+            isSending = false;
         }
+    }
+    else
+    {
+        for (int i = 0; i < numOutputChannels; ++i)
+            if (outputChannelData[i] != nullptr)
+                zeromem(outputChannelData[i], (size_t)numSamples * sizeof(float));
     }
 #endif
 }
@@ -184,7 +183,7 @@ AudioIO::AudioIO()
     audioDeviceManager.initialiseWithDefaultDevices(1, 1);
     AudioDeviceManager::AudioDeviceSetup dev_info = audioDeviceManager.getAudioDeviceSetup();
     dev_info.sampleRate = 48000;
-    dev_info.bufferSize = 256;
+    dev_info.bufferSize = 512;
     audioDevice.reset(new AudioDevice(Config::STATE));
 }
 
@@ -215,8 +214,9 @@ void AudioIO::startTransmit()
 
     std::unique_lock<std::mutex> cv_lk(cv_m);
     finishcv.wait(cv_lk);
-
-    MACManager::get().macReceiver->getOutput(outputBuffer);
+    
+    if (Config::STATE & RECEIVING)
+        MACManager::get().macReceiver->getOutput(outputBuffer);
     MACManager::destroy();
 
     std::cout << "---------------- Transfer Finished ----------------\n"; 

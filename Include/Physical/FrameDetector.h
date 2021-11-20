@@ -28,8 +28,6 @@ public:
     RingBuffer<float> detectorBuffer;
 
 private:
-    std::vector<float> dotproducts;
-    std::vector<float> powers;
     std::function<float(int, const float *, const float *)> mkl_dot;
     std::function<float(int, const float *, const float *)> power;
 

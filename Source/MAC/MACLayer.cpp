@@ -6,6 +6,8 @@
 #include <chrono>
 #include <memory>
 
+#include <windows.h>
+
 using namespace std::chrono_literals;
 
 MACLayer::MACLayer(std::shared_ptr<AudioDevice> audioDevice)
@@ -43,16 +45,14 @@ void MACLayerReceiver::MACThreadRecvStart()
 {
     while (running)
     {
-        /**
-         * 1. block on checkHeader (hiResTimerCallback)
-         * 2. if (Bad Frame)
-         *      continue;
-         * 3. sendACK(frame->id)
-         **/
-
         std::unique_lock<std::mutex> lock(cv_header_m);
+        auto now = std::chrono::system_clock::now();
 
-        cv_header.wait(lock, [this](){return !receivingQueue.empty();});
+        if (!cv_header.wait_until(lock, now + 5s, [this]() { return !receivingQueue.empty(); })) 
+        {
+            audioDevice->stopReceiving();
+            break;
+        }
 
         MACFrame macFrame;
         convertMACFrame(receivingQueue.front(), &macFrame);
@@ -60,11 +60,6 @@ void MACLayerReceiver::MACThreadRecvStart()
         {
             sendACK(macFrame.header.id);
             outputData.addArray(macFrame.data, macFrame.header.len);
-            if (macFrame.header.len < Config::MACDATA_PER_FRAME)
-            {
-                audioDevice->stopReceiving();
-                audioDevice->stopSending();
-            }
         }
         receivingQueue.pop_front();
     }
@@ -81,6 +76,9 @@ void MACLayerReceiver::frameReceived(Frame &&frame)
 
 bool MACLayerReceiver::checkFrame(const MACHeader *macHeader)
 {
+    if (Config::STATE & SENDING)
+        return false;
+
     bool success = true;
     success = success && (macHeader->src  == Config::SENDER)
                       && (macHeader->dest == Config::RECEIVER)
@@ -90,6 +88,7 @@ bool MACLayerReceiver::checkFrame(const MACHeader *macHeader)
 
 void MACLayerReceiver::sendACK(uint8_t id)
 {
+    std::cout << "Send ACK: " << (int)id << "\n";
     MACFrame *macFrame = frameFactory.createACKFrame(id);
     audioDevice->sendFrame(convertFrame(macFrame));
     frameFactory.destoryFrame(macFrame);
@@ -127,20 +126,26 @@ MACLayerTransmitter::~MACLayerTransmitter()
     }
 }
 
-void MACLayerTransmitter::ACKreceived(const Frame &ack)
+void MACLayerTransmitter::ACKReceived(const Frame &ack)
 {
     MACFrame macFrame;
     convertMACFrame(ack, &macFrame);
 
-    if (checkACK(&macFrame.header))
+    if (macFrame.header.id == pendingID.front()) 
     {
         txstate = ACK_RECEIVED;
         cv_ack.notify_one();
+        return;
     }
+
+    std::cout << "Received bad ACK " << (int)macFrame.header.id << ".\n";
 }
 
 bool MACLayerTransmitter::checkACK(const MACHeader *macHeader)
 {
+    if (Config::STATE & RECEIVING)
+        return false;
+        
     bool success = true;
     success = success && (macHeader->src  == Config::RECEIVER)
                       && (macHeader->dest == Config::SENDER)
@@ -154,6 +159,7 @@ void MACLayerTransmitter::MACThreadTransStart()
     while (running && !pendingFrame.empty())
     {
         txstate = SEND_DATA;
+        std::cout << "Send Frame.\n";
         audioDevice->sendFrame(pendingFrame.front());
 
         auto now = std::chrono::system_clock::now();
@@ -165,11 +171,13 @@ void MACLayerTransmitter::MACThreadTransStart()
         if (cv_ack.wait_until(lock, now + Config::ACK_TIMEOUT, [this](){ return txstate == ACK_RECEIVED; }))
         {
             auto recv = std::chrono::system_clock::now();
-            std::cout << "Time to ACK: " << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << "\n";
+            std::cout << "Time to ACK " << (int)pendingID.front() << ":" << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << "\n";
             pendingFrame.pop_front();
             pendingID.pop_front();
         }
     }
+    audioDevice->stopReceiving();
+    audioDevice->stopSending();
 }
 
 void MACLayerTransmitter::fillQueue()
