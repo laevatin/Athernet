@@ -46,8 +46,13 @@ void MACLayerReceiver::MACThreadRecvStart()
     while (running)
     {
         std::unique_lock<std::mutex> lock(cv_header_m);
+        auto now = std::chrono::system_clock::now();
 
-        cv_header.wait(lock, [this](){ return !receivingQueue.empty(); });
+        if (!cv_header.wait_until(lock, now + 5s, [this]() { return !receivingQueue.empty(); })) 
+        {
+            audioDevice->stopReceiving();
+            break;
+        }
 
         MACFrame macFrame;
         convertMACFrame(receivingQueue.front(), &macFrame);

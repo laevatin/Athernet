@@ -32,12 +32,12 @@ public:
 
     constexpr static int SAMPLE_RATE   = 48000;
 
-    constexpr static int HEADER_LENGTH = 200;
+    constexpr static int HEADER_LENGTH = 120;
 
     constexpr static int BIT_LENGTH    = 6;
 
-    constexpr static int DATA_PER_FRAME = 8 * 100;
-    constexpr static int BIT_PER_FRAME  = 8 * 110;
+    constexpr static int DATA_PER_FRAME = 8 * 120;
+    constexpr static int BIT_PER_FRAME  = 8 * 128;
 
     constexpr static int MACHEADER_LENGTH = 5 * 8; // sizeof(MACHeader) * 8
     constexpr static int MACDATA_PER_FRAME = DATA_PER_FRAME / 8 - MACHEADER_LENGTH / 8;
@@ -56,13 +56,13 @@ public:
     constexpr static uint8_t SENDER = 0xED;
     constexpr static uint8_t RECEIVER = 0xCE;
 
-    constexpr static auto ACK_TIMEOUT = 200ms;
+    constexpr static auto ACK_TIMEOUT = 150ms;
 
     constexpr static int RECV_TIMEOUT = 1;
 
     constexpr static int PENDING_QUEUE_SIZE = 10;
 
-    constexpr static enum state STATE = BOTH;
+    constexpr static enum state STATE = RECEIVING;
 
     static AudioType header;
     static std::vector<AudioType> modulateSound;
