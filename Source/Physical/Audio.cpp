@@ -60,7 +60,7 @@ void AudioDevice::hiResTimerCallback()
         if (!received.empty())
         {
             if (received.front().isACK() && (deviceState & SENDING)) 
-                MACManager::get().macTransmitter->ACKreceived(std::move(received.front()));
+                MACManager::get().macTransmitter->ACKReceived(std::move(received.front()));
             else if (!received.front().isACK() && (deviceState & RECEIVING))
                 MACManager::get().macReceiver->frameReceived(std::move(received.front()));
             received.pop_front();
@@ -117,7 +117,6 @@ void AudioDevice::hiResTimerCallback()
 
 void AudioDevice::sendFrame(const Frame &frame)
 {
-    // std::cout << "send frame: " << frame.isACK() << " " << frame.isGoodFrame() << "\n";
     ScopedLock sl(lock);
     frame.addToBuffer(sender);
 }
@@ -164,6 +163,7 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
             std::size_t avail = receiver.avail();
             receiver.write(inputChannelData[0], avail);
             isReceiving = false;
+            isSending = false;
         }
     }
 #endif
@@ -184,7 +184,7 @@ AudioIO::AudioIO()
     audioDeviceManager.initialiseWithDefaultDevices(1, 1);
     AudioDeviceManager::AudioDeviceSetup dev_info = audioDeviceManager.getAudioDeviceSetup();
     dev_info.sampleRate = 48000;
-    dev_info.bufferSize = 256;
+    dev_info.bufferSize = 512;
     audioDevice.reset(new AudioDevice(Config::STATE));
 }
 

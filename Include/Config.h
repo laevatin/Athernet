@@ -32,12 +32,12 @@ public:
 
     constexpr static int SAMPLE_RATE   = 48000;
 
-    constexpr static int HEADER_LENGTH = 100;
+    constexpr static int HEADER_LENGTH = 80;
 
-    constexpr static int BIT_LENGTH    = 6;
+    constexpr static int BIT_LENGTH    = 4;
 
-    constexpr static int DATA_PER_FRAME = 8 * 62;
-    constexpr static int BIT_PER_FRAME  = 8 * 72;
+    constexpr static int DATA_PER_FRAME = 8 * 100;
+    constexpr static int BIT_PER_FRAME  = 8 * 108;
 
     constexpr static int MACHEADER_LENGTH = 5 * 8; // sizeof(MACHeader) * 8
     constexpr static int MACDATA_PER_FRAME = DATA_PER_FRAME / 8 - MACHEADER_LENGTH / 8;
@@ -56,7 +56,7 @@ public:
     constexpr static uint8_t SENDER = 0xED;
     constexpr static uint8_t RECEIVER = 0xCE;
 
-    constexpr static auto ACK_TIMEOUT = 500ms;
+    constexpr static auto ACK_TIMEOUT = 140ms;
 
     constexpr static int RECV_TIMEOUT = 1;
 

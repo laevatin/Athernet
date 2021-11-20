@@ -5,6 +5,7 @@
 #include "Config.h"
 #include "Utils/IOFunctions.hpp"
 #include "MAC/ACK.h"
+#include "MAC/MACManager.h"
 
 extern std::ofstream debug_file;
 
@@ -32,7 +33,7 @@ void FrameDetector::checkHeader()
     {
         float dot = detectorBuffer.peek(mkl_dot, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
         float rec_power = detectorBuffer.peek(power, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
-        // debug_file << dot << "\t" << rec_power << "\n";
+        //debug_file << dot << "\t" << rec_power << "\n";
         dotproducts.push_back(dot);
         powers.push_back(rec_power);
         stopCountdown -= 1;
@@ -41,7 +42,7 @@ void FrameDetector::checkHeader()
     for (; offsetStart < headerOffset; offsetStart++)
     {
         int frac = dotproducts[offsetStart] / powers[offsetStart];
-        if (dotproducts[offsetStart] > 5.0f && dotproducts[offsetStart] > prevMax)
+        if (dotproducts[offsetStart] > 10.0f && dotproducts[offsetStart] > prevMax)
         {
             prevMax = dotproducts[offsetStart];
             prevMaxPos = offsetStart;
@@ -79,6 +80,7 @@ void FrameDetector::detectAndGet(std::list<Frame> &received)
 {
     float buffer[Config::BIT_PER_FRAME * Config::BIT_LENGTH / Config::BAND_WIDTH];
     static MACHeader *macHeader;
+    static uint8_t lastReceived = -1;
 
     if (m_state == CK_HEADER)
         checkHeader();
@@ -97,9 +99,17 @@ void FrameDetector::detectAndGet(std::list<Frame> &received)
         }
         else if (macHeader->type == Config::DATA && MACLayerReceiver::checkFrame(macHeader))
         {
-            std::cout << "FrameDetector: DATA detected, id: " << (int)macHeader->id 
-                      << " length: " << (int)macHeader->len << "\n";
-            m_state = GET_DATA;
+            std::cout << "FrameDetector: DATA detected, id: " << (int)macHeader->id
+                << " length: " << (int)macHeader->len << "\n";
+            if (macHeader->id == lastReceived)
+            {
+                MACManager::get().macReceiver->sendACK(macHeader->id);
+                m_state = CK_HEADER;
+            }
+            else 
+            {
+                m_state = GET_DATA;
+            }
         }
         else
             m_state = CK_HEADER;
@@ -113,6 +123,7 @@ void FrameDetector::detectAndGet(std::list<Frame> &received)
             detectorBuffer.read(buffer, remaining);
             received.emplace_back(macHeader, buffer);
             m_state = CK_HEADER;
+            lastReceived = received.front().isGoodFrame() ? macHeader->id : -1;
         }
     }
 }
