@@ -56,7 +56,7 @@ public:
     constexpr static uint8_t SENDER = 0xED;
     constexpr static uint8_t RECEIVER = 0xCE;
 
-    constexpr static auto ACK_TIMEOUT = 150ms;
+    constexpr static auto ACK_TIMEOUT = 180ms;
 
     constexpr static int RECV_TIMEOUT = 1;
 

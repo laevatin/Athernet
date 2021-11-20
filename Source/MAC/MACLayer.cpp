@@ -76,6 +76,9 @@ void MACLayerReceiver::frameReceived(Frame &&frame)
 
 bool MACLayerReceiver::checkFrame(const MACHeader *macHeader)
 {
+    if (Config::STATE & SENDING)
+        return false;
+
     bool success = true;
     success = success && (macHeader->src  == Config::SENDER)
                       && (macHeader->dest == Config::RECEIVER)
@@ -140,6 +143,9 @@ void MACLayerTransmitter::ACKReceived(const Frame &ack)
 
 bool MACLayerTransmitter::checkACK(const MACHeader *macHeader)
 {
+    if (Config::STATE & RECEIVING)
+        return false;
+        
     bool success = true;
     success = success && (macHeader->src  == Config::RECEIVER)
                       && (macHeader->dest == Config::SENDER)
