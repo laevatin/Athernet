@@ -111,8 +111,8 @@ private:
     std::list<Frame> m_queue;
     std::condition_variable m_cv_frame;
 
-    bool m_hasACKid[256];
-    bool m_hasDATAid[256];
+    bool m_hasACKid[256] = { 0 };
+    bool m_hasDATAid[256] = { 0 };
     bool running = true;
 
     MACFrameFactory frameFactory;

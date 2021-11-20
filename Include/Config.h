@@ -56,12 +56,12 @@ public:
     constexpr static uint8_t SELF = 0xED;
     constexpr static uint8_t OTHER = 0xCE;
 
-    constexpr static auto ACK_TIMEOUT = 500ms;
+    constexpr static auto ACK_TIMEOUT = 180ms;
 
     constexpr static int RECV_TIMEOUT = 1;
     
     constexpr static int POWER_AVG_LEN = 100; 
-    constexpr static float POWER_THOR  = 0.5f;
+    constexpr static float POWER_THOR  = 0.01f;
 
     constexpr static int BACKOFF_TSLOT = 100; // CSMA Tslot in milliseconds
 

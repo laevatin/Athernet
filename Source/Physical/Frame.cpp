@@ -9,13 +9,13 @@
 
 std::ofstream debug_file;
 
-Frame::Frame(const uint8_t *pdata)
+Frame::Frame(const uint8_t *pdata, uint8_t id)
     : m_isGood(true)
 {
     frameAudio.setSize(1, Config::FRAME_LENGTH);
     DataType data;
     data.addArray(pdata, Config::DATA_PER_FRAME / 8);
-
+    m_id = id;
     addHeader();
     DataType encoded = byteToBit(AudioDevice::codec.encodeBlock(data, 0));
     

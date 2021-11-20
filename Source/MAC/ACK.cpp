@@ -3,13 +3,14 @@
 #include "Utils/IOFunctions.hpp"
 #include "Config.h"
 
-ACK::ACK(const uint8_t *pdata)
+ACK::ACK(const uint8_t *pdata, uint8_t id)
     : Frame()
 {
     frameAudio.setSize(1, Config::ACK_LENGTH);
     DataType ack;
     ack.addArray(pdata, Config::BIT_PER_ACK / 8);
     m_isACK = true;
+    m_id = id;
     
     addHeader();
     Modulator::modulate(byteToBit(ack), 0, Config::BIT_PER_ACK, *this);

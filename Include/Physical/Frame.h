@@ -25,7 +25,7 @@ public:
     Frame();
 
     /* Encode the frame and modulate. */
-    Frame(const uint8_t *pdata);
+    Frame(const uint8_t *pdata, uint8_t id);
 
     /* Demodulate and decode the frame. 
      `audio` should contain at least (Config::BIT_PER_FRAME - Config::MACHEADER_LENGTH) * Config::BIT_LENGTH samples */

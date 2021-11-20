@@ -41,7 +41,7 @@ void FrameDetector::checkHeader()
 
         if (prevMaxPos != -1 && headerOffset - prevMaxPos > 500)
         {
-            std::cout << "header found at: " << prevMaxPos << std::endl;
+            //std::cout << "header found at: " << prevMaxPos << std::endl;
             /* Clean out the mess */
             detectorBuffer.discard((std::size_t)prevMaxPos + Config::HEADER_LENGTH);
             resetState();
@@ -82,17 +82,17 @@ void FrameDetector::detectAndGet(std::list<Frame> &received)
         macHeader = headerView(frameHeader.getRawDataPointer());
         if (macHeader->type == Config::ACK && MACLayerTransmitter::checkACK(macHeader))
         {
-            std::cout << "FrameDetector: ACK detected, id: " << (int)macHeader->id << "\n";
+            std::cout << "RECIVER: FrameDetector: ACK detected, id: " << (int)macHeader->id << "\n";
             received.push_back(ACK(macHeader));
             m_state = CK_HEADER;
         }
         else if (macHeader->type == Config::DATA && MACLayerReceiver::checkFrame(macHeader))
         {
-            std::cout << "FrameDetector: DATA detected, id: " << (int)macHeader->id
+            std::cout << "RECIVER: FrameDetector: DATA detected, id: " << (int)macHeader->id
                 << " length: " << (int)macHeader->len << "\n";
             if (macHeader->id == lastReceived)
             {
-                std::cout << "This frame has been received\n";
+                std::cout << "RECIVER: This frame has been received\n";
                 MACManager::get().macReceiver->sendACK(macHeader->id);
                 m_state = CK_HEADER;
             }

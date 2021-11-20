@@ -10,7 +10,7 @@ class ACK : public Frame
 {
 public:
     /* Create an ack to send */
-    ACK(const uint8_t *pdata);
+    ACK(const uint8_t *pdata, uint8_t id);
 
     /* Receive an ack */
     ACK(MACHeader *header);
