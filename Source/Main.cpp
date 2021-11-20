@@ -9,9 +9,7 @@
 
 extern std::ofstream debug_file;
 #define PI acos(-1)
-std::string m_exit = "exit";
-std::string macperf= "macperf ";
-std::string macping= "macping";
+std::string debugFile = "C:\\Users\\zengs\\Desktop\\homework\\CS120\\Project\\Athernet\\Input\\debug.out";
 void getInputFromFile(Array<uint8_t> &input, const std::string &path)
 {
     std::ifstream inputFile;
@@ -47,23 +45,26 @@ int main(int argc, char* argv[])
 	//std::cout << "Please enter the type of this device.(Sender:1 Receiver:2 Both:3)"<<newLine;
 	std::cout << "Please enter command\n";
 	std::getline(std::cin, command);
-	std::cout << command.find("macping");
 	if (command.find("macping ") == 0) {
 		command.erase(0, 8);
 		std::cout << command << std::endl;
 	}
-	if (command.find("macperf ") == 0) {
+	else if (command.find("macperf ") == 0) {
 		command.erase(0, 8);
 		std::cout << command << std::endl;
 	}
+	else {
+		std::cout << "Please enter the address of input file.\n";
+		std::getline(std::cin, Ifile);
+		std::cout << "Input file: " << Ifile << newLine;
 
-	std::cout << "Please enter the address of input file.\n";
-	std::getline(std::cin, Ifile);
-	std::cout <<"Input file: "<<Ifile << newLine;
+		std::cout << "Please enter the address of output file.\n";
+		std::getline(std::cin, Ofile);
+		std::cout << "Output file: " << Ofile << newLine;
+	}
+	
 
-	std::cout << "Please enter the address of output file.\n";
-	std::getline(std::cin, Ofile);
-	std::cout << "Output file: " << Ofile << newLine;
+
 
 
 
@@ -81,10 +82,11 @@ int main(int argc, char* argv[])
     audioIO.write(input);
 
     std::cout << "Initialization finished.\n";
-    while (getchar()) 
+	
+    while (getchar()!= 101) 
     {
         outputfile.open(Ofile);
-        debug_file.open("C:\\Users\\zengs\\Desktop\\homework\\CS120\\Project\\Athernet\\Input\\debug.out");
+        debug_file.open(debugFile);
 
         auto now1 = std::chrono::system_clock::now();
         audioIO.startTransmit();
@@ -98,6 +100,7 @@ int main(int argc, char* argv[])
         outputfile.close();
         debug_file.close();
         audioIO.write(input);
+		std::cout << "Press e to exit\n";
     }
 
     return 0;
