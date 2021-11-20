@@ -135,7 +135,7 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
     const ScopedLock sl(lock);
 #ifndef TEST_NOPHYS
     /* Only use channel 0. */
-    if (isSending) 
+    if (isSending || isReceiving) 
     {
         if (sender.hasEnoughElem(numSamples)) 
             sender.read(outputChannelData[0], numSamples);
@@ -145,16 +145,7 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
             sender.read(outputChannelData[0], size);
             zeromem(outputChannelData[0] + size, ((size_t)numSamples - size) * sizeof(float));
         }
-    }
-    else
-    {
-        for (int i = 0; i < numOutputChannels; ++i)
-            if (outputChannelData[i] != nullptr)
-                zeromem(outputChannelData[i], (size_t)numSamples * sizeof(float));
-    }
 
-    if (isReceiving) 
-    {
         if (receiver.hasEnoughSpace(numSamples))
             receiver.write(inputChannelData[0], numSamples);
         else
@@ -165,6 +156,12 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
             isReceiving = false;
             isSending = false;
         }
+    }
+    else
+    {
+        for (int i = 0; i < numOutputChannels; ++i)
+            if (outputChannelData[i] != nullptr)
+                zeromem(outputChannelData[i], (size_t)numSamples * sizeof(float));
     }
 #endif
 }
@@ -215,8 +212,9 @@ void AudioIO::startTransmit()
 
     std::unique_lock<std::mutex> cv_lk(cv_m);
     finishcv.wait(cv_lk);
-
-    MACManager::get().macReceiver->getOutput(outputBuffer);
+    
+    if (Config::STATE & RECEIVING)
+        MACManager::get().macReceiver->getOutput(outputBuffer);
     MACManager::destroy();
 
     std::cout << "---------------- Transfer Finished ----------------\n"; 

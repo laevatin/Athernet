@@ -29,7 +29,7 @@ void FrameDetector::checkHeader()
     const float *header = Config::header.getReadPointer(0);
     int offsetStart = headerOffset;
     
-    for (; headerOffset + Config::HEADER_LENGTH < detectorBuffer.size() && stopCountdown >= 0; headerOffset++)
+    for (; headerOffset + Config::HEADER_LENGTH < detectorBuffer.size(); headerOffset++)
     {
         float dot = detectorBuffer.peek(mkl_dot, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
         float rec_power = detectorBuffer.peek(power, header, (std::size_t)Config::HEADER_LENGTH, headerOffset);
@@ -42,7 +42,7 @@ void FrameDetector::checkHeader()
     for (; offsetStart < headerOffset; offsetStart++)
     {
         int frac = dotproducts[offsetStart] / powers[offsetStart];
-        if (dotproducts[offsetStart] > 10.0f && dotproducts[offsetStart] > prevMax)
+        if (dotproducts[offsetStart] > 20.0f && dotproducts[offsetStart] > prevMax)
         {
             prevMax = dotproducts[offsetStart];
             prevMaxPos = offsetStart;
@@ -103,6 +103,7 @@ void FrameDetector::detectAndGet(std::list<Frame> &received)
                 << " length: " << (int)macHeader->len << "\n";
             if (macHeader->id == lastReceived)
             {
+                std::cout << "This frame has been received\n";
                 MACManager::get().macReceiver->sendACK(macHeader->id);
                 m_state = CK_HEADER;
             }

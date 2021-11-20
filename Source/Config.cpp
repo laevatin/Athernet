@@ -35,7 +35,7 @@ void Config::initPreamble()
 
 void Config::initAudio()
 {
-    int base = 6700;
+    int base = 5600;
     AudioType audio1 = generateSound(base, Config::BIT_LENGTH, 0);
     AudioType audio2 = generateSound(base, Config::BIT_LENGTH, PI);
     AudioType audio3 = generateSound(base * 2, Config::BIT_LENGTH, 0);

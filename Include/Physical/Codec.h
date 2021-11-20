@@ -47,15 +47,15 @@ public:
     bool decodeBlock(const DataType &in, DataType &out, int start);
 
     /* Reed Solomon Code Parameters */
-    constexpr static std::size_t code_length = 108;
-    constexpr static std::size_t fec_length = 8;
+    constexpr static std::size_t code_length = 110;
+    constexpr static std::size_t fec_length = 10;
     constexpr static std::size_t data_length = code_length - fec_length;
 
 private:
     /* Finite Field Parameters */
     constexpr static std::size_t field_descriptor                =   8;
     constexpr static std::size_t generator_polynomial_index      = 120;
-    constexpr static std::size_t generator_polynomial_root_count =  8;
+    constexpr static std::size_t generator_polynomial_root_count =  10;
     
     typedef schifra::reed_solomon::shortened_encoder<code_length, fec_length, data_length> encoder_t;
     typedef schifra::reed_solomon::shortened_decoder<code_length, fec_length, data_length> decoder_t;
