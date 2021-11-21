@@ -113,6 +113,13 @@ MACLayerTransmitter::MACLayerTransmitter(const DataType &input, std::shared_ptr<
     MACThread = new std::thread([this]() { MACThreadTransStart(); });
 }
 
+MACLayerTransmitter::MACLayerTransmitter(std::shared_ptr<AudioDevice> audioDevice)
+    : MACLayer(audioDevice),
+    txstate(MACLayerTransmitter::SEND_PING)
+{
+    MACThread = new std::thread([this]() { MACThreadTransStart(); });
+}
+
 MACLayerTransmitter::~MACLayerTransmitter()
 {
     if (MACThread != nullptr)
@@ -126,6 +133,13 @@ void MACLayerTransmitter::ACKReceived(const Frame &ack)
 {
     MACFrame macFrame;
     convertMACFrame(ack, &macFrame);
+
+    if (macFrame.header.type == Config::MACPING_REPLY && txstate == SEND_PING)
+    {
+        txstate = PING_RECEIVED;
+        cv_ack.notify_one();
+        return;
+    }
 
     if (macFrame.header.id == pendingFrame.front().id()) 
     {
@@ -150,7 +164,8 @@ bool MACLayerTransmitter::checkPingReq(const MACHeader* macHeader) {
 	bool success = true;
 	success = success && (macHeader->src == Config::OTHER)
 		&& (macHeader->dest == Config::SELF)
-		&& (macHeader->type == Config::MACPING_REQ);
+		&& (macHeader->type == Config::MACPING_REQ)
+        && (macHeader->id == Config::MACPING_ID);
 	return success;
 }
 
@@ -158,7 +173,8 @@ bool MACLayerTransmitter::checkPingReply(const MACHeader* macHeader) {
 	bool success = true;
 	success = success && (macHeader->src == Config::OTHER)
 		&& (macHeader->dest == Config::SELF)
-		&& (macHeader->type == Config::MACPING_REPLY);
+		&& (macHeader->type == Config::MACPING_REPLY)
+        && (macHeader->id == Config::MACPING_ID);
 	return success;
 }
 
@@ -183,6 +199,24 @@ void MACLayerTransmitter::MACThreadTransStart()
             std::cout << "SENDER: Time to ACK " << (int)pendingFrame.front().id() << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << "\n";
             pendingFrame.pop_front();
         }
+    }
+    audioDevice->stopSending();
+}
+
+void MACLayerTransmitter::MACThreadPingStart()
+{
+    while (running)
+    {
+        auto now = std::chrono::system_clock::now();
+        MACManager::get().csmaSenderQueue->sendPingAsync(Config::MACPING_ID, Config::MACPING_REQ);
+
+        std::unique_lock<std::mutex> lock(cv_ack_m);
+        if (cv_ack.wait_until(lock, now + 2s, [this](){ return txstate == PING_RECEIVED; }))
+        {
+            auto recv = std::chrono::system_clock::now();
+            std::cout << "SENDER: Get Ping After: " << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << " milliseconds.\n";
+        }
+        Sleep(500);
     }
 }
 
@@ -248,6 +282,22 @@ void CSMASenderQueue::sendACKAsync(uint8_t id)
     }
 }
 
+void CSMASenderQueue::sendPingAsync(uint8_t id, uint8_t type)
+{
+    MACFrame *macFrame;
+    if (type == Config::MACPING_REQ)
+        macFrame = frameFactory.createPingReq(id);
+    if (type == Config::MACPING_REPLY)
+        macFrame = frameFactory.createPingReply(id);
+
+    m_queue_m.lock();
+    m_hasACKid[id] = true;
+    m_queue.push_back(convertFrame(macFrame));
+    m_queue_m.unlock();
+    m_cv_frame.notify_one();
+    frameFactory.destoryFrame(macFrame);
+}
+
 void CSMASenderQueue::senderStart()
 {
     while (running) 
@@ -262,7 +312,6 @@ void CSMASenderQueue::senderStart()
 
             if (m_audioDevice->getChannelState() == AudioDevice::CN_IDLE) 
             {
-                
                 m_audioDevice->sendFrame(m_queue.front());
                 if (m_queue.front().isACK()) {
                     m_hasACKid[m_queue.front().id()] = false;
@@ -272,8 +321,8 @@ void CSMASenderQueue::senderStart()
                     std::cout << "SENDER: Send Frame: " << (int)m_queue.front().id() << "\n";
                     m_hasDATAid[m_queue.front().id()] = false;
                 } 
-                    
-                m_queue.pop_front();                
+
+                m_queue.pop_front();
                 break;
             }
 

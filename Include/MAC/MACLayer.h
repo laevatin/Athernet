@@ -61,7 +61,12 @@ private:
 class MACLayerTransmitter : public MACLayer
 {
 public:
+    // send data
     explicit MACLayerTransmitter(const DataType &input, std::shared_ptr<AudioDevice> audioDevice);
+    
+    // send ping
+    explicit MACLayerTransmitter(std::shared_ptr<AudioDevice> audioDevice);
+    
     ~MACLayerTransmitter();
 
     /* This function may called from other thread. */
@@ -74,13 +79,16 @@ public:
 	static bool checkPingReply(const MACHeader* macHeader);
 private:
     void MACThreadTransStart();
+    void MACThreadPingStart();
     void fillQueue();
 
     enum TxState {
         IDLE,
         CK_HEADER,
         ACK_RECEIVED,
-        SEND_DATA
+        PING_RECEIVED,
+        SEND_DATA,
+        SEND_PING
     };
     
     std::mutex cv_ack_m;
@@ -104,6 +112,7 @@ public:
 
     void sendDataAsync(Frame&& frame);
     void sendACKAsync(uint8_t id);
+    void sendPingAsync(uint8_t id, uint8_t type);
 
 private:
     void senderStart();

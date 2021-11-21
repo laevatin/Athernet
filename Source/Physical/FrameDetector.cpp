@@ -101,10 +101,17 @@ void FrameDetector::detectAndGet(std::list<Frame> &received)
         }
 		else if (macHeader->type == Config::MACPING_REQ && MACLayerTransmitter::checkPingReq(macHeader))
 		{
-			std::cout << "RECIVER: FrameDetector: MACPING_REQ detected, id: " << (int)macHeader->id << "\n";
-			MACManager::get().macReceiver->sendACK(macHeader->id);
+			std::cout << "RECIVER: FrameDetector: MACPING_REQ detected.\n";
+            MACManager::get().csmaSenderQueue->sendPingAsync(Config::MACPING_ID, Config::MACPING_REPLY);
+            MACManager::get().macReceiver->stopMACThread();
 			m_state = CK_HEADER;
 		}
+        else if (macHeader->type == Config::MACPING_REPLY && MACLayerTransmitter::checkPingReply(macHeader))
+        {
+			std::cout << "RECIVER: FrameDetector: MACPING_REPLY detected.\n";
+            received.push_back(ACK(macHeader));
+            m_state = CK_HEADER;
+        }
         else
             m_state = CK_HEADER;
     }

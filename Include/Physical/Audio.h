@@ -30,6 +30,7 @@ public:
     ~AudioIO();
 
     void startTransmit();
+    void startPing();
     void write(const DataType &data);
     void read(DataType &data);
     

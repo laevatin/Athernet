@@ -21,6 +21,8 @@ Frame convertFrame(MACFrame* macframe)
         return ACK(serialized, macframe->header.id);
     else if (macframe->header.type == Config::DATA)
         return Frame(serialized, macframe->header.id);
+    else if (macframe->header.type == Config::MACPING_REPLY || macframe->header.type == Config::MACPING_REQ)
+        return ACK(serialized, macframe->header.id);
     else
     {
         std::cerr << "convertFrame: Unknown frame type. \n";

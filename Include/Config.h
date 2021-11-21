@@ -55,6 +55,7 @@ public:
 
 	constexpr static uint8_t MACPING_REQ = 0xBE;
 	constexpr static uint8_t MACPING_REPLY = 0xEF;
+    constexpr static uint8_t MACPING_ID = 0xFE;
 
     constexpr static uint8_t SELF = 0xCE;
     constexpr static uint8_t OTHER = 0xED;

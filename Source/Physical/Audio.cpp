@@ -241,6 +241,39 @@ void AudioIO::startTransmit()
     std::cout << "---------------- Transfer Finished ----------------\n"; 
 }
 
+void AudioIO::startPing()
+{
+    std::unique_ptr<MACLayerReceiver> macReceiver;
+    std::unique_ptr<MACLayerTransmitter> macTransmitter;
+    std::unique_ptr<CSMASenderQueue> csmaSenderQueue;
+
+    std::cout << "selected mode: " << Config::STATE << "\n"
+              << "start pinging...\n";
+    
+    if (Config::STATE & RECEIVING)
+        macReceiver.reset(new MACLayerReceiver(audioDevice));    
+
+    if (Config::STATE & SENDING)
+        macTransmitter.reset(new MACLayerTransmitter(audioDevice));
+
+    csmaSenderQueue.reset(new CSMASenderQueue(audioDevice));
+
+    MACManager::initialize(std::move(macReceiver), std::move(macTransmitter), std::move(csmaSenderQueue));
+
+    audioDeviceManager.addAudioCallback(audioDevice.get());
+    audioDevice->beginTransmit();
+
+    std::unique_lock<std::mutex> cv_lk(cv_m);
+    finishcv.wait(cv_lk);
+    
+    if (Config::STATE & RECEIVING)
+        MACManager::get().macReceiver->getOutput(outputBuffer);
+    MACManager::destroy();
+
+    std::cout << "---------------- Transfer Finished ----------------\n"; 
+
+}
+
 void AudioIO::write(const DataType &data) 
 {
     inputBuffer = data;
