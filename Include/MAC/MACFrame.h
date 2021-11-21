@@ -36,6 +36,12 @@ public:
     /* Create an ack frame */
     MACFrame *createACKFrame(uint8_t id);
 
+	/* Create a macping reply*/
+	MACFrame* createPingReply(uint8_t id);
+
+	/* Create a macping request*/
+	MACFrame* createPingReq(uint8_t id);
+
     /* Create an empty frame */
     MACFrame *createEmpty();
 

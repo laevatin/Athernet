@@ -68,6 +68,10 @@ public:
     void ACKReceived(const Frame &ack);
 
     static bool checkACK(const MACHeader *macHeader);
+
+	static bool checkPingReq(const MACHeader* macHeader);
+
+	static bool checkPingReply(const MACHeader* macHeader);
 private:
     void MACThreadTransStart();
     void fillQueue();

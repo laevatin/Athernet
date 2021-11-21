@@ -49,7 +49,7 @@ void MACLayerReceiver::MACThreadRecvStart()
         std::unique_lock<std::mutex> lock(cv_header_m);
         auto now = std::chrono::system_clock::now();
 
-        if (!cv_header.wait_until(lock, now + 5s, [this]() { return !receivingQueue.empty(); })) 
+        if (!cv_header.wait_until(lock, now + 20s, [this]() { return !receivingQueue.empty(); })) 
         {
             audioDevice->stopReceiving();
             audioDevice->stopSending();
@@ -146,6 +146,22 @@ bool MACLayerTransmitter::checkACK(const MACHeader *macHeader)
     return success;
 }
 
+bool MACLayerTransmitter::checkPingReq(const MACHeader* macHeader) {
+	bool success = true;
+	success = success && (macHeader->src == Config::OTHER)
+		&& (macHeader->dest == Config::SELF)
+		&& (macHeader->type == Config::MACPING_REQ);
+	return success;
+}
+
+bool MACLayerTransmitter::checkPingReply(const MACHeader* macHeader) {
+	bool success = true;
+	success = success && (macHeader->src == Config::OTHER)
+		&& (macHeader->dest == Config::SELF)
+		&& (macHeader->type == Config::MACPING_REPLY);
+	return success;
+}
+
 void MACLayerTransmitter::MACThreadTransStart()
 {
     fillQueue();
@@ -225,7 +241,7 @@ void CSMASenderQueue::sendACKAsync(uint8_t id)
         MACFrame *macFrame = frameFactory.createACKFrame(id);
         m_queue_m.lock();
         m_hasACKid[id] = true;
-        m_queue.push_front(convertFrame(macFrame));
+        m_queue.push_back(convertFrame(macFrame));
         m_queue_m.unlock();
         m_cv_frame.notify_one();
         frameFactory.destoryFrame(macFrame);
@@ -265,7 +281,7 @@ void CSMASenderQueue::senderStart()
             std::cout << "Channel busy, retrying " << count << "\n";
             if (count >= 10) 
                 count = 10;
-            Sleep(Config::BACKOFF_TSLOT * (int)pow(2, count));
+            Sleep(Config::BACKOFF_TSLOT * (int)pow(2, count - 1));
             lock_queue.lock();
         }
     }

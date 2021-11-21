@@ -53,10 +53,13 @@ public:
     constexpr static uint8_t ACK = 0xAC;
     constexpr static uint8_t DATA = 0xDA;
 
-    constexpr static uint8_t SELF = 0xED;
-    constexpr static uint8_t OTHER = 0xCE;
+	constexpr static uint8_t MACPING_REQ = 0xBE;
+	constexpr static uint8_t MACPING_REPLY = 0xEF;
 
-    constexpr static auto ACK_TIMEOUT = 180ms;
+    constexpr static uint8_t SELF = 0xCE;
+    constexpr static uint8_t OTHER = 0xED;
+
+    constexpr static auto ACK_TIMEOUT = 500ms;
 
     constexpr static int RECV_TIMEOUT = 1;
     

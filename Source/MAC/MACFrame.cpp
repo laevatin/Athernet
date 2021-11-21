@@ -35,6 +35,26 @@ MACFrame *MACFrameFactory::createACKFrame(uint8_t id)
     return frame;
 }
 
+MACFrame* MACFrameFactory::createPingReply(uint8_t id) {
+	MACFrame* frame = new MACFrame();
+	frame->header.dest = Config::OTHER;
+	frame->header.src = Config::SELF;
+	frame->header.type = Config::MACPING_REPLY;
+	frame->header.id = id;
+	frame->header.len = 0;
+	return frame;
+}
+
+MACFrame* MACFrameFactory::createPingReq(uint8_t id) {
+	MACFrame* frame = new MACFrame();
+	frame->header.dest = Config::OTHER;
+	frame->header.src = Config::SELF;
+	frame->header.type = Config::MACPING_REQ;
+	frame->header.id = id;
+	frame->header.len = 0;
+	return frame;
+}
+
 MACFrame *MACFrameFactory::createEmpty()
 {
     MACFrame *frame = new MACFrame();

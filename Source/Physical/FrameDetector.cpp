@@ -99,6 +99,12 @@ void FrameDetector::detectAndGet(std::list<Frame> &received)
             else 
                 m_state = GET_DATA;
         }
+		else if (macHeader->type == Config::MACPING_REQ && MACLayerTransmitter::checkPingReq(macHeader))
+		{
+			std::cout << "RECIVER: FrameDetector: MACPING_REQ detected, id: " << (int)macHeader->id << "\n";
+			MACManager::get().macReceiver->sendACK(macHeader->id);
+			m_state = CK_HEADER;
+		}
         else
             m_state = CK_HEADER;
     }
