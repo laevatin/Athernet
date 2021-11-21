@@ -57,8 +57,8 @@ public:
 	constexpr static uint8_t MACPING_REPLY = 0xEF;
     constexpr static uint8_t MACPING_ID = 0xFE;
 
-    constexpr static uint8_t SELF = 0xCE;
-    constexpr static uint8_t OTHER = 0xED;
+    constexpr static uint8_t SELF = 0xED;
+    constexpr static uint8_t OTHER = 0xCE;
 
     constexpr static auto ACK_TIMEOUT = 500ms;
 

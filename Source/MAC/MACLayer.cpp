@@ -117,7 +117,7 @@ MACLayerTransmitter::MACLayerTransmitter(std::shared_ptr<AudioDevice> audioDevic
     : MACLayer(audioDevice),
     txstate(MACLayerTransmitter::SEND_PING)
 {
-    MACThread = new std::thread([this]() { MACThreadTransStart(); });
+    MACThread = new std::thread([this]() { MACThreadPingStart(); });
 }
 
 MACLayerTransmitter::~MACLayerTransmitter()
@@ -140,15 +140,15 @@ void MACLayerTransmitter::ACKReceived(const Frame &ack)
         cv_ack.notify_one();
         return;
     }
-
-    if (macFrame.header.id == pendingFrame.front().id()) 
+    
+    if (txstate != SEND_PING && macFrame.header.id == pendingFrame.front().id()) 
     {
         txstate = ACK_RECEIVED;
         cv_ack.notify_one();
         return;
     }
 
-    std::cout << "SENDER: Received bad ACK " << (int)macFrame.header.id << "current" << (int)pendingFrame.front().id() << ".\n";
+    std::cout << "SENDER: Received bad ACK " << (int)macFrame.header.id << " type " << (int)macFrame.header.type << ".\n";
 }
 
 bool MACLayerTransmitter::checkACK(const MACHeader *macHeader)
@@ -180,6 +180,7 @@ bool MACLayerTransmitter::checkPingReply(const MACHeader* macHeader) {
 
 void MACLayerTransmitter::MACThreadTransStart()
 {
+    int resendCount = 0;
     fillQueue();
     while (running && !pendingFrame.empty())
     {
@@ -195,9 +196,19 @@ void MACLayerTransmitter::MACThreadTransStart()
 
         if (cv_ack.wait_until(lock, now + Config::ACK_TIMEOUT, [this](){ return txstate == ACK_RECEIVED; }))
         {
+            resendCount = 0;
             auto recv = std::chrono::system_clock::now();
             std::cout << "SENDER: Time to ACK " << (int)pendingFrame.front().id() << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << "\n";
             pendingFrame.pop_front();
+        }
+        else
+        {
+            resendCount += 1;
+            if (resendCount >= 10)
+            {
+                std::cout << "Link Error: no ACK received after 10 retries.\n";
+                break;
+            }
         }
     }
     audioDevice->stopSending();
@@ -207,6 +218,7 @@ void MACLayerTransmitter::MACThreadPingStart()
 {
     while (running)
     {
+        txstate = SEND_PING;
         auto now = std::chrono::system_clock::now();
         MACManager::get().csmaSenderQueue->sendPingAsync(Config::MACPING_ID, Config::MACPING_REQ);
 
@@ -216,7 +228,7 @@ void MACLayerTransmitter::MACThreadPingStart()
             auto recv = std::chrono::system_clock::now();
             std::cout << "SENDER: Get Ping After: " << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << " milliseconds.\n";
         }
-        Sleep(500);
+        Sleep(1000);
     }
 }
 
