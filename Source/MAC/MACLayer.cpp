@@ -182,6 +182,12 @@ void MACLayerTransmitter::MACThreadTransStart()
 {
     int resendCount = 0;
     fillQueue();
+    auto time1 = std::chrono::system_clock::now();
+    auto time2 = time1;
+
+    int receivedCount = 0;
+    int receivedSaved = 0;
+
     while (running && !pendingFrame.empty())
     {
         txstate = SEND_DATA;
@@ -192,11 +198,23 @@ void MACLayerTransmitter::MACThreadTransStart()
 
         /* fillQueue should not take too much time. */
         fillQueue();
+        time2 = std::chrono::system_clock::now();
+
+        if (time2 - time1 > 1s)
+        {
+            time1 = std::chrono::system_clock::now();
+            auto time = std::chrono::duration_cast<std::chrono::milliseconds>(time2 - time1).count();
+            int frameSent = receivedCount - receivedSaved;
+            receivedSaved = receivedCount;
+            float speed = ((float)frameSent * (Config::MACDATA_PER_FRAME) * 8) / (float)time;
+            std::cout << "SENDER: Current transfer speed: " << speed << " Kbps. \n";
+        }
         std::unique_lock<std::mutex> lock(cv_ack_m);
 
         if (cv_ack.wait_until(lock, now + Config::ACK_TIMEOUT, [this](){ return txstate == ACK_RECEIVED; }))
         {
             resendCount = 0;
+            receivedCount += 1;
             auto recv = std::chrono::system_clock::now();
             std::cout << "SENDER: Time to ACK " << (int)pendingFrame.front().id() << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << "\n";
             pendingFrame.pop_front();
