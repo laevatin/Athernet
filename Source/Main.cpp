@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
         debug_file.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\debug.out");
 
         auto now1 = std::chrono::system_clock::now();
-        // audioIO.startTransmit();
+        //audioIO.startTransmit();
         audioIO.startPing();
         auto now2 = std::chrono::system_clock::now();
 

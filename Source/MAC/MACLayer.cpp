@@ -49,10 +49,8 @@ void MACLayerReceiver::MACThreadRecvStart()
         std::unique_lock<std::mutex> lock(cv_header_m);
         auto now = std::chrono::system_clock::now();
 
-        if (!cv_header.wait_until(lock, now + 20s, [this]() { return !receivingQueue.empty(); })) 
+        if (!cv_header.wait_until(lock, now + 10s, [this]() { return !receivingQueue.empty(); })) 
         {
-            audioDevice->stopReceiving();
-            audioDevice->stopSending();
             break;
         }
 
@@ -65,6 +63,8 @@ void MACLayerReceiver::MACThreadRecvStart()
         }
         receivingQueue.pop_front();
     }
+    audioDevice->stopSending();
+    audioDevice->stopReceiving();
 }
 
 void MACLayerReceiver::frameReceived(Frame &&frame)
@@ -202,8 +202,8 @@ void MACLayerTransmitter::MACThreadTransStart()
 
         if (time2 - time1 > 1s)
         {
-            time1 = std::chrono::system_clock::now();
             auto time = std::chrono::duration_cast<std::chrono::milliseconds>(time2 - time1).count();
+            time1 = std::chrono::system_clock::now();
             int frameSent = receivedCount - receivedSaved;
             receivedSaved = receivedCount;
             float speed = ((float)frameSent * (Config::MACDATA_PER_FRAME) * 8) / (float)time;
@@ -246,7 +246,7 @@ void MACLayerTransmitter::MACThreadPingStart()
             auto recv = std::chrono::system_clock::now();
             std::cout << "SENDER: Get Ping After: " << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << " milliseconds.\n";
         }
-        Sleep(1000);
+        Sleep(400);
     }
 }
 
@@ -339,6 +339,9 @@ void CSMASenderQueue::senderStart()
         while (!m_queue.empty() && running) 
         {
             count++;
+
+            if (m_audioDevice->getChannelState() == AudioDevice::CN_BUSY)
+                Sleep(10);
 
             if (m_audioDevice->getChannelState() == AudioDevice::CN_IDLE) 
             {
