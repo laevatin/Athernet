@@ -57,7 +57,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\..\JuceLibraryCode;C:\Users\16322\Desktop\lessons\2021_1\CS120_Computer_Network\JUCE\modules;..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\16322\Desktop\lessons\2021_1\CS120_Computer_Network\asiosdk\asiosdk_2.3.3_2019-06-14\common;..\..\JuceLibraryCode;C:\Users\16322\Desktop\lessons\2021_1\CS120_Computer_Network\JUCE\modules;..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CONSOLE;WIN32;_WINDOWS;DEBUG;_DEBUG;JUCE_DISPLAY_SPLASH_SCREEN=1;JUCE_USE_DARK_SPLASH_SCREEN=1;JUCE_PROJUCER_VERSION=0x60102;JUCE_MODULE_AVAILABLE_juce_audio_basics=1;JUCE_MODULE_AVAILABLE_juce_audio_devices=1;JUCE_MODULE_AVAILABLE_juce_audio_formats=1;JUCE_MODULE_AVAILABLE_juce_audio_processors=1;JUCE_MODULE_AVAILABLE_juce_audio_utils=1;JUCE_MODULE_AVAILABLE_juce_core=1;JUCE_MODULE_AVAILABLE_juce_data_structures=1;JUCE_MODULE_AVAILABLE_juce_events=1;JUCE_MODULE_AVAILABLE_juce_graphics=1;JUCE_MODULE_AVAILABLE_juce_gui_basics=1;JUCE_MODULE_AVAILABLE_juce_gui_extra=1;JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1;JUCE_ASIO=1;JUCE_WASAPI=0;JUCE_DIRECTSOUND=0;JUCE_ALSA=0;JUCE_USE_ANDROID_OBOE=0;JUCE_STRICT_REFCOUNTEDPOINTER=1;JUCE_STANDALONE_APPLICATION=1;JUCER_VS2019_78A5026=1;JUCE_APP_VERSION=1.0.0;JUCE_APP_VERSION_HEX=0x10000;JucePlugin_Build_VST=0;JucePlugin_Build_VST3=0;JucePlugin_Build_AU=0;JucePlugin_Build_AUv3=0;JucePlugin_Build_RTAS=0;JucePlugin_Build_AAX=0;JucePlugin_Build_Standalone=0;JucePlugin_Build_Unity=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -2093,6 +2093,7 @@
       <AdditionalOptions> /bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_gui_extra.cpp" />
+    <ClCompile Include="..\..\Source\UDP\UDP.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Include\MAC\ACK.h" />
@@ -2105,6 +2106,7 @@
     <ClInclude Include="..\..\Include\Physical\Frame.h" />
     <ClInclude Include="..\..\Include\Physical\FrameDetector.h" />
     <ClInclude Include="..\..\Include\Physical\Modulator.h" />
+    <ClInclude Include="..\..\Include\UDP\UDP.h" />
     <ClInclude Include="..\..\Include\Utils\Accumulator.h" />
     <ClInclude Include="..\..\Include\Utils\IOFunctions.hpp" />
     <ClInclude Include="..\..\Include\Utils\Ringbuffer.hpp" />

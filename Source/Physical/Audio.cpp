@@ -266,7 +266,7 @@ void AudioIO::startPing()
     std::unique_lock<std::mutex> cv_lk(cv_m);
     finishcv.wait(cv_lk);
     
-    if (Config::STATE & RECEIVING)
+    if constexpr (Config::STATE & RECEIVING)
         MACManager::get().macReceiver->getOutput(outputBuffer);
     MACManager::destroy();
 

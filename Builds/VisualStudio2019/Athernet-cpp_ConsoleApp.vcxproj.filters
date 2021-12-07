@@ -454,6 +454,12 @@
     <Filter Include="JUCE Library Code">
       <UniqueIdentifier>{7ED5A90E-41AF-A1EF-659B-37CEEAB9BA61}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Athernet-cpp\Include\UDP">
+      <UniqueIdentifier>{14b88b9e-2c74-4393-8782-fb0c05f091bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Athernet-cpp\Source\UDP">
+      <UniqueIdentifier>{e1677385-c458-4dd1-9df1-17f4e70ec220}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\MAC\ACK.cpp">
@@ -2453,6 +2459,9 @@
     </ClCompile>
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_gui_extra.cpp">
       <Filter>JUCE Library Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\UDP\UDP.cpp">
+      <Filter>Athernet-cpp\Source\UDP</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -4861,6 +4870,9 @@
     </ClInclude>
     <ClInclude Include="..\..\JuceLibraryCode\JuceHeader.h">
       <Filter>JUCE Library Code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Include\UDP\UDP.h">
+      <Filter>Athernet-cpp\Include\UDP</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
