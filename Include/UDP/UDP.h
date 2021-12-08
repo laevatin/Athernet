@@ -9,6 +9,7 @@ class UDP
 {
 protected:
 	UDP(const char* port);
+	~UDP();
 	WSADATA m_wsaData;
 	SOCKET m_socket;
 	sockaddr_in m_sockaddr;
