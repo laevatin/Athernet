@@ -21,7 +21,6 @@ public:
     virtual void stopMACThread();
 
 protected:
-    MACFrameFactory frameFactory;
     std::thread *MACThread;
     std::atomic<bool> running;
     std::shared_ptr<AudioDevice> audioDevice;
@@ -128,7 +127,6 @@ private:
     bool m_hasDATAid[256] = { 0 };
     bool running = true;
 
-    MACFrameFactory frameFactory;
 };
 
 #endif

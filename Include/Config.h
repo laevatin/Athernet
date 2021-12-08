@@ -36,13 +36,13 @@ public:
 
     constexpr static int BIT_LENGTH    = 6;
 
-    constexpr static int DATA_PER_FRAME = 8 * 96;
+    constexpr static int DATA_PER_FRAME = 8 * 120;
     constexpr static int BIT_PER_FRAME  = 8 * 127;
 
-    constexpr static int MACHEADER_LENGTH = 5 * 8; // sizeof(MACHeader) * 8
+    constexpr static int MACHEADER_LENGTH = 8 * 8; // sizeof(MACHeader) * 8
     constexpr static int MACDATA_PER_FRAME = DATA_PER_FRAME / 8 - MACHEADER_LENGTH / 8;
 
-    constexpr static int BIT_PER_ACK  = 40;
+    constexpr static int BIT_PER_ACK  = MACHEADER_LENGTH;
 
     constexpr static int BAND_WIDTH   = 2;
 
@@ -58,7 +58,7 @@ public:
     constexpr static uint8_t MACPING_ID = 0xFE;
 
     constexpr static uint8_t SELF = 0xCE;
-    constexpr static uint8_t OTHER = 0xED;
+    constexpr static uint8_t OTHER = 0xCE;
 
     constexpr static auto ACK_TIMEOUT = 1000ms;
 

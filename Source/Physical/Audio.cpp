@@ -13,7 +13,7 @@ Codec AudioDevice::codec;
 
 extern std::ofstream debug_file;
 
-// #define TEST_NOPHYS
+#define TEST_NOPHYS
 
 AudioDevice::AudioDevice(enum state s) 
     : deviceState(s)
@@ -93,7 +93,7 @@ void AudioDevice::hiResTimerCallback()
     {
         lock.enter();
         // std::cout << "SEND" << "\n";
-        int numSamples = 5000;
+        int numSamples = 500;
         float* buffer = new float[numSamples];
         if (sender.hasEnoughElem(numSamples))
             sender.read(buffer, numSamples);
@@ -166,7 +166,6 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
         for (int i = numSamples - Config::POWER_AVG_LEN; i < numSamples; i++) 
             sumPower += inputChannelData[0][i] * inputChannelData[0][i];
         m_avgPower = sumPower / Config::POWER_AVG_LEN;
-        debug_file << m_avgPower << "\n";
     }
     else
     {

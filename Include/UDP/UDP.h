@@ -7,9 +7,14 @@
 
 class UDP
 {
+public:
+	UDP(const UDP&) = delete;
+    UDP& operator=(const UDP&) = delete;
+	
 protected:
 	UDP(const char* port);
 	~UDP();
+
 	WSADATA m_wsaData;
 	SOCKET m_socket;
 	sockaddr_in m_sockaddr;

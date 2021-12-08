@@ -4874,6 +4874,9 @@
     <ClInclude Include="..\..\Include\UDP\UDP.h">
       <Filter>Athernet-cpp\Include\UDP</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Include\Utils\CRC.h">
+      <Filter>Athernet-cpp\Include\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\JUCE\modules\juce_audio_devices\native\oboe\CMakeLists.txt">

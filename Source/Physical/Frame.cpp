@@ -18,10 +18,6 @@ Frame::Frame(const uint8_t *pdata, uint8_t id)
     m_id = id;
     addHeader();
     DataType encoded = byteToBit(AudioDevice::codec.encodeBlock(data, 0));
-    
-    // for (int i = 0; i < encoded.size(); i += 1)
-    //     std::cout << (int)encoded[i];
-    // std::cout << "\n";
 
     Modulator::modulate(encoded, 0, Config::BIT_PER_FRAME, *this);
 }
@@ -40,12 +36,6 @@ Frame::Frame(MACHeader *macHeader, const float *audio)
     for (int i = 0; i < (Config::BIT_PER_FRAME - Config::MACHEADER_LENGTH) * Config::BIT_LENGTH / Config::BAND_WIDTH; i += Config::BIT_LENGTH)
         Modulator::demodulate(audio + i, tmp);
     out.addArray(bitToByte(tmp));
-    
-    // DataType ooo = byteToBit(out);
-    // std::cout << "GETDATA: ";
-    // for (int i = 0; i < ooo.size(); i += 1)
-    //     std::cout << (int)ooo[i];
-    // std::cout << "\n";
 
     m_isGood = AudioDevice::codec.decodeBlock(out, frameData, 0);
 }

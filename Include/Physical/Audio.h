@@ -86,7 +86,7 @@ private:
 
     FrameDetector frameDetector;
 
-    enum state deviceState = state::SENDING;
+    enum state deviceState = state::BOTH;
 
     std::atomic<float> m_avgPower = 0;
 

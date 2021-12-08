@@ -58,8 +58,11 @@ void MACLayerReceiver::MACThreadRecvStart()
         if (receivingQueue.front().isGoodFrame())
         {
             convertMACFrame(receivingQueue.front(), &macFrame);
-            sendACK(macFrame.header.id);
-            outputData.addArray(macFrame.data, macFrame.header.len);
+            if (MACManager::get().macFrameFactory->checkCRC(&macFrame)) 
+            {
+                sendACK(macFrame.header.id);
+                outputData.addArray(macFrame.data, macFrame.header.len);
+            }
         }
         receivingQueue.pop_front();
     }
@@ -141,7 +144,8 @@ void MACLayerTransmitter::ACKReceived(const Frame &ack)
         return;
     }
     
-    if (txstate != SEND_PING && macFrame.header.id == pendingFrame.front().id()) 
+    if (txstate != SEND_PING && macFrame.header.id == pendingFrame.front().id()
+        && MACManager::get().macFrameFactory->checkCRC(&macFrame)) 
     {
         txstate = ACK_RECEIVED;
         cv_ack.notify_one();
@@ -258,10 +262,10 @@ void MACLayerTransmitter::fillQueue()
         if (inputPos + length > inputData.size())
             length = inputData.size() - inputPos;
 
-        MACFrame *macFrame = frameFactory.createDataFrame(inputData, inputPos, length);
+        MACFrame *macFrame = MACManager::get().macFrameFactory->createDataFrame(inputData, inputPos, length);
         inputPos += length;
         pendingFrame.push_back(convertFrame(macFrame));
-        frameFactory.destoryFrame(macFrame);
+        MACManager::get().macFrameFactory->destoryFrame(macFrame);
     }
 }
 
@@ -302,13 +306,13 @@ void CSMASenderQueue::sendACKAsync(uint8_t id)
         return;
     else 
     {
-        MACFrame *macFrame = frameFactory.createACKFrame(id);
+        MACFrame *macFrame = MACManager::get().macFrameFactory->createACKFrame(id);
         m_queue_m.lock();
         m_hasACKid[id] = true;
         m_queue.push_back(convertFrame(macFrame));
         m_queue_m.unlock();
         m_cv_frame.notify_one();
-        frameFactory.destoryFrame(macFrame);
+        MACManager::get().macFrameFactory->destoryFrame(macFrame);
     }
 }
 
@@ -316,16 +320,16 @@ void CSMASenderQueue::sendPingAsync(uint8_t id, uint8_t type)
 {
     MACFrame *macFrame;
     if (type == Config::MACPING_REQ)
-        macFrame = frameFactory.createPingReq(id);
+        macFrame = MACManager::get().macFrameFactory->createPingReq(id);
     if (type == Config::MACPING_REPLY)
-        macFrame = frameFactory.createPingReply(id);
+        macFrame = MACManager::get().macFrameFactory->createPingReply(id);
 
     m_queue_m.lock();
     m_hasACKid[id] = true;
     m_queue.push_back(convertFrame(macFrame));
     m_queue_m.unlock();
     m_cv_frame.notify_one();
-    frameFactory.destoryFrame(macFrame);
+    MACManager::get().macFrameFactory->destoryFrame(macFrame);
 }
 
 void CSMASenderQueue::senderStart()

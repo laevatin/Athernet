@@ -2108,6 +2108,7 @@
     <ClInclude Include="..\..\Include\Physical\Modulator.h" />
     <ClInclude Include="..\..\Include\UDP\UDP.h" />
     <ClInclude Include="..\..\Include\Utils\Accumulator.h" />
+    <ClInclude Include="..\..\Include\Utils\CRC.h" />
     <ClInclude Include="..\..\Include\Utils\IOFunctions.hpp" />
     <ClInclude Include="..\..\Include\Utils\Ringbuffer.hpp" />
     <ClInclude Include="..\..\Include\Config.h" />

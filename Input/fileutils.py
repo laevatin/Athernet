@@ -23,4 +23,4 @@ def file_diff(a, b):
     input_file.close()
     output_file.close()
 
-file_diff("input50000.in", "output50000.out")
+file_diff("input1000.in", "output1000.out")

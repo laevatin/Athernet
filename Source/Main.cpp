@@ -33,60 +33,61 @@ void getInputFromFile(Array<uint8_t> &input, const std::string &path)
 
 int main(int argc, char* argv[])
 {
-    //MessageManager::getInstance();
-    //AudioIO audioIO;
-    //
-    //Array<uint8_t> input;
-    //Array<uint8_t> output;
-    //getInputFromFile(input, "C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\input50000.in");
+    MessageManager::getInstance();
+    AudioIO audioIO;
 
-    //input = bitToByte(input);
-    //std::ofstream outputfile;
-    //audioIO.write(input);
+    Array<uint8_t> input;
+    Array<uint8_t> output;
+    getInputFromFile(input, "C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\input1000.in");
 
-    //std::cout << "Initialization finished.\n";
-    //while (getchar()) 
-    //{
-    //    outputfile.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\output50000.out");
-    //    debug_file.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\debug.out");
+    input = bitToByte(input);
+    std::ofstream outputfile;
+    audioIO.write(input);
 
-    //    auto now1 = std::chrono::system_clock::now();
-    //    //audioIO.startTransmit();
-    //    audioIO.startPing();
-    //    auto now2 = std::chrono::system_clock::now();
-
-    //    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(now2 - now1).count() << std::endl;
-    //    audioIO.read(output);
-    //    output = byteToBit(output);
-    //    for (int i = 0; i < output.size(); i++)
-    //        outputfile << (int)output[i];
-    //    outputfile.close();
-    //    debug_file.close();
-    //    audioIO.write(input);
-    //}
-    if (argc <= 2) {
-        return -1;
-    }
-
-    if (!strcmp(argv[1], "send"))
+    std::cout << "Initialization finished.\n";
+    while (getchar()) 
     {
-        char data[] = "hello world!";
-        UDPClient client("10.19.126.236", "1000");
-        while (true)
-        {
-            client.SendData(data, sizeof(data));
-            Sleep(1000);
-        }
+        outputfile.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\output1000.out");
+        debug_file.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\debug.out");
+
+        auto now1 = std::chrono::system_clock::now();
+        audioIO.startTransmit();
+        // audioIO.startPing();
+        auto now2 = std::chrono::system_clock::now();
+
+        std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(now2 - now1).count() << std::endl;
+        audioIO.read(output);
+        output = byteToBit(output);
+        for (int i = 0; i < output.size(); i++)
+            outputfile << (int)output[i];
+        outputfile.close();
+        debug_file.close();
+        audioIO.write(input);
     }
-    else {
-        char buffer[1024];
-        UDPServer server("1000");
-        while (true)
-        {
-            server.RecvData(buffer, 1024);
-            std::cout << buffer << std::endl;
-        }
-    }
+
+    // if (argc <= 2) {
+    //     return -1;
+    // }
+
+    // if (!strcmp(argv[1], "send"))
+    // {
+    //     char data[] = "hello world!";
+    //     UDPClient client("10.19.126.236", "1000");
+    //     while (true)
+    //     {
+    //         client.SendData(data, sizeof(data));
+    //         Sleep(1000);
+    //     }
+    // }
+    // else {
+    //     char buffer[1024];
+    //     UDPServer server("1000");
+    //     while (true)
+    //     {
+    //         server.RecvData(buffer, 1024);
+    //         std::cout << buffer << std::endl;
+    //     }
+    // }
 
 
     return 0;

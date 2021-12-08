@@ -5,6 +5,7 @@
 
 #include <JuceHeader.h>
 #include "Config.h"
+#include "Utils/CRC.h"
 
 typedef juce::Array<uint8_t> DataType;
 class Config;
@@ -16,6 +17,7 @@ struct MACHeader
     uint8_t type;
     uint8_t len;
     uint8_t id;
+    uint16_t crc16;
 };
 
 struct MACFrame
@@ -48,8 +50,11 @@ public:
     /* Resource management */
     void destoryFrame(MACFrame *frame);
 
+    bool checkCRC(MACFrame *frame);
+
 private:
-    uint8_t nextid;
+    uint8_t m_nextid;
+    CRC::Table<std::uint16_t, 16> m_crcTable;
 };
 
 #endif

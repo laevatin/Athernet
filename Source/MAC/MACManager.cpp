@@ -7,7 +7,9 @@ MACManager& MACManager::get()
 }
 
 MACManager::MACManager()
-{}
+{
+    macFrameFactory.reset(new MACFrameFactory());
+}
 
 MACManager::~MACManager()
 {}
@@ -35,5 +37,9 @@ void MACManager::destroy()
 
     if (get().csmaSenderQueue.get()) {
         get().csmaSenderQueue.release();
+    }
+
+    if (get().macFrameFactory.get()) {
+        get().macFrameFactory.reset(new MACFrameFactory());
     }
 }
