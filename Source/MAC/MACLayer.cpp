@@ -58,11 +58,8 @@ void MACLayerReceiver::MACThreadRecvStart()
         if (receivingQueue.front().isGoodFrame())
         {
             convertMACFrame(receivingQueue.front(), &macFrame);
-            if (MACManager::get().macFrameFactory->checkCRC(&macFrame)) 
-            {
-                sendACK(macFrame.header.id);
-                outputData.addArray(macFrame.data, macFrame.header.len);
-            }
+            sendACK(macFrame.header.id);
+            outputData.addArray(macFrame.data, macFrame.header.len);
         }
         receivingQueue.pop_front();
     }

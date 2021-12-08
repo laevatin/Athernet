@@ -2,6 +2,7 @@
 #include "Physical/Codec.h"
 #include "Physical/Modulator.h"
 #include "MAC/MACFrame.h"
+#include "MAC/MACManager.h"
 #include "Utils/IOFunctions.hpp"
 #include "mkl.h"
 #include <fstream>
@@ -29,6 +30,7 @@ Frame::Frame(MACHeader *macHeader, const float *audio)
 {
     DataType out, tmp;
     uint8_t *macHeader_uint8 = reinterpret_cast<uint8_t *>(macHeader);
+
     out.addArray(macHeader_uint8, Config::MACHEADER_LENGTH / 8);
     m_dataLength = macHeader->len;
     m_id = macHeader->id;
@@ -38,6 +40,11 @@ Frame::Frame(MACHeader *macHeader, const float *audio)
     out.addArray(bitToByte(tmp));
 
     m_isGood = AudioDevice::codec.decodeBlock(out, frameData, 0);
+
+    /* Check CRC */
+    macHeader_uint8 = frameData.getRawDataPointer();
+    MACFrame *frame = reinterpret_cast<MACFrame *>(macHeader_uint8);
+    m_isGood = m_isGood && MACManager::get().macFrameFactory->checkCRC(frame);
 }
 
 Frame::Frame(Frame &&other)

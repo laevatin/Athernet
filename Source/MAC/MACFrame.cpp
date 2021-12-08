@@ -96,5 +96,7 @@ bool MACFrameFactory::checkCRC(MACFrame *frame)
     {
         return false;
     }
+
+    frame->header.crc16 = crcSaved;
     return true;
 }

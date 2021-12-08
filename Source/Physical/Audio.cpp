@@ -72,15 +72,7 @@ void AudioDevice::hiResTimerCallback()
 
         delete [] buffer;
     }
-
-        // check header
-        // need a new timeout
-        // if (demodulator.isTimeout())
-        // {
-            // isReceiving = false;
-            // std::cout << "Receiving timed out" << newLine;
-        // }
-
+    
     if (!isSending && !isReceiving)
     {
         stopTimer();
