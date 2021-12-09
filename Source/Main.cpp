@@ -35,9 +35,9 @@ int main(int argc, char* argv[])
 {
     MessageManager::getInstance();
     AudioIO audioIO;
-
     Array<uint8_t> input;
     Array<uint8_t> output;
+
     getInputFromFile(input, "C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\input1000.in");
 
     input = bitToByte(input);
@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
     while (getchar()) 
     {
         outputfile.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\output1000.out");
-        debug_file.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\debug.out");
+        // debug_file.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\debug.out");
 
         auto now1 = std::chrono::system_clock::now();
         audioIO.startTransmit();
@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
         for (int i = 0; i < output.size(); i++)
             outputfile << (int)output[i];
         outputfile.close();
-        debug_file.close();
+        // debug_file.close();
         audioIO.write(input);
     }
 

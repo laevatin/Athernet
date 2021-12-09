@@ -36,6 +36,8 @@ public:
 
     constexpr static int BIT_LENGTH    = 6;
 
+    constexpr static int PACKET_PAYLOAD = 106; // DATA_PER_FRAME / 8 - sizeof(ANetIP) - sizeof(ANetUDP)
+
     constexpr static int DATA_PER_FRAME = 8 * 120;
     constexpr static int BIT_PER_FRAME  = 8 * 127;
 
