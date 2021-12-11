@@ -72,11 +72,11 @@ void AudioDevice::hiResTimerCallback()
 
         delete [] buffer;
     }
-    
+
     if (!isSending && !isReceiving)
     {
         stopTimer();
-        finishcv.notify_one();
+        // finishcv.notify_one();
     }
 
 #ifdef TEST_NOPHYS
@@ -192,55 +192,13 @@ AudioIO::AudioIO()
     dev_info.sampleRate = 48000;
     dev_info.bufferSize = 512;
     audioDevice.reset(new AudioDevice(Config::STATE));
-}
-
-AudioIO::~AudioIO()
-{
-    audioDeviceManager.removeAudioCallback(audioDevice.get());
-    audioDevice.reset();
-}
-
-void AudioIO::startTransmit()
-{
-    std::unique_ptr<MACLayerReceiver> macReceiver;
-    std::unique_ptr<MACLayerTransmitter> macTransmitter;
-    std::unique_ptr<CSMASenderQueue> csmaSenderQueue;
-
-    std::cout << "selected mode: " << Config::STATE << "\n"
-              << "start transmitting data...\n";
-    
-    if (Config::STATE & RECEIVING)
-        macReceiver.reset(new MACLayerReceiver(audioDevice));    
-
-    if (Config::STATE & SENDING)
-        macTransmitter.reset(new MACLayerTransmitter(inputBuffer, audioDevice));
-
-    csmaSenderQueue.reset(new CSMASenderQueue(audioDevice));
-
-    MACManager::initialize(std::move(macReceiver), std::move(macTransmitter), std::move(csmaSenderQueue));
-
     audioDeviceManager.addAudioCallback(audioDevice.get());
-    audioDevice->beginTransmit();
 
-    std::unique_lock<std::mutex> cv_lk(cv_m);
-    finishcv.wait(cv_lk);
-    
-    if (Config::STATE & RECEIVING)
-        MACManager::get().macReceiver->getOutput(outputBuffer);
-    MACManager::destroy();
-
-    std::cout << "---------------- Transfer Finished ----------------\n"; 
-}
-
-void AudioIO::startPing()
-{
     std::unique_ptr<MACLayerReceiver> macReceiver;
     std::unique_ptr<MACLayerTransmitter> macTransmitter;
     std::unique_ptr<CSMASenderQueue> csmaSenderQueue;
 
-    std::cout << "selected mode: " << Config::STATE << "\n"
-              << "start pinging...\n";
-    
+    std::cout << "AudioIO: selected mode: " << Config::STATE << "\n";
     if (Config::STATE & RECEIVING)
         macReceiver.reset(new MACLayerReceiver(audioDevice));    
 
@@ -248,29 +206,74 @@ void AudioIO::startPing()
         macTransmitter.reset(new MACLayerTransmitter(audioDevice));
 
     csmaSenderQueue.reset(new CSMASenderQueue(audioDevice));
-
     MACManager::initialize(std::move(macReceiver), std::move(macTransmitter), std::move(csmaSenderQueue));
-
-    audioDeviceManager.addAudioCallback(audioDevice.get());
     audioDevice->beginTransmit();
 
-    std::unique_lock<std::mutex> cv_lk(cv_m);
-    finishcv.wait(cv_lk);
+}
+
+AudioIO::~AudioIO()
+{
+    MACManager::destroy();    
+    audioDeviceManager.removeAudioCallback(audioDevice.get());
+    audioDevice.reset();
+}
+
+void AudioIO::SendData(const uint8_t* data, int len)
+{
+    int ofs = 0;
+    while (len > Config::MACDATA_PER_FRAME)
+    {
+        MACManager::get().macTransmitter->SendPacket(data + ofs, Config::MACDATA_PER_FRAME);
+        len -= Config::MACDATA_PER_FRAME;
+        ofs += Config::MACDATA_PER_FRAME;
+    }
+    MACManager::get().macTransmitter->SendPacket(data + ofs, len);
+}
+
+int AudioIO::RecvData(uint8_t* out, int outlen)
+{
+    int ofs = 0;
+    int total = 0;
+    while (outlen > Config::MACDATA_PER_FRAME)
+    {
+        int received = MACManager::get().macReceiver->RecvPacket(out + ofs);
+        outlen -= received;
+        total += received;
+        ofs += received;
+    }
+    total += MACManager::get().macReceiver->RecvPacket(out + ofs);
+    return total;
+}
+
+// void AudioIO::startTransmit()
+// {
+
+
+//     std::unique_lock<std::mutex> cv_lk(cv_m);
+//     finishcv.wait(cv_lk);
     
-    if constexpr (Config::STATE & RECEIVING)
-        MACManager::get().macReceiver->getOutput(outputBuffer);
-    MACManager::destroy();
+//     if (Config::STATE & RECEIVING)
+//         MACManager::get().macReceiver->getOutput(outputBuffer);
 
-    std::cout << "---------------- Transfer Finished ----------------\n"; 
 
-}
+//     std::cout << "---------------- Transfer Finished ----------------\n"; 
+// }
 
-void AudioIO::write(const DataType &data) 
-{
-    inputBuffer = data;
-}
+// void AudioIO::startPing()
+// {
+//     std::cout << "selected mode: " << Config::STATE << "\n"
+//               << "start pinging...\n";
 
-void AudioIO::read(DataType &data)
-{
-    data = std::move(outputBuffer);
-}
+//     audioDeviceManager.addAudioCallback(audioDevice.get());
+//     audioDevice->beginTransmit();
+
+//     std::unique_lock<std::mutex> cv_lk(cv_m);
+//     finishcv.wait(cv_lk);
+    
+//     if constexpr (Config::STATE & RECEIVING)
+//         MACManager::get().macReceiver->getOutput(outputBuffer);
+//     MACManager::destroy();
+
+//     std::cout << "---------------- Transfer Finished ----------------\n"; 
+
+// }

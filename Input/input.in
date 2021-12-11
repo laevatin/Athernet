@@ -1,1 +1,20 @@
-01001010011010101110101010011011001010011011101000000100010010001000010010101101001100100110101110001000100010011101100100101000001111001001100101101000010000100000000111010011111101100001100100101000
+============= ALL USERS PLEASE NOTE  ==
+====================== CAR and CDR now 
+return extra values. The function CAR n
+ow returns two values.  Since it has to
+ go to the trouble to figure out if the
+ object is carcdr-able anyway, we figur
+ed you might as well get both halves at
+ once.  For example, the following code
+ shows how to destructure a cons (SOME-
+CONS) into its two slots THE-CAR and TH
+E-CDR):         (MULTIPLE-VALUE-BIND (T
+HE-CAR THE-CDR) (CAR SOME-CONS) ...) Fo
+r symmetry with CAR, CDR returns a seco
+nd value which is the CAR of the object
+.  In a related change, the functions M
+AKE-ARRAY and CONS have been fixed so t
+hey don't allocate any storage except o
+n the stack.  This should hopefully hel
+p people who don't like using the garba
+ge collector because it cold boots the 

@@ -25,11 +25,18 @@ void getInputFromFile(Array<uint8_t> &input, const std::string &path)
     
     while (inputFile >> in) 
     {
-        input.set(idx++, in - '0');
+        input.set(idx++, in);
     }
 
     inputFile.close();
 }
+
+
+/*
+-------   ANet  -------  Wifi  -------
+|Node1| <------>|Node2|<------>|Node3|
+-------         -------        -------
+*/
 
 int main(int argc, char* argv[])
 {
@@ -37,32 +44,44 @@ int main(int argc, char* argv[])
     AudioIO audioIO;
     Array<uint8_t> input;
     Array<uint8_t> output;
+    std::ifstream inputFile;
+    inputFile.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\input.in");
 
-    getInputFromFile(input, "C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\input1000.in");
-
-    input = bitToByte(input);
+    // getInputFromFile(input, "C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\input1000.in");
+    std::string message;
+    
+    // input = bitToByte(input);
     std::ofstream outputfile;
-    audioIO.write(input);
+    // audioIO.write(input);
 
     std::cout << "Initialization finished.\n";
     while (getchar()) 
     {
-        outputfile.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\output1000.out");
+        char recvbuffer[1024];
+        while (std::getline(inputFile, message)) 
+        {
+            //for (int i = 0; i < message.length(); i++)
+                std::cout << message << std::endl;
+            auto now1 = std::chrono::system_clock::now();
+            audioIO.SendData((const uint8_t *)message.c_str(), message.length() + 1);
+
+            int rec = audioIO.RecvData((uint8_t *)recvbuffer, message.length() + 1);
+            auto now2 = std::chrono::system_clock::now();
+            std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(now2 - now1).count() << std::endl;
+            //for (int i = 0; i < rec; i++)
+                std::cout << recvbuffer << std::endl;
+            //std::cout << "\n";
+        }
+        // outputfile.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\output1000.out");
         // debug_file.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\debug.out");
 
-        auto now1 = std::chrono::system_clock::now();
-        audioIO.startTransmit();
-        // audioIO.startPing();
-        auto now2 = std::chrono::system_clock::now();
-
-        std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(now2 - now1).count() << std::endl;
-        audioIO.read(output);
-        output = byteToBit(output);
-        for (int i = 0; i < output.size(); i++)
-            outputfile << (int)output[i];
-        outputfile.close();
-        // debug_file.close();
-        audioIO.write(input);
+        // audioIO.read(output);
+        // output = byteToBit(output);
+        // for (int i = 0; i < output.size(); i++)
+        //     outputfile << (int)output[i];
+        // outputfile.close();
+        // // debug_file.close();
+        // audioIO.write(input);
     }
 
     // if (argc <= 2) {

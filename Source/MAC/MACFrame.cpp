@@ -9,12 +9,11 @@ MACFrameFactory::MACFrameFactory()
 MACFrameFactory::~MACFrameFactory()
 {}
 
-MACFrame *MACFrameFactory::createDataFrame(const DataType &data, int start, int len)
+MACFrame *MACFrameFactory::createDataFrame(const uint8_t *data, int start, int len)
 {
     jassert(len <= Config::MACDATA_PER_FRAME);
 
     MACFrame *frame = new MACFrame();
-    const uint8_t *pdata = data.getRawDataPointer();
 
     frame->header.dest = Config::OTHER;
     frame->header.src = Config::SELF;
@@ -24,7 +23,7 @@ MACFrame *MACFrameFactory::createDataFrame(const DataType &data, int start, int 
     /* Set to zero at first, then calculate it. */
     frame->header.crc16 = 0;
 
-    memcpy(frame->data, pdata + start, (size_t)len * sizeof(uint8_t));
+    memcpy(frame->data, data + start, (size_t)len);
     frame->header.crc16 = CRC::Calculate(frame, Config::MACHEADER_LENGTH / 8 + len, m_crcTable);
     return frame;
 }

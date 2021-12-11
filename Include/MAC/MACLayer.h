@@ -7,6 +7,7 @@
 #include <list>
 #include <condition_variable>
 #include <atomic>
+#include <stdint.h>
 #include "MAC/MACFrame.h"
 #include "Physical/Frame.h"
 
@@ -34,8 +35,9 @@ public:
 
     void frameReceived(Frame &&frame);
     void stopMACThread() override;
-    void getOutput(DataType &out);
     void sendACK(uint8_t id);
+    int RecvPacket(uint8_t *out);
+
     static bool checkFrame(const MACHeader *macHeader);
 
 private:
@@ -48,11 +50,14 @@ private:
         SEND_ACK
     };
 
-    std::mutex cv_header_m;
-    std::condition_variable cv_header;
+    std::mutex m_frameQueue;
+    std::condition_variable cv_frameQueue;
+    std::list<Frame> frameQueue;
 
-    DataType outputData;
-    std::list<Frame> receivingQueue;
+    std::mutex m_packetQueue;
+    std::condition_variable cv_packetQueue;
+    std::list<MACFrame> packetQueue;
+
     std::atomic<RxState> rxstate;
 };
 
@@ -61,15 +66,16 @@ class MACLayerTransmitter : public MACLayer
 {
 public:
     // send data
-    explicit MACLayerTransmitter(const DataType &input, std::shared_ptr<AudioDevice> audioDevice);
+    explicit MACLayerTransmitter(std::shared_ptr<AudioDevice> audioDevice);
     
     // send ping
-    explicit MACLayerTransmitter(std::shared_ptr<AudioDevice> audioDevice);
+    // explicit MACLayerTransmitter(std::shared_ptr<AudioDevice> audioDevice);
     
     ~MACLayerTransmitter();
 
     /* This function may called from other thread. */
     void ACKReceived(const Frame &ack);
+    void SendPacket(const uint8_t *data, int len);
 
     static bool checkACK(const MACHeader *macHeader);
 
@@ -79,7 +85,6 @@ public:
 private:
     void MACThreadTransStart();
     void MACThreadPingStart();
-    void fillQueue();
 
     enum TxState {
         IDLE,
@@ -92,15 +97,15 @@ private:
     
     std::mutex cv_ack_m;
     std::condition_variable cv_ack;
+    
+    std::mutex m_queue;
+    std::condition_variable cv_queue;
 
     std::list<Frame> pendingFrame;
     std::list<uint8_t> pendingID;
 
     int currentID;
     std::atomic<TxState> txstate;
-
-    DataType inputData;
-    int inputPos;
 };
 
 class CSMASenderQueue

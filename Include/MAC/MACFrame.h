@@ -15,8 +15,8 @@ struct MACHeader
     uint8_t dest;
     uint8_t src;
     uint8_t type;
-    uint8_t len;
     uint8_t id;
+    uint16_t len;
     uint16_t crc16;
 };
 
@@ -33,7 +33,7 @@ public:
     ~MACFrameFactory();
 
     /* Create a data frame */
-    MACFrame *createDataFrame(const DataType &data, int start, int len);
+    MACFrame *createDataFrame(const uint8_t *data, int start, int len);
     
     /* Create an ack frame */
     MACFrame *createACKFrame(uint8_t id);

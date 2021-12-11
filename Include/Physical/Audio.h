@@ -29,11 +29,11 @@ public:
     AudioIO();
     ~AudioIO();
 
-    void startTransmit();
-    void startPing();
-    void write(const DataType &data);
-    void read(DataType &data);
-    
+    // wrapper for macTransmitter
+    void SendData(const uint8_t* data, int len);
+    // wrapper for macReceiver
+    int RecvData(uint8_t* out, int outlen);
+
 private:
     AudioDeviceManager audioDeviceManager;
 
@@ -86,7 +86,7 @@ private:
 
     FrameDetector frameDetector;
 
-    enum state deviceState = state::BOTH;
+    enum state deviceState = Config::STATE;
 
     std::atomic<float> m_avgPower = 0;
 
