@@ -32,17 +32,18 @@ UDPServer::UDPServer(const char* port)
 	}
 }
 
-void UDPServer::RecvData(char* out, int outlen)
+int UDPServer::RecvData(uint8_t* out, int outlen)
 {
 	int remote_size = sizeof(sockaddr);
+	int data_size = 0;
 	int count = 0;
 	while (1)
 	{
-		int data_size = recvfrom(m_socket, out, outlen, 0, (sockaddr *)&m_sockaddr_remote, &remote_size);
+		data_size = recvfrom(m_socket, (char*)out, outlen, 0, (sockaddr *)&m_sockaddr_remote, &remote_size);
 		if (data_size > 0)
 		{
 			std::cout << "Received UDP packet from " << inet_ntoa(m_sockaddr_remote.sin_addr)
-				<< " with " << data_size << " bytes.\n";
+				<< ":" << ntohl(m_sockaddr_remote.sin_port) << " with " << data_size << " bytes.\n";
 			break;
 		}
 		count++;
@@ -52,6 +53,7 @@ void UDPServer::RecvData(char* out, int outlen)
 			break;
 		}
 	}
+	return data_size;
 }
 
 UDPClient::UDPClient(const char* ip, const char* port)
@@ -61,7 +63,7 @@ UDPClient::UDPClient(const char* ip, const char* port)
 	m_sockaddr.sin_addr.S_un.S_addr = ipaddr;
 }
 
-void UDPClient::SendData(const char* data, int len)
+void UDPClient::SendData(const uint8_t* data, int len)
 {
-	sendto(m_socket, data, len, 0, (sockaddr*)&m_sockaddr, sizeof(m_sockaddr));
+	sendto(m_socket, (char*)data, len, 0, (sockaddr*)&m_sockaddr, sizeof(m_sockaddr));
 }

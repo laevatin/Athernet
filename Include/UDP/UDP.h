@@ -5,6 +5,8 @@
 
 #include <winsock2.h>
 
+typedef unsigned char uint8_t;
+
 class UDP
 {
 public:
@@ -13,6 +15,7 @@ public:
 	
 protected:
 	UDP(const char* port);
+	UDP() = default;
 	~UDP();
 
 	WSADATA m_wsaData;
@@ -23,19 +26,18 @@ protected:
 class UDPServer : protected UDP
 {
 public:
-	UDPServer(const char* port);
-	void RecvData(char* out, int outlen);
+	explicit UDPServer(const char* port);
+	int RecvData(uint8_t* out, int outlen);
 
 private:
 	sockaddr_in m_sockaddr_remote;
-
 };
 
 class UDPClient : protected UDP
 {
 public:
-	UDPClient(const char* ip, const char* port);
-	void SendData(const char* data, int len);
+	explicit UDPClient(const char* ip, const char* port);
+	void SendData(const uint8_t* data, int len);
 };
 
 #endif

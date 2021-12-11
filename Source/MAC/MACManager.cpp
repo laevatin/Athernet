@@ -27,16 +27,16 @@ void MACManager::destroy()
 {
     if (get().macReceiver.get()) {
         get().macReceiver->stopMACThread();
-        get().macReceiver.release();
+        get().macReceiver.reset();
     }
 
     if (get().macTransmitter.get()) {
         get().macTransmitter->stopMACThread();
-        get().macTransmitter.release();
+        get().macTransmitter.reset();
     }
 
     if (get().csmaSenderQueue.get()) {
-        get().csmaSenderQueue.release();
+        get().csmaSenderQueue.reset();
     }
 
     if (get().macFrameFactory.get()) {

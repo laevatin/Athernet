@@ -1,6 +1,7 @@
 #include "Physical/Audio.h"
 #include "Utils/IOFunctions.hpp"
 #include "UDP/UDP.h"
+#include "NAT/ANet.h"
 #include <windows.h>
 #include <objbase.h>
 #include <bitset>
@@ -31,83 +32,97 @@ void getInputFromFile(Array<uint8_t> &input, const std::string &path)
     inputFile.close();
 }
 
-
-/*
--------   ANet  -------  Wifi  -------
-|Node1| <------>|Node2|<------>|Node3|
--------         -------        -------
-*/
-
 int main(int argc, char* argv[])
 {
     MessageManager::getInstance();
-    AudioIO audioIO;
-    Array<uint8_t> input;
-    Array<uint8_t> output;
-    std::ifstream inputFile;
-    inputFile.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\input.in");
 
-    // getInputFromFile(input, "C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\input1000.in");
-    std::string message;
-    
-    // input = bitToByte(input);
-    std::ofstream outputfile;
-    // audioIO.write(input);
-
-    std::cout << "Initialization finished.\n";
-    while (getchar()) 
+    if (argc <= 1)
     {
-        char recvbuffer[1024];
-        while (std::getline(inputFile, message)) 
-        {
-            //for (int i = 0; i < message.length(); i++)
-                std::cout << message << std::endl;
-            auto now1 = std::chrono::system_clock::now();
-            audioIO.SendData((const uint8_t *)message.c_str(), message.length() + 1);
-
-            int rec = audioIO.RecvData((uint8_t *)recvbuffer, message.length() + 1);
-            auto now2 = std::chrono::system_clock::now();
-            std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(now2 - now1).count() << std::endl;
-            //for (int i = 0; i < rec; i++)
-                std::cout << recvbuffer << std::endl;
-            //std::cout << "\n";
-        }
-        // outputfile.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\output1000.out");
-        // debug_file.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\debug.out");
-
-        // audioIO.read(output);
-        // output = byteToBit(output);
-        // for (int i = 0; i < output.size(); i++)
-        //     outputfile << (int)output[i];
-        // outputfile.close();
-        // // debug_file.close();
-        // audioIO.write(input);
+        std::cout << "Usage: ./Athernet-cpp [node-num] [dest-ip]" << std::endl;
+        return -1;
     }
 
-    // if (argc <= 2) {
-    //     return -1;
-    // }
+    int node = atoi(argv[1]);
+    std::cout << "1 for 1->3, 3 for 3->1" << std::endl;
+    char ctl;
+    std::cin >> ctl;
 
-    // if (!strcmp(argv[1], "send"))
-    // {
-    //     char data[] = "hello world!";
-    //     UDPClient client("10.19.126.236", "1000");
-    //     while (true)
-    //     {
-    //         client.SendData(data, sizeof(data));
-    //         Sleep(1000);
-    //     }
-    // }
-    // else {
-    //     char buffer[1024];
-    //     UDPServer server("1000");
-    //     while (true)
-    //     {
-    //         server.RecvData(buffer, 1024);
-    //         std::cout << buffer << std::endl;
-    //     }
-    // }
+    switch (node) 
+    {
+    case 1:
+        {
+        ANet athernet("192.168.1.1", "4567", "192.168.1.2", "4568", node);
+        
+        if (ctl == '1')
+        {
+            std::ifstream inputFile;
+            inputFile.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\input.in");
+            std::string message;
 
+            while (std::getline(inputFile, message)) 
+            {
+                athernet.SendData((const uint8_t *)message.c_str(), message.length() + 1, 2);
+            }
+        }
+        else 
+        {
+            char buffer[512];
+            athernet.RecvData((uint8_t *)buffer, Config::PACKET_PAYLOAD, 2);
+            std::cout << "Payload: " << buffer << "\n";
+        }
+
+        getchar();
+        getchar();
+        break;
+        }
+    case 2:
+        {
+        ANet athernet("192.168.1.2", "4569", argv[2], "4570", node);
+        uint8_t buffer[512];
+        int from_node, to_node;
+        if (ctl == '1') 
+        {
+            from_node = 1;
+            to_node = 3;
+        }
+        else 
+        {
+            from_node = 3;
+            to_node = 1;
+        }
+        while (1)
+        {
+            int recv = athernet.RecvData(buffer, Config::PACKET_PAYLOAD, from_node);
+            athernet.SendData(buffer, recv, to_node);
+        }
+
+        break;
+        }
+    case 3:
+        {
+        ANet athernet("0.0.0.0", "4570", argv[2], "4569", node);
+        
+        if (ctl == '1')
+        {
+            char buffer[512];
+            athernet.RecvData((uint8_t *)buffer, Config::PACKET_PAYLOAD, 2);
+            std::cout << "Payload: " << buffer << "\n";
+        }
+        else 
+        {
+            std::ifstream inputFile;
+            inputFile.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\input.in");
+            std::string message;
+
+            while (std::getline(inputFile, message)) 
+            {
+                athernet.SendData((const uint8_t *)message.c_str(), message.length() + 1, 2);
+            }
+        }
+
+        break;
+        }
+    }
 
     return 0;
 }

@@ -460,6 +460,12 @@
     <Filter Include="Athernet-cpp\Source\UDP">
       <UniqueIdentifier>{e1677385-c458-4dd1-9df1-17f4e70ec220}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Athernet-cpp\Source\NAT">
+      <UniqueIdentifier>{87360f4c-2d23-48d1-892e-d70172eee5d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Athernet-cpp\Include\NAT">
+      <UniqueIdentifier>{1a4e658d-1fbd-4ace-bb54-3d86b2c0c3e5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\MAC\ACK.cpp">
@@ -2462,6 +2468,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source\UDP\UDP.cpp">
       <Filter>Athernet-cpp\Source\UDP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\NAT\ANet.cpp">
+      <Filter>Athernet-cpp\Source\NAT</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -4876,6 +4885,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Include\Utils\CRC.h">
       <Filter>Athernet-cpp\Include\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Include\NAT\ANet.h">
+      <Filter>Athernet-cpp\Include\NAT</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
