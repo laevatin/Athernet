@@ -16,10 +16,16 @@ float recent_power(int N, const float *x)
         sum += x[i] * x[i];
     return sum;
 }
-
+float m_dot(int length, const float *x, const float *y)
+{
+    float sum = 0;
+    for (int i = 0;i < length;i++)
+        sum += x[i] * y[i];
+    return sum;
+}
 FrameDetector::FrameDetector()
     : m_state(CK_HEADER),
-    mkl_dot(std::bind(cblas_sdot, std::placeholders::_1, std::placeholders::_2, 1, std::placeholders::_3, 1)),
+    mkl_dot(m_dot),
     power([](int N, const float* dummy, const float* data) { return recent_power(N, data); })
 {}
 

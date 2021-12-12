@@ -6,7 +6,7 @@
 #include <JuceHeader.h>
 #include "Utils/Ringbuffer.hpp"
 #include "MAC/Serde.h"
-#include "mkl.h"
+//#include "mkl.h"
 #include "Physical/Frame.h"
 
 using namespace juce;
@@ -29,7 +29,6 @@ public:
 private:
     std::function<float(int, const float *, const float *)> mkl_dot;
     std::function<float(int, const float *, const float *)> power;
-
     enum state {
         CK_HEADER,
         FD_HEADER,

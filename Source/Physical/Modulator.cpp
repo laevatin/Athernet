@@ -1,7 +1,14 @@
 #include "Physical/Modulator.h"
 #include "Config.h"
-#include "mkl.h"
+//#include "mkl.h"
 
+float m_dot2(int length, const float *x, const float *y)
+{
+    float sum = 0;
+    for (int i = 0;i < length;i++)
+        sum += x[i] * y[i];
+    return sum;
+}
 void Modulator::modulate(const DataType &data, int start, int length, Frame &frame)
 {
     for (int i = start; i < start + length; i += Config::BAND_WIDTH)
@@ -20,11 +27,16 @@ void Modulator::modulate(const DataType &data, int start, int length, Frame &fra
 void Modulator::demodulate(const float *samples, DataType &out)
 {
     float data[4];
-    data[0] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[0].getReadPointer(0), 1);
-    data[1] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[1].getReadPointer(0), 1);
-    data[2] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[2].getReadPointer(0), 1);
-    data[3] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[3].getReadPointer(0), 1);
+    //data[0] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[0].getReadPointer(0), 1);
+    //data[1] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[1].getReadPointer(0), 1);
+    //data[2] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[2].getReadPointer(0), 1);
+    //data[3] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[3].getReadPointer(0), 1);
 
+    data[0] = m_dot2(Config::BIT_LENGTH,samples,Config::modulateSound[0].getReadPointer(0));
+    data[1] = m_dot2(Config::BIT_LENGTH,samples,Config::modulateSound[1].getReadPointer(0));
+    data[2] = m_dot2(Config::BIT_LENGTH,samples,Config::modulateSound[2].getReadPointer(0));
+    data[3] = m_dot2(Config::BIT_LENGTH,samples,Config::modulateSound[3].getReadPointer(0));
+    
     float max = 0;
     int maxi = -1;
 

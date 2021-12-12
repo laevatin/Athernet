@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
         if (ctl == '1')
         {
             std::ifstream inputFile;
-            inputFile.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\input.in");
+            inputFile.open("C:\\Users\\zengs\\Desktop\\homework\\CS120\\Project\\Athernet\\Input\\input.in");
             std::string message;
 
             while (std::getline(inputFile, message)) 
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
         else 
         {
             std::ifstream inputFile;
-            inputFile.open("C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\Athernet-cpp\\Input\\input.in");
+            inputFile.open("C:\\Users\\zengs\\Desktop\\homework\\CS120\\Project\\Athernet\\Input\\input.in");
             std::string message;
 
             while (std::getline(inputFile, message)) 
