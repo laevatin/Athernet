@@ -95,19 +95,19 @@ int main(int argc, char *argv[])
     {
         ANet athernet("192.168.1.2", "4569", argv[2], "4570", node);
         uint8_t buffer[512];
-        int from_node, to_node;
+        int from_node = 1, to_node = 3;
         switch (ctl)
         {
         case '1':
-        {
-            from_node = 1;
-            to_node = 3;
+        {   
+            while (1)
+                athernet.Gateway(1, 3);
             break;
         }
         case '3':
         {
-            from_node = 3;
-            to_node = 1;
+            while (1)
+                athernet.Gateway(3, 1);
             break;
         }
         case '4':
@@ -119,13 +119,7 @@ int main(int argc, char *argv[])
             }
         }
         }
-
-        while (1)
-        {
-            int recv = athernet.RecvData(buffer, Config::PACKET_PAYLOAD, from_node);
-            std::cout << buffer << "\n";
-            athernet.SendData(buffer, recv, to_node);
-        }
+        
         break;
     }
     case 3:
@@ -140,7 +134,7 @@ int main(int argc, char *argv[])
             {
                 char buffer[512];
                 athernet.RecvData((uint8_t *)buffer, Config::PACKET_PAYLOAD, 2);
-                std::cout << "Payload: " << buffer << "\n";
+                std::cout << "Payload: " << buffer << std::endl;
             }
         }
         case '3':

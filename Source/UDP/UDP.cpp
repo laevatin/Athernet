@@ -32,7 +32,7 @@ UDPServer::UDPServer(const char* port)
 	}
 }
 
-int UDPServer::RecvData(uint8_t* out, int outlen)
+int UDPServer::RecvData(uint8_t* out, int outlen, uint32_t* ipaddr, uint16_t* port)
 {
 	int remote_size = sizeof(sockaddr);
 	int data_size = 0;
@@ -42,6 +42,8 @@ int UDPServer::RecvData(uint8_t* out, int outlen)
 		data_size = recvfrom(m_socket, (char*)out, outlen, 0, (sockaddr *)&m_sockaddr_remote, &remote_size);
 		if (data_size > 0)
 		{
+			*ipaddr = (uint32_t)m_sockaddr_remote.sin_addr.S_un.S_addr;
+			*port = m_sockaddr.sin_port;
 			std::cout << "Received UDP packet from " << inet_ntoa(m_sockaddr_remote.sin_addr)
 				<< ":" << ntohs(m_sockaddr.sin_port) << " with " << data_size << " bytes.\n";
 			break;

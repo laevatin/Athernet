@@ -1,5 +1,6 @@
 #include "NAT/ANet.h"
 #include <winsock2.h>
+#include <JuceHeader.h>
 
 ANetPing::ANetPing(const char *IP)
 {
@@ -73,6 +74,8 @@ void ANet::SendData(const uint8_t* data, int len, int dest_node)
 
 int ANet::RecvData(uint8_t* out, int outlen, int from_node)
 {
+    uint32_t ip;
+    uint16_t port;
     if ((m_node == 1 && from_node == 2) || (m_node == 2 && from_node == 1)) 
     {
         struct ANetPacket packet;
@@ -88,9 +91,41 @@ int ANet::RecvData(uint8_t* out, int outlen, int from_node)
     }
     else if ((m_node == 2 && from_node == 3) || (m_node == 3 && from_node == 2))
     {
-        return m_udpServer->RecvData(out, outlen);
+        return m_udpServer->RecvData(out, outlen, &ip, &port);
     }
     return -1;
+}
+
+void ANet::Gateway(int from, int to)
+{
+    uint32_t ip;
+    uint16_t port;
+    int recv = 0;
+    struct ANetPacket packet;
+    struct in_addr ip_addr;
+
+    if (from == 3)
+        recv = m_udpServer->RecvData((uint8_t*)packet.payload, Config::MACDATA_PER_FRAME, &ip, &port);
+    else 
+    {
+        recv = m_audioIO->RecvData((uint8_t *)&packet, Config::MACDATA_PER_FRAME);
+
+        std::cout << packet.payload << "\n";
+        ip_addr.s_addr = packet.ip.ip_src;
+        std::cout << "Received UDP packet from " << inet_ntoa(ip_addr) << ":"
+            << ntohs(packet.udp.udp_src_port) << " with " << packet.udp.udp_len << " bytes.\n";
+    }
+
+    if (to == 3)
+        SendData((const uint8_t *)packet.payload, packet.udp.udp_len, 3);
+    else 
+    {
+        packet.ip.ip_src = ip;
+        packet.udp.udp_src_port = port;
+        packet.udp.udp_len = recv;
+        m_audioIO->SendData((const uint8_t *)&packet, Config::MACDATA_PER_FRAME);
+    }
+
 }
 
 void ANet::SendPing(const char *pingIP)

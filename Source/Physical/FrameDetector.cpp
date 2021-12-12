@@ -88,14 +88,14 @@ void FrameDetector::detectAndGet(std::list<Frame> &received)
         macHeader = headerView(frameHeader.getRawDataPointer());
         if (macHeader->type == Config::ACK && MACLayerTransmitter::checkACK(macHeader))
         {
-            std::cout << "RECIVER: FrameDetector: ACK detected, id: " << (int)macHeader->id << "\n";
+            //std::cout << "RECIVER: FrameDetector: ACK detected, id: " << (int)macHeader->id << "\n";
             received.push_back(ACK(macHeader));
             m_state = CK_HEADER;
         }
         else if (macHeader->type == Config::DATA && MACLayerReceiver::checkFrame(macHeader))
         {
-            std::cout << "RECIVER: FrameDetector: DATA detected, id: " << (int)macHeader->id
-                << " length: " << (int)macHeader->len << "\n";
+            //std::cout << "RECIVER: FrameDetector: DATA detected, id: " << (int)macHeader->id
+            //    << " length: " << (int)macHeader->len << "\n";
             if (macHeader->id == lastReceived)
             {
                 std::cout << "RECIVER: This frame has been received\n";

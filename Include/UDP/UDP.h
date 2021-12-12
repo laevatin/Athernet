@@ -4,6 +4,7 @@
 #define __UDP_H__
 
 #include <winsock2.h>
+#include <JuceHeader.h>
 
 typedef unsigned char uint8_t;
 
@@ -27,7 +28,7 @@ class UDPServer : protected UDP
 {
 public:
 	explicit UDPServer(const char* port);
-	int RecvData(uint8_t* out, int outlen);
+	int RecvData(uint8_t* out, int outlen, uint32_t* ipaddr, uint16_t* port);
 
 private:
 	sockaddr_in m_sockaddr_remote;

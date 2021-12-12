@@ -56,6 +56,7 @@ public:
     ~ANet();
     void SendData(const uint8_t* data, int len, int dest_node);
     int RecvData(uint8_t* out, int outlen, int from_node);
+    void Gateway(int from, int to);
     void SendPing(const char *pingIP);
 
 private:
