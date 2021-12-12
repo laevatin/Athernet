@@ -73,11 +73,11 @@ int ANet::RecvData(uint8_t* out, int outlen, int from_node)
         struct ANetPacket packet;
         struct in_addr ip_addr;
         int macLen = sizeof(ANetIP) + sizeof(ANetUDP) + outlen;
-        int bytes = m_audioIO->RecvData((uint8_t *)&packet, macLen);
+        m_audioIO->RecvData((uint8_t *)&packet, macLen);
         ip_addr.s_addr = packet.ip.ip_src;
 
         std::cout << "Received UDP packet from " << inet_ntoa(ip_addr) << ":" 
-                << ntohl(packet.udp.udp_src_port) << " with " << bytes << " bytes.\n";
+                << ntohs(packet.udp.udp_src_port) << " with " << packet.udp.udp_len << " bytes.\n";
         memcpy(out, packet.payload, packet.udp.udp_len);
         return packet.udp.udp_len;
     }

@@ -25,7 +25,7 @@ UDPServer::UDPServer(const char* port)
 	: UDP(port)
 {
 	if (bind(m_socket, (sockaddr*)&m_sockaddr, sizeof(m_sockaddr)) == SOCKET_ERROR) {
-		std::cerr << "Cannot bind to port " << ntohl(m_sockaddr.sin_port)
+		std::cerr << "Cannot bind to port " << ntohs(m_sockaddr.sin_port)
 			<< ", exiting.\n";
 		closesocket(m_socket);
 		exit(-1);
@@ -43,7 +43,7 @@ int UDPServer::RecvData(uint8_t* out, int outlen)
 		if (data_size > 0)
 		{
 			std::cout << "Received UDP packet from " << inet_ntoa(m_sockaddr_remote.sin_addr)
-				<< ":" << ntohl(m_sockaddr_remote.sin_port) << " with " << data_size << " bytes.\n";
+				<< ":" << ntohs(m_sockaddr.sin_port) << " with " << data_size << " bytes.\n";
 			break;
 		}
 		count++;

@@ -32,11 +32,11 @@ public:
 
     constexpr static int SAMPLE_RATE   = 48000;
 
-    constexpr static int HEADER_LENGTH = 100;
+    constexpr static int HEADER_LENGTH = 160;
 
     constexpr static int BIT_LENGTH    = 6;
 
-    constexpr static int PACKET_PAYLOAD = 106; // DATA_PER_FRAME / 8 - sizeof(ANetIP) - sizeof(ANetUDP)
+    constexpr static int PACKET_PAYLOAD = 98; // MACDATA_PER_FRAME / 8 - sizeof(ANetIP) - sizeof(ANetUDP)
 
     constexpr static int DATA_PER_FRAME = 8 * 120;
     constexpr static int BIT_PER_FRAME  = 8 * 127;
@@ -60,7 +60,7 @@ public:
     constexpr static uint8_t MACPING_ID = 0xFE;
 
     constexpr static uint8_t SELF = 0xCE;
-    constexpr static uint8_t OTHER = 0xCE;
+    constexpr static uint8_t OTHER = 0xEC;
 
     constexpr static auto ACK_TIMEOUT = 1000ms;
 

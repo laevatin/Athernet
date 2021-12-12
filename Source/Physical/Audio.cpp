@@ -13,7 +13,7 @@ Codec AudioDevice::codec;
 
 extern std::ofstream debug_file;
 
-#define TEST_NOPHYS
+// #define TEST_NOPHYS
 
 AudioDevice::AudioDevice(enum state s) 
     : deviceState(s)

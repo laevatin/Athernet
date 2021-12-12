@@ -93,6 +93,7 @@ int main(int argc, char* argv[])
         while (1)
         {
             int recv = athernet.RecvData(buffer, Config::PACKET_PAYLOAD, from_node);
+            std::cout << buffer << "\n";
             athernet.SendData(buffer, recv, to_node);
         }
 
@@ -104,9 +105,12 @@ int main(int argc, char* argv[])
         
         if (ctl == '1')
         {
-            char buffer[512];
-            athernet.RecvData((uint8_t *)buffer, Config::PACKET_PAYLOAD, 2);
-            std::cout << "Payload: " << buffer << "\n";
+            while (1)
+            {
+                char buffer[512];
+                athernet.RecvData((uint8_t *)buffer, Config::PACKET_PAYLOAD, 2);
+                std::cout << "Payload: " << buffer << "\n";
+            }
         }
         else 
         {
@@ -120,6 +124,8 @@ int main(int argc, char* argv[])
             }
         }
 
+        getchar();
+        getchar();
         break;
         }
     }

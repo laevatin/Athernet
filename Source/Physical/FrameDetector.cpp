@@ -45,7 +45,7 @@ void FrameDetector::checkHeader()
             prevMaxPos = headerOffset;
         }
 
-        if (prevMaxPos != -1 && headerOffset - prevMaxPos > 100)
+        if (prevMaxPos != -1 && headerOffset - prevMaxPos > 200)
         {
             // std::cout << "header found at: " << prevMaxPos << std::endl;
             /* Clean out the mess */
