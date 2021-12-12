@@ -2472,6 +2472,9 @@
     <ClCompile Include="..\..\Source\NAT\ANet.cpp">
       <Filter>Athernet-cpp\Source\NAT</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\NAT\Ping.cpp">
+      <Filter>Athernet-cpp\Source\NAT</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Include\MAC\ACK.h">
@@ -4887,6 +4890,9 @@
       <Filter>Athernet-cpp\Include\Utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Include\NAT\ANet.h">
+      <Filter>Athernet-cpp\Include\NAT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Include\NAT\Ping.h">
       <Filter>Athernet-cpp\Include\NAT</Filter>
     </ClInclude>
   </ItemGroup>

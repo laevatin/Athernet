@@ -7,13 +7,21 @@
 #include <string>
 #include <memory>
 #include "UDP/UDP.h"
+#include "NAT/Ping.h"
 #include "Physical/Audio.h"
 #include "Config.h"
+
+enum ANetIPTag
+{
+    DATA, 
+    PING
+};
 
 struct ANetIP
 {
     uint32_t ip_src;
     uint32_t ip_dst;
+    enum ANetIPTag tag;
 };
 
 struct ANetUDP
@@ -21,6 +29,14 @@ struct ANetUDP
     uint16_t udp_src_port;
     uint16_t udp_dst_port;
     uint16_t udp_len;
+};
+
+struct ANetPing
+{
+    ANetPing(const char *destIP);
+    char destIP[24];
+    // int RTT;
+    bool success;
 };
 
 struct ANetPacket 
@@ -40,11 +56,13 @@ public:
     ~ANet();
     void SendData(const uint8_t* data, int len, int dest_node);
     int RecvData(uint8_t* out, int outlen, int from_node);
+    void SendPing(const char *pingIP);
 
 private:
     std::unique_ptr<UDPClient> m_udpClient;
     std::unique_ptr<UDPServer> m_udpServer;
     std::unique_ptr<AudioIO> m_audioIO;
+    // std::unique_ptr<IcmpPing> m_icmpPing;
     
     uint32_t m_selfIP;
     uint32_t m_destIP;

@@ -23,8 +23,8 @@ void getInputFromFile(Array<uint8_t> &input, const std::string &path)
         std::cerr << "ERROR: Unable to open input file." << newLine;
         exit(1);
     }
-    
-    while (inputFile >> in) 
+
+    while (inputFile >> in)
     {
         input.set(idx++, in);
     }
@@ -32,7 +32,7 @@ void getInputFromFile(Array<uint8_t> &input, const std::string &path)
     inputFile.close();
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     MessageManager::getInstance();
 
@@ -43,67 +43,98 @@ int main(int argc, char* argv[])
     }
 
     int node = atoi(argv[1]);
-    std::cout << "1 for 1->3, 3 for 3->1" << std::endl;
+    std::cout << "1 for 1->3, 3 for 3->1, 4 for pinging" << std::endl;
     char ctl;
     std::cin >> ctl;
 
-    switch (node) 
+    switch (node)
     {
     case 1:
-        {
+    {
         ANet athernet("192.168.1.1", "4567", "192.168.1.2", "4568", node);
-        
-        if (ctl == '1')
+
+        switch (ctl)
+        {
+        case '1':
         {
             std::ifstream inputFile;
             inputFile.open("C:\\Users\\zengs\\Desktop\\homework\\CS120\\Project\\Athernet\\Input\\input.in");
             std::string message;
 
-            while (std::getline(inputFile, message)) 
+            while (std::getline(inputFile, message))
             {
                 athernet.SendData((const uint8_t *)message.c_str(), message.length() + 1, 2);
             }
+            break;
         }
-        else 
+        case '3':
         {
-            char buffer[512];
-            athernet.RecvData((uint8_t *)buffer, Config::PACKET_PAYLOAD, 2);
-            std::cout << "Payload: " << buffer << "\n";
+            while (1)
+            {
+                char buffer[512];
+                athernet.RecvData((uint8_t *)buffer, Config::PACKET_PAYLOAD, 2);
+                std::cout << "Payload: " << buffer << "\n";
+            }
+            break;
+        }
+        case '4':
+        {
+            while (1)
+            {
+                athernet.SendPing("182.61.200.6");
+                Sleep(1000);
+            }
+        }
         }
 
         getchar();
         getchar();
         break;
-        }
+    }
     case 2:
-        {
+    {
         ANet athernet("192.168.1.2", "4569", argv[2], "4570", node);
         uint8_t buffer[512];
         int from_node, to_node;
-        if (ctl == '1') 
+        switch (ctl)
+        {
+        case '1':
         {
             from_node = 1;
             to_node = 3;
+            break;
         }
-        else 
+        case '3':
         {
             from_node = 3;
             to_node = 1;
+            break;
         }
+        case '4':
+        {
+            while (1)
+            {
+                athernet.SendPing("182.61.200.6");
+                Sleep(1000);
+            }
+        }
+        }
+
         while (1)
         {
             int recv = athernet.RecvData(buffer, Config::PACKET_PAYLOAD, from_node);
             std::cout << buffer << "\n";
             athernet.SendData(buffer, recv, to_node);
         }
-
         break;
-        }
+    }
     case 3:
-        {
+    {
         ANet athernet("0.0.0.0", "4570", argv[2], "4569", node);
-        
-        if (ctl == '1')
+
+        switch (ctl)
+        {
+        case '1':
         {
             while (1)
             {
@@ -112,22 +143,23 @@ int main(int argc, char* argv[])
                 std::cout << "Payload: " << buffer << "\n";
             }
         }
-        else 
+        case '3':
         {
             std::ifstream inputFile;
             inputFile.open("C:\\Users\\zengs\\Desktop\\homework\\CS120\\Project\\Athernet\\Input\\input.in");
             std::string message;
 
-            while (std::getline(inputFile, message)) 
+            while (std::getline(inputFile, message))
             {
                 athernet.SendData((const uint8_t *)message.c_str(), message.length() + 1, 2);
             }
+        }
         }
 
         getchar();
         getchar();
         break;
-        }
+    }
     }
 
     return 0;

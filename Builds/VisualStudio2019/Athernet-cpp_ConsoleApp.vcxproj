@@ -145,6 +145,7 @@
     <ClCompile Include="..\..\Source\MAC\MACManager.cpp" />
     <ClCompile Include="..\..\Source\MAC\Serde.cpp" />
     <ClCompile Include="..\..\Source\NAT\ANet.cpp" />
+    <ClCompile Include="..\..\Source\NAT\Ping.cpp" />
     <ClCompile Include="..\..\Source\Physical\Audio.cpp" />
     <ClCompile Include="..\..\Source\Physical\Codec.cpp" />
     <ClCompile Include="..\..\Source\Physical\Frame.cpp" />
@@ -2103,6 +2104,7 @@
     <ClInclude Include="..\..\Include\MAC\MACManager.h" />
     <ClInclude Include="..\..\Include\MAC\Serde.h" />
     <ClInclude Include="..\..\Include\NAT\ANet.h" />
+    <ClInclude Include="..\..\Include\NAT\Ping.h" />
     <ClInclude Include="..\..\Include\Physical\Audio.h" />
     <ClInclude Include="..\..\Include\Physical\Codec.h" />
     <ClInclude Include="..\..\Include\Physical\Frame.h" />
