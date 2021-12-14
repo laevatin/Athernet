@@ -1,7 +1,7 @@
 #include "Physical/Audio.h"
 #include "Utils/IOFunctions.hpp"
 #include "UDP/UDP.h"
-#include "NAT/ANet.h"
+#include "ANet/ANet.h"
 #include <windows.h>
 #include <objbase.h>
 #include <bitset>

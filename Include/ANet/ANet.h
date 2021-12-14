@@ -7,7 +7,7 @@
 #include <string>
 #include <memory>
 #include "UDP/UDP.h"
-#include "NAT/Ping.h"
+#include "ANet/Ping.h"
 #include "Physical/Audio.h"
 #include "Config.h"
 
@@ -48,12 +48,12 @@ struct ANetPacket
     uint8_t payload[Config::PACKET_PAYLOAD];
 };
 
-class ANet
+class ANetConn
 {
 public:
-    ANet(const char* self_ip, const char* self_port, const char* dest_ip, const char* dest_port, int node);
-    ANet(ANet &other) = delete;
-    ~ANet();
+    ANetConn(const char *dest_ip, const char *dest_port, bool isAthernet);
+    ANetConn(ANetConn &other) = delete;
+    ~ANetConn();
     void SendData(const uint8_t* data, int len, int dest_node);
     int RecvData(uint8_t* out, int outlen, int from_node);
     void Gateway(int from, int to);
@@ -63,13 +63,10 @@ private:
     std::unique_ptr<UDPClient> m_udpClient;
     std::unique_ptr<UDPServer> m_udpServer;
     std::unique_ptr<AudioIO> m_audioIO;
-    // std::unique_ptr<IcmpPing> m_icmpPing;
     
-    uint32_t m_selfIP;
     uint32_t m_destIP;
-    uint16_t m_selfPort;
     uint16_t m_destPort;
-    int m_node;
+    bool m_isAthernet;
 };
 
 #endif
