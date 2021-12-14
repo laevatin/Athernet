@@ -48,24 +48,39 @@ struct ANetPacket
     uint8_t payload[Config::PACKET_PAYLOAD];
 };
 
-class ANetConn
+class ANetClient
 {
 public:
-    ANetConn(const char *dest_ip, const char *dest_port, bool isAthernet);
-    ANetConn(ANetConn &other) = delete;
-    ~ANetConn();
+    ANetClient(const char *dest_ip, const char *dest_port, bool isAthernet);
+    ANetClient(ANetClient &other) = delete;
+
     void SendData(const uint8_t* data, int len, int dest_node);
-    int RecvData(uint8_t* out, int outlen, int from_node);
-    void Gateway(int from, int to);
+
     void SendPing(const char *pingIP);
 
 private:
     std::unique_ptr<UDPClient> m_udpClient;
+    std::unique_ptr<AudioIO> m_audioIO;
+    
+    uint32_t m_selfIP;
+    uint16_t m_selfPort;
+    uint32_t m_destIP;
+    uint16_t m_destPort;
+    bool m_isAthernet;
+};
+
+class ANetServer
+{
+public:
+    ANetServer(const char *open_port, bool isAthernet);
+    ANetServer(ANetServer &other) = delete;
+    int RecvData(uint8_t* out, int outlen);
+
+private:
     std::unique_ptr<UDPServer> m_udpServer;
     std::unique_ptr<AudioIO> m_audioIO;
     
-    uint32_t m_destIP;
-    uint16_t m_destPort;
+    uint16_t m_openPort;
     bool m_isAthernet;
 };
 

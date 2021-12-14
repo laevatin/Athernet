@@ -33,7 +33,7 @@ UDPServer::UDPServer(const char* port)
 	}
 }
 
-int UDPServer::RecvPacket(ANetPacket& out, uint32_t* ipaddr, uint16_t* port)
+int UDPServer::RecvPacket(ANetPacket& out)
 {
 	int remote_size = sizeof(sockaddr);
 	int data_size = recvfrom(m_socket, (char*)out.payload, Config::PACKET_PAYLOAD, 0, (sockaddr *)&m_sockaddr_remote, &remote_size);

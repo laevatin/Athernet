@@ -75,8 +75,8 @@ public:
 
     constexpr static enum state STATE = BOTH;
     constexpr static bool IS_GATEWAY = false;
-    constexpr static char* NODE1 = "192.168.1.2";
-    constexpr static char* NODE2 = "192.168.1.1";
+    constexpr static char* IP_ATHERNET = "192.168.1.1"; // Node1
+    constexpr static char* PORT_ATHERNET = "4567"; 
 
     static AudioType header;
     static std::vector<AudioType> modulateSound;

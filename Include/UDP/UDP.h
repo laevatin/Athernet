@@ -28,7 +28,7 @@ class UDPServer : protected UDP
 {
 public:
 	explicit UDPServer(const char* port);
-	int RecvPacket(ANetPacket& out, uint32_t* ipaddr, uint16_t* port);
+	int RecvPacket(ANetPacket& out);
 
 private:
 	sockaddr_in m_sockaddr_remote;
