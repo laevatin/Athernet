@@ -51,14 +51,14 @@ int main(int argc, char *argv[])
     {
     case 1:
     {
-        ANetClient athernet("192.168.1.2", "4567", true);
+        ANetClient athernet("10.20.222.133", "4567", true);
 
         switch (ctl)
         {
         case '1':
         {
             std::ifstream inputFile;
-            inputFile.open(R"("C:\Users\16322\Desktop\lessons\2021_1\CS120_Computer_Network\Athernet-cpp\Input\input.in")");
+            inputFile.open(R"(C:\Users\16322\Desktop\lessons\2021_1\CS120_Computer_Network\Athernet-cpp\Input\input.in)");
             std::string message;
 
             while (std::getline(inputFile, message))
@@ -70,7 +70,10 @@ int main(int argc, char *argv[])
         case '4':
         {
             while (1)
-                athernet.SendPing(inet_addr("10.11.12.13"));
+            {
+                athernet.SendPing(inet_addr("8.8.8.8"));
+                Sleep(1000);
+            }
         }
         default:
             break;
@@ -103,9 +106,9 @@ int main(int argc, char *argv[])
         }
         case '3':
         {
-            ANetClient athernet("10.20.222.133", "4567", false);
+            ANetClient athernet("10.19.131.103", "4568", false);
             std::ifstream inputFile;
-            inputFile.open(R"("C:\Users\16322\Desktop\lessons\2021_1\CS120_Computer_Network\Athernet-cpp\Input\input.in")");
+            inputFile.open(R"(C:\Users\16322\Desktop\lessons\2021_1\CS120_Computer_Network\Athernet-cpp\Input\input.in)");
             std::string message;
 
             while (std::getline(inputFile, message))

@@ -53,7 +53,8 @@ void ANetClient::SendPing(uint32_t target)
 {
     if (m_isAthernet)
     {
-        struct ANetPacket packet(m_selfIP, target, m_selfPort, m_destPort, nullptr, 0);
+        struct ANetPacket packet(m_selfIP, target, m_selfPort, m_destPort, nullptr, 1);
+        packet.ip.tag = PING;
         int macLen = sizeof(ANetIP) + sizeof(ANetUDP) + sizeof(ANetPing);
 
         auto now = std::chrono::system_clock::now();
@@ -63,6 +64,8 @@ void ANetClient::SendPing(uint32_t target)
 
         struct ANetPing ping{};
         memcpy(&ping, packet.payload, sizeof(ANetPing));
+
+
 
         if (ping.success)
         {

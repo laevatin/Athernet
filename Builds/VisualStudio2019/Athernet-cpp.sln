@@ -1,5 +1,6 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2019
+# Visual Studio Version 16
 
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Athernet-cpp - ConsoleApp", "Athernet-cpp_ConsoleApp.vcxproj", "{7F5F08F5-7664-C6A5-9806-88EAD8864CD4}"
 EndProject

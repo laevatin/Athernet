@@ -198,7 +198,7 @@ void MACLayerTransmitter::MACThreadTransStart()
         {
             resendCount = 0;
             auto recv = std::chrono::system_clock::now();
-            // std::cout << "SENDER: Time to ACK " << (int)pendingFrame.front().id() << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << "\n";
+            std::cout << "SENDER: Time to ACK " << (int)pendingFrame.front().id() << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << "\n";
             pendingFrame.pop_front();
         }
         else
@@ -327,10 +327,10 @@ void CSMASenderQueue::senderStart()
                 m_audioDevice->sendFrame(m_queue.front());
                 if (m_queue.front().isACK()) {
                     m_hasACKid[m_queue.front().id()] = false;
-                    // std::cout << "SENDER: Send ACK:  " << (int)m_queue.front().id() << "\n";
+                    std::cout << "SENDER: Send ACK:  " << (int)m_queue.front().id() << "\n";
                 }
                 else{
-                    // std::cout << "SENDER: Send Frame: " << (int)m_queue.front().id() << "\n";
+                    std::cout << "SENDER: Send Frame: " << (int)m_queue.front().id() << "\n";
                     m_hasDATAid[m_queue.front().id()] = false;
                 } 
 
