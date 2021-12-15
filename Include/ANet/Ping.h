@@ -13,7 +13,7 @@
 class IcmpPing
 {
 public: 
-	IcmpPing(uint32_t destip);
+	explicit IcmpPing(uint32_t destip);
 	int IcmpSendPing();
 
 private:

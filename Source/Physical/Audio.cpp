@@ -191,7 +191,7 @@ AudioIO::AudioIO()
         AudioDeviceManager::AudioDeviceSetup dev_info = audioDeviceManager.getAudioDeviceSetup();
         dev_info.sampleRate = 48000;
         dev_info.bufferSize = 512;
-        audioDevice.reset(new AudioDevice(Config::STATE));
+        audioDevice = std::make_shared<AudioDevice>(Config::STATE);
         audioDeviceManager.addAudioCallback(audioDevice.get());
 
         std::unique_ptr<MACLayerReceiver> macReceiver;

@@ -15,7 +15,7 @@ public:
     UDP& operator=(const UDP&) = delete;
 	
 protected:
-	UDP(const char* port);
+	explicit UDP(const char* port);
 	UDP() = default;
 	~UDP();
 

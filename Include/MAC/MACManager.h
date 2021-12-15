@@ -27,7 +27,7 @@ public:
 
 private:
     MACManager();
-    ~MACManager();
+    ~MACManager() = default;
 };
 
 #endif

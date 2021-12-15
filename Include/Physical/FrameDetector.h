@@ -18,7 +18,7 @@ class FrameDetector
 {
 public:
     FrameDetector();
-    ~FrameDetector();
+    ~FrameDetector() = default;
 
     void checkHeader();
     void detectAndGet(std::list<Frame> &received);
@@ -28,7 +28,6 @@ public:
 
 private:
     std::function<float(int, const float *, const float *)> mkl_dot;
-    std::function<float(int, const float *, const float *)> power;
     enum state {
         CK_HEADER,
         FD_HEADER,
@@ -38,11 +37,10 @@ private:
     int headerOffset = 0;
     int prevMaxPos = -1;
     float prevMax = 0.0f;
-    int frameCountdown;
     DataType frameHeader;
 
     void resetState();
-    DataType getMACHeader(const float *samples);
+    static DataType getMACHeader(const float *samples);
 };
 
 #endif

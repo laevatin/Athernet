@@ -30,7 +30,7 @@ class MACFrameFactory
 {
 public:
     MACFrameFactory();
-    ~MACFrameFactory();
+    ~MACFrameFactory() = default;
 
     /* Create a data frame */
     MACFrame *createDataFrame(const uint8_t *data, int start, int len);

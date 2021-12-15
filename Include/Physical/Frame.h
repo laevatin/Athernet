@@ -34,20 +34,19 @@ public:
     ~Frame() = default;
 
     /* Move constructor */
-    Frame(Frame &&other);
+    Frame(Frame &&other) noexcept;
 
     /* Copy constructor */
-    Frame(const Frame &other);
+    Frame(const Frame &other) = default;
 
     void addToBuffer(RingBuffer<float> &buffer) const;
     void addSound(const AudioType &src);
-    void getData(DataType &out) const;
     void getData(uint8_t *out) const;
 
-    const bool isGoodFrame() const;
-    const bool isACK() const;
-    const uint8_t dataLength() const;
-    const uint8_t id() const;
+    bool isGoodFrame() const;
+    bool isACK() const;
+    uint8_t dataLength() const;
+    uint8_t id() const;
 
 protected:
     void addHeader();
@@ -60,7 +59,7 @@ protected:
     bool m_isGood = false;
 
     uint8_t m_dataLength = 0;
-    uint8_t m_id;
+    uint8_t m_id = 0;
     int m_audioPos = 0;
 };
 

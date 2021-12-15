@@ -19,17 +19,13 @@ ACK::ACK(const uint8_t *pdata, uint8_t id)
 ACK::ACK(MACHeader *header)
     : Frame()
 {
-    uint8_t *header_uint8 = reinterpret_cast<uint8_t *>(header);
+    auto *header_uint8 = reinterpret_cast<uint8_t *>(header);
     m_isACK = true;
     m_id = header->id;
     
     frameData.addArray(header_uint8, Config::MACHEADER_LENGTH / 8);
 }
 
-ACK::ACK(ACK&& other)
+ACK::ACK(ACK&& other) noexcept
     : Frame(std::move(other))
-{}
-
-ACK::ACK(const ACK& other)
-    : Frame(other)
 {}

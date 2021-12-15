@@ -52,8 +52,8 @@ public:
         CN_BUSY,
     };
     
-    AudioDevice(enum state s);
-    ~AudioDevice() = default;
+    explicit AudioDevice(enum state s);
+    ~AudioDevice() override = default;
 
     void beginTransmit();
 

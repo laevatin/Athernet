@@ -7,7 +7,6 @@
 #include <vector>
 #include <chrono>
 
-typedef juce::Array<uint8_t> DataType;
 typedef juce::AudioBuffer<float> AudioType;
 
 using namespace std::chrono_literals;
@@ -64,17 +63,12 @@ public:
 
     constexpr static auto ACK_TIMEOUT = 200ms;
 
-    constexpr static int RECV_TIMEOUT = 1;
-    
     constexpr static int POWER_AVG_LEN = 100; 
     constexpr static float POWER_THOR  = 0.01f;
 
     constexpr static int BACKOFF_TSLOT = 100; // CSMA Tslot in milliseconds
 
-    constexpr static int PENDING_QUEUE_SIZE = 10;
-
     constexpr static enum state STATE = BOTH;
-    constexpr static bool IS_GATEWAY = false;
     constexpr static char IP_ATHERNET[] = "192.168.1.1"; // Node1
     constexpr static char PORT_ATHERNET[] = "4567";
 
@@ -82,11 +76,11 @@ public:
     static std::vector<AudioType> modulateSound;
 
 private:
-    void initPreamble();
+    static void initPreamble();
 
     void initAudio();
 
-    AudioType generateSound(int freq, int length, float initPhase);
+    static AudioType generateSound(int freq, int length, float initPhase);
 
 };
 

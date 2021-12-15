@@ -6,14 +6,11 @@ MACFrameFactory::MACFrameFactory()
       m_crcTable(CRC::CRC_16_ARC())
 {}
 
-MACFrameFactory::~MACFrameFactory()
-{}
-
 MACFrame *MACFrameFactory::createDataFrame(const uint8_t *data, int start, int len)
 {
     jassert(len <= Config::MACDATA_PER_FRAME);
 
-    MACFrame *frame = new MACFrame();
+    auto *frame = new MACFrame();
 
     frame->header.dest = Config::OTHER;
     frame->header.src = Config::SELF;
@@ -30,7 +27,7 @@ MACFrame *MACFrameFactory::createDataFrame(const uint8_t *data, int start, int l
 
 MACFrame *MACFrameFactory::createACKFrame(uint8_t id)
 {
-    MACFrame *frame = new MACFrame();
+    auto *frame = new MACFrame();
     frame->header.dest = Config::OTHER;
     frame->header.src = Config::SELF;
     frame->header.type = Config::ACK;
@@ -42,7 +39,7 @@ MACFrame *MACFrameFactory::createACKFrame(uint8_t id)
 }
 
 MACFrame* MACFrameFactory::createPingReply(uint8_t id) {
-	MACFrame* frame = new MACFrame();
+	auto* frame = new MACFrame();
 	frame->header.dest = Config::OTHER;
 	frame->header.src = Config::SELF;
 	frame->header.type = Config::MACPING_REPLY;
@@ -52,7 +49,7 @@ MACFrame* MACFrameFactory::createPingReply(uint8_t id) {
 }
 
 MACFrame* MACFrameFactory::createPingReq(uint8_t id) {
-	MACFrame* frame = new MACFrame();
+	auto* frame = new MACFrame();
 	frame->header.dest = Config::OTHER;
 	frame->header.src = Config::SELF;
 	frame->header.type = Config::MACPING_REQ;
@@ -63,7 +60,7 @@ MACFrame* MACFrameFactory::createPingReq(uint8_t id) {
 
 MACFrame *MACFrameFactory::createEmpty()
 {
-    MACFrame *frame = new MACFrame();
+    auto *frame = new MACFrame();
     return frame;
 }
 

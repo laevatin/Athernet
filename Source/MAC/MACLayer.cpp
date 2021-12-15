@@ -1,11 +1,11 @@
 #include "MAC/MACLayer.h"
 #include "MAC/Serde.h"
 #include "Physical/Audio.h"
-#include "Utils/IOFunctions.hpp"
 #include "MAC/MACManager.h"
 
 #include <chrono>
 #include <memory>
+#include <utility>
 
 #include <windows.h>
 
@@ -13,10 +13,7 @@ using namespace std::chrono_literals;
 
 MACLayer::MACLayer(std::shared_ptr<AudioDevice> audioDevice)
     : running(true),
-    audioDevice(audioDevice)
-{}
-
-MACLayer::~MACLayer()
+    audioDevice(std::move(audioDevice))
 {}
 
 void MACLayer::stopMACThread()
@@ -26,7 +23,7 @@ void MACLayer::stopMACThread()
 
 
 MACLayerReceiver::MACLayerReceiver(std::shared_ptr<AudioDevice> audioDevice)
-    : MACLayer(audioDevice),
+    : MACLayer(std::move(audioDevice)),
     rxstate(MACLayerReceiver::IDLE)
 {
     MACThread = new std::thread([this]() { MACThreadRecvStart(); });
@@ -75,10 +72,9 @@ void MACLayerReceiver::frameReceived(Frame &&frame)
 
 bool MACLayerReceiver::checkFrame(const MACHeader *macHeader)
 {
-    bool success = true;
-    success = success && (macHeader->src  == Config::OTHER)
-                      && (macHeader->dest == Config::SELF)
-                      && (macHeader->type == Config::DATA);
+    bool success = (macHeader->src  == Config::OTHER)
+            && (macHeader->dest == Config::SELF)
+            && (macHeader->type == Config::DATA);
     return success;
 }
 
@@ -108,7 +104,7 @@ int MACLayerReceiver::RecvPacket(uint8_t *out)
 
 
 MACLayerTransmitter::MACLayerTransmitter(std::shared_ptr<AudioDevice> audioDevice)
-    : MACLayer(audioDevice),
+    : MACLayer(std::move(audioDevice)),
     txstate(MACLayerTransmitter::IDLE)
 {
     MACThread = new std::thread([this]() { MACThreadTransStart(); });
@@ -130,7 +126,7 @@ MACLayerTransmitter::~MACLayerTransmitter()
     }
 }
 
-void MACLayerTransmitter::ACKReceived(const Frame &ack)
+void MACLayerTransmitter::ACKReceived(Frame&& ack)
 {
     MACFrame macFrame;
     convertMACFrame(ack, &macFrame);
@@ -155,16 +151,14 @@ void MACLayerTransmitter::ACKReceived(const Frame &ack)
 
 bool MACLayerTransmitter::checkACK(const MACHeader *macHeader)
 {
-    bool success = true;
-    success = success && (macHeader->src  == Config::OTHER)
-                      && (macHeader->dest == Config::SELF)
-                      && (macHeader->type == Config::ACK);
+    bool success = (macHeader->src  == Config::OTHER)
+            && (macHeader->dest == Config::SELF)
+            && (macHeader->type == Config::ACK);
     return success;
 }
 
 bool MACLayerTransmitter::checkPingReq(const MACHeader* macHeader) {
-	bool success = true;
-	success = success && (macHeader->src == Config::OTHER)
+	bool success = (macHeader->src == Config::OTHER)
 		&& (macHeader->dest == Config::SELF)
 		&& (macHeader->type == Config::MACPING_REQ)
         && (macHeader->id == Config::MACPING_ID);
@@ -172,8 +166,7 @@ bool MACLayerTransmitter::checkPingReq(const MACHeader* macHeader) {
 }
 
 bool MACLayerTransmitter::checkPingReply(const MACHeader* macHeader) {
-	bool success = true;
-	success = success && (macHeader->src == Config::OTHER)
+	bool success = (macHeader->src == Config::OTHER)
 		&& (macHeader->dest == Config::SELF)
 		&& (macHeader->type == Config::MACPING_REPLY)
         && (macHeader->id == Config::MACPING_ID);
@@ -243,7 +236,7 @@ void MACLayerTransmitter::SendPacket(const uint8_t *data, int len)
 }
 
 CSMASenderQueue::CSMASenderQueue(std::shared_ptr<AudioDevice> audioDevice)
-    : m_audioDevice(audioDevice)
+    : m_audioDevice(std::move(audioDevice))
 {
     m_senderThread = new std::thread([this]() { senderStart(); });
 }

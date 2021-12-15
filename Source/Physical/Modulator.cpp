@@ -1,6 +1,5 @@
 #include "Physical/Modulator.h"
 #include "Config.h"
-//#include "mkl.h"
 
 float m_dot2(int length, const float *x, const float *y)
 {
@@ -16,21 +15,15 @@ void Modulator::modulate(const DataType &data, int start, int length, Frame &fra
         /* gets 0 if i is out of bound */
         uint8_t composed = data[i];
         composed = composed | (data[i + 1] << 1);
-        // std::cout << (int)data[i] << (int)data[i + 1];
 
         frame.addSound(Config::modulateSound[composed]);
     }
-	// std::cout << newLine;
 }
 
 /* consume Config::BIT_LENGTH samples, `samples` should contain at least Config::BIT_LENGTH data */
 void Modulator::demodulate(const float *samples, DataType &out)
 {
     float data[4];
-    //data[0] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[0].getReadPointer(0), 1);
-    //data[1] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[1].getReadPointer(0), 1);
-    //data[2] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[2].getReadPointer(0), 1);
-    //data[3] = cblas_sdot(Config::BIT_LENGTH, samples, 1, Config::modulateSound[3].getReadPointer(0), 1);
 
     data[0] = m_dot2(Config::BIT_LENGTH,samples,Config::modulateSound[0].getReadPointer(0));
     data[1] = m_dot2(Config::BIT_LENGTH,samples,Config::modulateSound[1].getReadPointer(0));

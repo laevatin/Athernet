@@ -1,4 +1,3 @@
-#include "Physical/Audio.h"
 #include "Physical/FrameDetector.h"
 #include "Physical/Modulator.h"
 #include <fstream>
@@ -9,13 +8,6 @@
 
 extern std::ofstream debug_file;
 
-float recent_power(int N, const float *x)
-{
-    float sum = 0;
-    for (int i = 0; i < N; i++)
-        sum += x[i] * x[i];
-    return sum;
-}
 float m_dot(int length, const float *x, const float *y)
 {
     float sum = 0;
@@ -25,14 +17,12 @@ float m_dot(int length, const float *x, const float *y)
 }
 FrameDetector::FrameDetector()
     : m_state(CK_HEADER),
-    mkl_dot(m_dot),
-    power([](int N, const float* dummy, const float* data) { return recent_power(N, data); })
+    mkl_dot(m_dot)
 {}
 
 void FrameDetector::checkHeader()
 {
     const float *header = Config::header.getReadPointer(0);
-    int offsetStart = headerOffset;
     
     for (; headerOffset + Config::HEADER_LENGTH < detectorBuffer.size(); headerOffset++)
     {
@@ -105,7 +95,7 @@ void FrameDetector::detectAndGet(std::list<Frame> &received)
             else 
                 m_state = GET_DATA;
         }
-		else if (macHeader->type == Config::MACPING_REQ && MACLayerTransmitter::checkPingReq(macHeader))
+        else if (macHeader->type == Config::MACPING_REQ && MACLayerTransmitter::checkPingReq(macHeader))
 		{
 			std::cout << "RECIVER: FrameDetector: MACPING_REQ detected.\n";
             MACManager::get().csmaSenderQueue->sendPingAsync(Config::MACPING_ID, Config::MACPING_REPLY);
@@ -149,6 +139,3 @@ void FrameDetector::clear()
     detectorBuffer.reset();
     m_state = CK_HEADER;
 }
-
-FrameDetector::~FrameDetector()
-{}

@@ -55,8 +55,8 @@ DataType Codec::encode(const DataType &in)
                     << "Msg: " << block.error_as_string()  << std::endl;
         }
 
-        for (int k = 0; k < code_length; k++)
-            out.add((uint8_t) block.data[k]);
+        for (int k : block.data)
+            out.add((uint8_t) k);
     }
 
     return std::move(out);
@@ -78,15 +78,14 @@ DataType Codec::encodeBlock(const DataType &in, int start)
                 << "Msg: " << block.error_as_string()  << std::endl;
     }
 
-    for (int k = 0; k < code_length; k++)
-        out.add((uint8_t) block.data[k]);
+    for (int k : block.data)
+        out.add((uint8_t) k);
 
     return std::move(out);
 }
 
 bool Codec::decode(const DataType &in, DataType &out)
 {
-    auto* pointer = in.getRawDataPointer();
     bool success = false;
 
     for (int i = 0; i < in.size(); i += code_length)
@@ -111,7 +110,6 @@ bool Codec::decode(const DataType &in, DataType &out)
 
 bool Codec::decodeBlock(const DataType &in, DataType &out, int start)
 {
-    auto* pointer = in.getRawDataPointer();
     bool success = false;
 
     schifra::reed_solomon::block<code_length,fec_length> block;

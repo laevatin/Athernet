@@ -27,10 +27,10 @@ void Config::initPreamble()
 
     omega[0] = 0;
     for (int i = 1; i < HEADER_LENGTH; i++)
-        omega[i] = omega[i - 1] + (f_p[i] + f_p[i - 1]) / 2.0 * (1.0 / Config::SAMPLE_RATE);
+        omega[i] = omega[i - 1] + (f_p[i] + f_p[i - 1]) / 2.0f * (1.0f / Config::SAMPLE_RATE);
 
     for (int i = 0; i < HEADER_LENGTH; i++)
-        Config::header.setSample(0, i, sin(2 * PI * omega[i]));
+        Config::header.setSample(0, i, (float)sin(2 * PI * omega[i]));
 }
 
 void Config::initAudio()
@@ -64,7 +64,7 @@ AudioType Config::generateSound(int freq, int length, float initPhase)
     auto soundPointer = sound.getWritePointer(0);
 
     for (int i = 0; i < length; i++)
-        soundPointer[i] = sin((float)i * 2 * PI * ((float)freq / (float)Config::SAMPLE_RATE) + initPhase);
+        soundPointer[i] = (float)sin((float)i * 2 * PI * ((float)freq / (float)Config::SAMPLE_RATE) + initPhase);
 
     return std::move(sound);
 }

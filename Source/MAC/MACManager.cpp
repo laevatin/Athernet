@@ -1,5 +1,7 @@
 #include "MAC/MACManager.h"
 
+#include <memory>
+
 MACManager& MACManager::get()
 {
     static MACManager instance;
@@ -8,11 +10,8 @@ MACManager& MACManager::get()
 
 MACManager::MACManager()
 {
-    macFrameFactory.reset(new MACFrameFactory());
+    macFrameFactory = std::make_unique<MACFrameFactory>();
 }
-
-MACManager::~MACManager()
-{}
 
 void MACManager::initialize(std::unique_ptr<MACLayerReceiver> &&macReceiver, 
                         std::unique_ptr<MACLayerTransmitter> &&macTransmitter,
@@ -25,21 +24,21 @@ void MACManager::initialize(std::unique_ptr<MACLayerReceiver> &&macReceiver,
 
 void MACManager::destroy()
 {
-    if (get().macReceiver.get()) {
+    if (get().macReceiver) {
         get().macReceiver->stopMACThread();
         get().macReceiver.reset();
     }
 
-    if (get().macTransmitter.get()) {
+    if (get().macTransmitter) {
         get().macTransmitter->stopMACThread();
         get().macTransmitter.reset();
     }
 
-    if (get().csmaSenderQueue.get()) {
+    if (get().csmaSenderQueue) {
         get().csmaSenderQueue.reset();
     }
 
-    if (get().macFrameFactory.get()) {
-        get().macFrameFactory.reset(new MACFrameFactory());
+    if (get().macFrameFactory) {
+        get().macFrameFactory = std::make_unique<MACFrameFactory>();
     }
 }

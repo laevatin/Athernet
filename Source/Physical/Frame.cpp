@@ -4,7 +4,6 @@
 #include "MAC/MACFrame.h"
 #include "MAC/MACManager.h"
 #include "Utils/IOFunctions.hpp"
-//#include "mkl.h"
 #include <fstream>
 #include "Config.h"
 
@@ -29,7 +28,7 @@ Frame::Frame()
 Frame::Frame(MACHeader *macHeader, const float *audio)
 {
     DataType out, tmp;
-    uint8_t *macHeader_uint8 = reinterpret_cast<uint8_t *>(macHeader);
+    auto *macHeader_uint8 = reinterpret_cast<uint8_t *>(macHeader);
 
     out.addArray(macHeader_uint8, Config::MACHEADER_LENGTH / 8);
     m_dataLength = macHeader->len;
@@ -43,11 +42,11 @@ Frame::Frame(MACHeader *macHeader, const float *audio)
 
     /* Check CRC */
     macHeader_uint8 = frameData.getRawDataPointer();
-    MACFrame *frame = reinterpret_cast<MACFrame *>(macHeader_uint8);
+    auto *frame = reinterpret_cast<MACFrame *>(macHeader_uint8);
     m_isGood = m_isGood && MACManager::get().macFrameFactory->checkCRC(frame);
 }
 
-Frame::Frame(Frame &&other)
+Frame::Frame(Frame &&other) noexcept
     : frameAudio(std::move(other.frameAudio)),
     frameData(std::move(other.frameData)),
     m_audioPos(std::exchange(other.m_audioPos, 0)),
@@ -55,16 +54,6 @@ Frame::Frame(Frame &&other)
     m_isGood(std::exchange(other.m_isGood, false)), 
     m_dataLength(std::exchange(other.m_dataLength, 0)),
     m_id(std::exchange(other.m_id, 0))
-{}
-
-Frame::Frame(const Frame &other)
-    : frameAudio(other.frameAudio),
-    frameData(other.frameData),
-    m_audioPos(other.m_audioPos),
-    m_isACK(other.m_isACK),
-    m_isGood(other.m_isGood), 
-    m_dataLength(other.m_dataLength),
-    m_id(other.m_id)
 {}
 
 void Frame::addToBuffer(RingBuffer<float> &buffer) const
@@ -89,32 +78,27 @@ void Frame::addHeader()
     m_audioPos += Config::HEADER_LENGTH;
 }
 
-void Frame::getData(DataType &out) const
-{
-    out.addArray(frameData, 0, m_dataLength + sizeof(MACHeader));
-}
-
 void Frame::getData(uint8_t *out) const
 {
     memcpy(out, frameData.getRawDataPointer(), m_dataLength + sizeof(MACHeader));
 }
 
-const bool Frame::isGoodFrame() const
+bool Frame::isGoodFrame() const
 {
     return m_isGood;
 }
 
-const bool Frame::isACK() const
+bool Frame::isACK() const
 {
     return m_isACK;
 }
 
-const uint8_t Frame::dataLength() const 
+uint8_t Frame::dataLength() const
 {
     return m_dataLength;
 }
 
-const uint8_t Frame::id() const
+uint8_t Frame::id() const
 {
     return m_id;
 }

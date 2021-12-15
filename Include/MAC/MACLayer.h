@@ -17,7 +17,7 @@ class MACLayer
 {
 public:
     explicit MACLayer(std::shared_ptr<AudioDevice> audioDevice);
-    virtual ~MACLayer();
+    virtual ~MACLayer() = 0;
 
     virtual void stopMACThread();
 
@@ -31,11 +31,11 @@ class MACLayerReceiver : public MACLayer
 {
 public:
     explicit MACLayerReceiver(std::shared_ptr<AudioDevice> audioDevice);
-    ~MACLayerReceiver();
+    ~MACLayerReceiver() override;
 
     void frameReceived(Frame &&frame);
     void stopMACThread() override;
-    void sendACK(uint8_t id);
+    static static void sendACK(uint8_t id);
     int RecvPacket(uint8_t *out);
 
     static bool checkFrame(const MACHeader *macHeader);
@@ -71,10 +71,10 @@ public:
     // send ping
     // explicit MACLayerTransmitter(std::shared_ptr<AudioDevice> audioDevice);
     
-    ~MACLayerTransmitter();
+    ~MACLayerTransmitter() override;
 
     /* This function may called from other thread. */
-    void ACKReceived(const Frame &ack);
+    void ACKReceived(Frame&& ack);
     void SendPacket(const uint8_t *data, int len);
 
     static bool checkACK(const MACHeader *macHeader);
@@ -88,7 +88,6 @@ private:
 
     enum TxState {
         IDLE,
-        CK_HEADER,
         ACK_RECEIVED,
         PING_RECEIVED,
         SEND_DATA,
@@ -104,7 +103,6 @@ private:
     std::list<Frame> pendingFrame;
     std::list<uint8_t> pendingID;
 
-    int currentID;
     std::atomic<TxState> txstate;
 };
 
@@ -128,9 +126,9 @@ private:
     std::list<Frame> m_queue;
     std::condition_variable m_cv_frame;
 
-    bool m_hasACKid[256] = { 0 };
-    bool m_hasDATAid[256] = { 0 };
-    bool running = true;
+    bool m_hasACKid[256] = { false };
+    bool m_hasDATAid[256] = { false };
+    std::atomic<bool> running = true;
 
 };
 
