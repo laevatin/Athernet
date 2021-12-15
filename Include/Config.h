@@ -11,7 +11,7 @@ typedef juce::Array<uint8_t> DataType;
 typedef juce::AudioBuffer<float> AudioType;
 
 using namespace std::chrono_literals;
-struct MACHeader;
+class MACHeader;
 
 enum state {
     SENDING = 1,
@@ -75,8 +75,8 @@ public:
 
     constexpr static enum state STATE = BOTH;
     constexpr static bool IS_GATEWAY = false;
-    constexpr static char* IP_ATHERNET = "192.168.1.1"; // Node1
-    constexpr static char* PORT_ATHERNET = "4567"; 
+    constexpr static char IP_ATHERNET[] = "192.168.1.1"; // Node1
+    constexpr static char PORT_ATHERNET[] = "4567";
 
     static AudioType header;
     static std::vector<AudioType> modulateSound;

@@ -6,13 +6,14 @@
 #include <winsock2.h>
 #include <iphlpapi.h>
 #include <icmpapi.h>
+#include <JuceHeader.h>
 
 #define ICMP_BUFFER_SIZE 128
 
 class IcmpPing
 {
 public: 
-	IcmpPing(const char *destip);
+	IcmpPing(uint32_t destip);
 	int IcmpSendPing();
 
 private:

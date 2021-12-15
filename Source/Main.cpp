@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 
     if (argc <= 1)
     {
-        std::cout << "Usage: ./Athernet-cpp [node-num] [dest-ip]" << std::endl;
+        std::cout << "Usage: ./Athernet-cpp [node-num]" << std::endl;
         return -1;
     }
 
@@ -51,40 +51,29 @@ int main(int argc, char *argv[])
     {
     case 1:
     {
-        ANet athernet("192.168.1.1", "4567", "192.168.1.2", "4568", node);
+        ANetClient athernet("192.168.1.2", "4567", true);
 
         switch (ctl)
         {
         case '1':
         {
             std::ifstream inputFile;
-            inputFile.open("C:\\Users\\zengs\\Desktop\\homework\\CS120\\Project\\Athernet\\Input\\input.in");
+            inputFile.open(R"("C:\Users\16322\Desktop\lessons\2021_1\CS120_Computer_Network\Athernet-cpp\Input\input.in")");
             std::string message;
 
             while (std::getline(inputFile, message))
             {
-                athernet.SendData((const uint8_t *)message.c_str(), message.length() + 1, 2);
-            }
-            break;
-        }
-        case '3':
-        {
-            while (1)
-            {
-                char buffer[512];
-                athernet.RecvData((uint8_t *)buffer, Config::PACKET_PAYLOAD, 2);
-                std::cout << "Payload: " << buffer << "\n";
+                athernet.SendData((const uint8_t *)message.c_str(), message.length() + 1);
             }
             break;
         }
         case '4':
         {
             while (1)
-            {
-                athernet.SendPing("182.61.200.6");
-                Sleep(1000);
-            }
+                athernet.SendPing(inet_addr("10.11.12.13"));
         }
+        default:
+            break;
         }
 
         getchar();
@@ -93,61 +82,40 @@ int main(int argc, char *argv[])
     }
     case 2:
     {
-        ANet athernet("192.168.1.2", "4569", argv[2], "4570", node);
-        uint8_t buffer[512];
-        int from_node = 1, to_node = 3;
-        switch (ctl)
-        {
-        case '1':
-        {   
-            while (1)
-                athernet.Gateway(1, 3);
-            break;
-        }
-        case '3':
-        {
-            while (1)
-                athernet.Gateway(3, 1);
-            break;
-        }
-        case '4':
-        {
-            while (1)
-            {
-                athernet.SendPing("182.61.200.6");
-                Sleep(1000);
-            }
-        }
-        }
-        
+        ANetGateway gateway("4567", "4568");
+        gateway.StartForwarding();
         break;
     }
     case 3:
     {
-        ANet athernet("0.0.0.0", "4570", argv[2], "4569", node);
-
         switch (ctl)
         {
         case '1':
         {
+            ANetServer athernet("4568", false);
             while (1)
             {
                 char buffer[512];
-                athernet.RecvData((uint8_t *)buffer, Config::PACKET_PAYLOAD, 2);
+                athernet.RecvData((uint8_t *)buffer, Config::PACKET_PAYLOAD);
                 std::cout << "Payload: " << buffer << std::endl;
             }
+            break;
         }
         case '3':
         {
+            ANetClient athernet("10.20.222.133", "4567", false);
             std::ifstream inputFile;
-            inputFile.open("C:\\Users\\zengs\\Desktop\\homework\\CS120\\Project\\Athernet\\Input\\input.in");
+            inputFile.open(R"("C:\Users\16322\Desktop\lessons\2021_1\CS120_Computer_Network\Athernet-cpp\Input\input.in")");
             std::string message;
 
             while (std::getline(inputFile, message))
             {
-                athernet.SendData((const uint8_t *)message.c_str(), message.length() + 1, 2);
+                athernet.SendData((const uint8_t *)message.c_str(), message.length() + 1);
             }
+            break;
         }
+        default:
+            break;
         }
 
         getchar();

@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="WQZVj5" name="Athernet-cpp" projectType="consoleapp" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              compilerFlagSchemes="NewScheme" cppLanguageStandard="17" headerPath="..\..\Include&#10;">
+              compilerFlagSchemes="NewScheme" cppLanguageStandard="17" headerPath="..\..\Include&#10;C:\Users\16322\Desktop\lessons\2021_1\CS120_Computer_Network\asiosdk\asiosdk_2.3.3_2019-06-14\common">
   <MAINGROUP id="qncXkF" name="Athernet-cpp">
     <GROUP id="{63E937E2-2125-F6F7-7546-45DBF7ED9FA1}" name="Include">
       <GROUP id="{48B39BE5-E3F4-454E-E311-957D15EB1B01}" name="UDP">
@@ -63,7 +63,7 @@
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_ASIO="1" JUCE_WASAPI="0"
                JUCE_DIRECTSOUND="0" JUCE_ALSA="0" JUCE_USE_ANDROID_OBOE="0"/>
   <EXPORTFORMATS>
-    <VS2019 targetFolder="Builds/VisualStudio2019" externalLibraries="-L${ONEAPI_ROOT}\mkl\2021.4.0\lib\intel64">
+    <VS2019 targetFolder="Builds/VisualStudio2019">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="Athernet-cpp"/>
         <CONFIGURATION isDebug="0" name="Release" targetName="Athernet-cpp"/>

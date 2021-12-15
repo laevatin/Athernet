@@ -6,6 +6,7 @@
 #include <JuceHeader.h>
 #include <string>
 #include <memory>
+#include <map>
 #include "UDP/UDP.h"
 #include "ANet/Ping.h"
 #include "Physical/Audio.h"
@@ -33,10 +34,7 @@ struct ANetUDP
 
 struct ANetPing
 {
-    ANetPing(const char *destIP);
-    char destIP[24];
-    // int RTT;
-    bool success;
+    uint8_t success;
 };
 
 struct ANetPacket 
@@ -54,13 +52,15 @@ public:
     ANetClient(const char *dest_ip, const char *dest_port, bool isAthernet);
     ANetClient(ANetClient &other) = delete;
 
-    void SendData(const uint8_t* data, int len, int dest_node);
+    void SendData(const uint8_t* data, int len);
 
-    void SendPing(const char *pingIP);
+    void SendPing(uint32_t target);
+    void SendPing();
 
 private:
     std::unique_ptr<UDPClient> m_udpClient;
     std::unique_ptr<AudioIO> m_audioIO;
+    std::unique_ptr<IcmpPing> m_icmpPing;
     
     uint32_t m_selfIP;
     uint16_t m_selfPort;
@@ -82,6 +82,23 @@ private:
     
     uint16_t m_openPort;
     bool m_isAthernet;
+};
+
+class ANetGateway
+{
+public: 
+    ANetGateway(const char* anet_port, const char* out_port);
+    void StartForwarding();
+
+private:
+
+    void ATNToInternet();
+    void InternetToATN();
+    uint16_t m_anetPort;
+    uint16_t m_outPort;
+    AudioIO m_audioIO;
+    UDPServer m_udpServer;
+    std::map<uint32_t, std::unique_ptr<ANetClient>> m_NATTable;
 };
 
 #endif

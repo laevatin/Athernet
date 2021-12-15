@@ -18,7 +18,6 @@
 
 using namespace juce;
 
-typedef Array<uint8_t> DataType;
 typedef AudioBuffer<float> AudioType;
 
 class AudioDevice;
@@ -30,17 +29,14 @@ public:
     ~AudioIO();
 
     // wrapper for macTransmitter
-    void SendData(const uint8_t* data, int len);
+    static void SendData(const uint8_t* data, int len);
     // wrapper for macReceiver
-    int RecvData(uint8_t* out, int outlen);
+    static int RecvData(uint8_t* out, int outlen);
 
 private:
-    AudioDeviceManager audioDeviceManager;
-
-    std::shared_ptr<AudioDevice> audioDevice;
-
-    DataType inputBuffer;
-    DataType outputBuffer;
+    static AudioDeviceManager audioDeviceManager;
+    static std::shared_ptr<AudioDevice> audioDevice;
+    static int refcount;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioIO)
 };
@@ -57,7 +53,7 @@ public:
     };
     
     AudioDevice(enum state s);
-    ~AudioDevice();
+    ~AudioDevice() = default;
 
     void beginTransmit();
 

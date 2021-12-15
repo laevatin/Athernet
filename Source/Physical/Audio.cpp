@@ -6,9 +6,6 @@
 #include <fstream>
 #include <atomic>
 
-static std::condition_variable finishcv;
-static std::mutex cv_m;
-
 Codec AudioDevice::codec;
 
 extern std::ofstream debug_file;
@@ -17,9 +14,6 @@ extern std::ofstream debug_file;
 
 AudioDevice::AudioDevice(enum state s) 
     : deviceState(s)
-{}
-
-AudioDevice::~AudioDevice()
 {}
 
 void AudioDevice::beginTransmit()
@@ -49,7 +43,7 @@ void AudioDevice::hiResTimerCallback()
         std::size_t len = receiver.size();
         std::size_t maxlen = 12000;
         len = std::min(len, maxlen);
-        float *buffer = new float[len];
+        auto *buffer = new float[len];
 
         lock.enter();
         if (frameDetector.detectorBuffer.hasEnoughSpace(len))
@@ -185,37 +179,48 @@ enum AudioDevice::ChannelState AudioDevice::getChannelState()
     return CN_IDLE;
 }
 
+int AudioIO::refcount = 0;
+AudioDeviceManager AudioIO::audioDeviceManager;
+std::shared_ptr<AudioDevice> AudioIO::audioDevice;
+
 AudioIO::AudioIO()
 {
-    audioDeviceManager.initialiseWithDefaultDevices(1, 1);
-    AudioDeviceManager::AudioDeviceSetup dev_info = audioDeviceManager.getAudioDeviceSetup();
-    dev_info.sampleRate = 48000;
-    dev_info.bufferSize = 512;
-    audioDevice.reset(new AudioDevice(Config::STATE));
-    audioDeviceManager.addAudioCallback(audioDevice.get());
+    if (refcount == 0)
+    {
+        audioDeviceManager.initialiseWithDefaultDevices(1, 1);
+        AudioDeviceManager::AudioDeviceSetup dev_info = audioDeviceManager.getAudioDeviceSetup();
+        dev_info.sampleRate = 48000;
+        dev_info.bufferSize = 512;
+        audioDevice.reset(new AudioDevice(Config::STATE));
+        audioDeviceManager.addAudioCallback(audioDevice.get());
 
-    std::unique_ptr<MACLayerReceiver> macReceiver;
-    std::unique_ptr<MACLayerTransmitter> macTransmitter;
-    std::unique_ptr<CSMASenderQueue> csmaSenderQueue;
+        std::unique_ptr<MACLayerReceiver> macReceiver;
+        std::unique_ptr<MACLayerTransmitter> macTransmitter;
+        std::unique_ptr<CSMASenderQueue> csmaSenderQueue;
 
-    std::cout << "AudioIO: selected mode: " << Config::STATE << "\n";
-    if (Config::STATE & RECEIVING)
-        macReceiver.reset(new MACLayerReceiver(audioDevice));    
+        std::cout << "AudioIO: selected mode: " << Config::STATE << "\n";
+        if constexpr (Config::STATE & RECEIVING)
+            macReceiver = std::make_unique<MACLayerReceiver>(audioDevice);
 
-    if (Config::STATE & SENDING)
-        macTransmitter.reset(new MACLayerTransmitter(audioDevice));
+        if constexpr (Config::STATE & SENDING)
+            macTransmitter = std::make_unique<MACLayerTransmitter>(audioDevice);
 
-    csmaSenderQueue.reset(new CSMASenderQueue(audioDevice));
-    MACManager::initialize(std::move(macReceiver), std::move(macTransmitter), std::move(csmaSenderQueue));
-    audioDevice->beginTransmit();
-
+        csmaSenderQueue = std::make_unique<CSMASenderQueue>(audioDevice);
+        MACManager::initialize(std::move(macReceiver), std::move(macTransmitter), std::move(csmaSenderQueue));
+        audioDevice->beginTransmit();
+    }
+    refcount += 1;
 }
 
 AudioIO::~AudioIO()
 {
-    MACManager::destroy();    
-    audioDeviceManager.removeAudioCallback(audioDevice.get());
-    audioDevice.reset();
+    refcount -= 1;
+    if (refcount == 0)
+    {
+        MACManager::destroy();
+        audioDeviceManager.removeAudioCallback(audioDevice.get());
+        audioDevice.reset();
+    }
 }
 
 void AudioIO::SendData(const uint8_t* data, int len)

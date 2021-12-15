@@ -8,10 +8,10 @@
 #pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "ws2_32.lib")
 
-IcmpPing::IcmpPing(const char* destip)
+IcmpPing::IcmpPing(uint32_t destip)
 {
 	m_handle = IcmpCreateFile();
-	m_address = inet_addr(destip);
+	m_address = destip;
 }
 
 int IcmpPing::IcmpSendPing()

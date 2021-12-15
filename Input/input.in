@@ -1,20 +1,30 @@
-============= ALL USERS PLEASE NOTE  ==
-====================== CAR and CDR now 
-return extra values. The function CAR n
-ow returns two values.  Since it has to
- go to the trouble to figure out if the
- object is carcdr-able anyway, we figur
-ed you might as well get both halves at
- once.  For example, the following code
- shows how to destructure a cons (SOME-
-CONS) into its two slots THE-CAR and TH
-E-CDR):         (MULTIPLE-VALUE-BIND (T
-HE-CAR THE-CDR) (CAR SOME-CONS) ...) Fo
-r symmetry with CAR, CDR returns a seco
-nd value which is the CAR of the object
-.  In a related change, the functions M
-AKE-ARRAY and CONS have been fixed so t
-hey don't allocate any storage except o
-n the stack.  This should hopefully hel
-p people who don't like using the garba
-ge collector because it cold boots the 
+Is this the real life?
+Is this just fantasy?
+Caught in a landslide
+No escape from reality
+Open your eyes
+Look up to the skies and see
+I'm just a poor boy, 
+I need no sympathy
+Because I'm easy come, easy go
+A little high, little low
+Anyway the wind blows, 
+doesn't really matter to me, to me
+Mama, just killed a man
+Put a gun against his head
+Pulled my trigger, now he's dead
+Mama, life had just begun
+But now I've gone and 
+thrown it all away
+Mama, ooo
+Didn't mean to make you cry
+If I'm not back again 
+this time tomorrow
+Carry on, carry on, 
+as if nothing really matters
+Too late, my time has come
+Sends shivers down my spine
+Body's aching all the time
+Goodbye everybody I've got to go
+That's all and
+this is the last line.

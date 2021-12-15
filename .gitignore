@@ -1,6 +1,8 @@
 /Builds/VisualStudio2019/.vs/*
 /Builds/VisualStudio2019/x64/*
+/cmake-*
 .vscode
+.idea
 *.in
 *.out
 *.txt

@@ -6,7 +6,7 @@
 #include <winsock2.h>
 #include <JuceHeader.h>
 
-typedef unsigned char uint8_t;
+struct ANetPacket;
 
 class UDP
 {
