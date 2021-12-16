@@ -18,18 +18,22 @@ class MACHeader;
 /**
  * Data structure for the frames
  */
+struct FrameHeader
+{
+    uint16_t length;
+};
 
 class Frame 
 {
 public:
-    Frame();
+    Frame() = default;
 
     /* Encode the frame and modulate. */
-    Frame(const uint8_t *pdata, uint8_t id);
+    Frame(const void *phys_data, uint16_t length);
 
     /* Demodulate and decode the frame. 
      `audio` should contain at least (Config::BIT_PER_FRAME - Config::MACHEADER_LENGTH) * Config::BIT_LENGTH samples */
-    Frame(MACHeader *macHeader, const float *audio);
+    Frame(FrameHeader *header, const float *audio);
 
     ~Frame() = default;
 
@@ -39,28 +43,19 @@ public:
     /* Copy constructor */
     Frame(const Frame &other) = default;
 
-    void addToBuffer(RingBuffer<float> &buffer) const;
-    void addSound(const AudioType &src);
-    void getData(uint8_t *out) const;
+    void getData(DataType &out) const;
 
     bool isGoodFrame() const;
-    bool isACK() const;
-    uint8_t dataLength() const;
-    uint8_t id() const;
+    uint16_t dataLength() const;
 
 protected:
-    void addHeader();
 
-    AudioType frameAudio;
-
+    FrameHeader header;
     /* frameData is byte array */
-    DataType frameData; 
-    bool m_isACK = false;
+    DataType m_frameData;
     bool m_isGood = false;
 
-    uint8_t m_dataLength = 0;
-    uint8_t m_id = 0;
-    int m_audioPos = 0;
+    friend class AudioFrame;
 };
 
 #endif

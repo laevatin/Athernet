@@ -21,6 +21,7 @@
       </GROUP>
       <GROUP id="{E2AFAEC3-8EC8-EED8-68FB-678EC7811792}" name="Physical">
         <FILE id="OtvU5J" name="Audio.h" compile="0" resource="0" file="Include/Physical/Audio.h"/>
+        <FILE id="xeNVLO" name="AudioFrame.h" compile="0" resource="0" file="Include/Physical/AudioFrame.h"/>
         <FILE id="pdvdc7" name="Codec.h" compile="0" resource="0" file="Include/Physical/Codec.h"/>
         <FILE id="Bxvw9J" name="Frame.h" compile="0" resource="0" file="Include/Physical/Frame.h"/>
         <FILE id="TMn4PH" name="FrameDetector.h" compile="0" resource="0" file="Include/Physical/FrameDetector.h"/>
@@ -50,6 +51,7 @@
       </GROUP>
       <GROUP id="{FE4895C6-983A-6044-B1C1-6A095568E775}" name="Physical">
         <FILE id="hetPTa" name="Audio.cpp" compile="1" resource="0" file="Source/Physical/Audio.cpp"/>
+        <FILE id="RizHNJ" name="AudioFrame.cpp" compile="1" resource="0" file="Source/Physical/AudioFrame.cpp"/>
         <FILE id="rBgm7Q" name="Codec.cpp" compile="1" resource="0" file="Source/Physical/Codec.cpp"/>
         <FILE id="gqRsNU" name="Frame.cpp" compile="1" resource="0" file="Source/Physical/Frame.cpp"/>
         <FILE id="oQ9Hgk" name="FrameDetector.cpp" compile="1" resource="0"

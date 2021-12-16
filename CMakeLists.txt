@@ -65,6 +65,7 @@ jucer_project_files("Athernet-cpp/Include/Physical"
 # Compile   Xcode     Binary    File                                Compiler Flag
 #           Resource  Resource                                      Scheme
   .         .         .         "Include/Physical/Audio.h"
+  .         .         .         "Include/Physical/AudioFrame.h"
   .         .         .         "Include/Physical/Codec.h"
   .         .         .         "Include/Physical/Frame.h"
   .         .         .         "Include/Physical/FrameDetector.h"
@@ -112,6 +113,7 @@ jucer_project_files("Athernet-cpp/Source/Physical"
 # Compile   Xcode     Binary    File                                 Compiler Flag
 #           Resource  Resource                                       Scheme
   x         .         .         "Source/Physical/Audio.cpp"
+  x         .         .         "Source/Physical/AudioFrame.cpp"
   x         .         .         "Source/Physical/Codec.cpp"
   x         .         .         "Source/Physical/Frame.cpp"
   x         .         .         "Source/Physical/FrameDetector.cpp"

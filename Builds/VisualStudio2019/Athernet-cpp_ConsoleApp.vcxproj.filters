@@ -292,6 +292,9 @@
     <ClCompile Include="..\..\Source\Physical\Audio.cpp">
       <Filter>Athernet-cpp\Source\Physical</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\Physical\AudioFrame.cpp">
+      <Filter>Athernet-cpp\Source\Physical</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\Physical\Codec.cpp">
       <Filter>Athernet-cpp\Source\Physical</Filter>
     </ClCompile>
@@ -1318,6 +1321,9 @@
       <Filter>Athernet-cpp\Include\MAC</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Include\Physical\Audio.h">
+      <Filter>Athernet-cpp\Include\Physical</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Include\Physical\AudioFrame.h">
       <Filter>Athernet-cpp\Include\Physical</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Include\Physical\Codec.h">

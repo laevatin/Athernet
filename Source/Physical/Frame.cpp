@@ -9,78 +9,51 @@
 
 std::ofstream debug_file;
 
-Frame::Frame(const uint8_t *pdata, uint8_t id)
+Frame::Frame(const void *phys_data, uint16_t length)
     : m_isGood(true)
 {
-    frameAudio.setSize(1, Config::FRAME_LENGTH);
-    DataType data;
-    data.addArray(pdata, Config::DATA_PER_FRAME / 8);
-    m_id = id;
-    addHeader();
-    DataType encoded = byteToBit(AudioDevice::codec.encodeBlock(data, 0));
+    jassert(length <= Config::DATA_PER_FRAME / 8);
+    header.length = length;
+    if (length == Config::DATA_PER_FRAME)
+        header.length = Config::BIT_PER_FRAME / 8;
 
-    Modulator::modulate(encoded, 0, Config::BIT_PER_FRAME, *this);
+    m_frameData.addArray((void *)&header, sizeof(struct FrameHeader));
+    m_frameData.addArray(phys_data, length);
+
+    /* Add FEC when length == Config::DATA_PER_FRAME */
+    if (length == Config::DATA_PER_FRAME)
+        m_frameData = AudioDevice::codec.encodeBlock(m_frameData, 0);
 }
 
-Frame::Frame()
-{}
-
-Frame::Frame(MACHeader *macHeader, const float *audio)
+Frame::Frame(FrameHeader *header, const float *audio)
 {
-    DataType out, tmp;
-    auto *macHeader_uint8 = reinterpret_cast<uint8_t *>(macHeader);
+    DataType bitArray, byteArray;
+    for (int i = 0; i < header->length * 8 * Config::BIT_LENGTH / Config::BAND_WIDTH; i += Config::BIT_LENGTH)
+        Modulator::demodulate(audio + i, bitArray);
 
-    out.addArray(macHeader_uint8, Config::MACHEADER_LENGTH / 8);
-    m_dataLength = macHeader->len;
-    m_id = macHeader->id;
+    byteArray.addArray((void *)header, sizeof(struct FrameHeader));
+    byteArray.addArray(bitToByte(bitArray), header->length);
 
-    for (int i = 0; i < (Config::BIT_PER_FRAME - Config::MACHEADER_LENGTH) * Config::BIT_LENGTH / Config::BAND_WIDTH; i += Config::BIT_LENGTH)
-        Modulator::demodulate(audio + i, tmp);
-    out.addArray(bitToByte(tmp));
-
-    m_isGood = AudioDevice::codec.decodeBlock(out, frameData, 0);
-
-    /* Check CRC */
-    macHeader_uint8 = frameData.getRawDataPointer();
-    auto *frame = reinterpret_cast<MACFrame *>(macHeader_uint8);
-    m_isGood = m_isGood && MACManager::get().macFrameFactory->checkCRC(frame);
+    if (header->length == Config::BIT_PER_FRAME / 8)
+    {
+        m_isGood = AudioDevice::codec.decodeBlock(byteArray, m_frameData, 0);
+    }
+    else
+    {
+        m_frameData = std::move(byteArray);
+        m_isGood = true;
+    }
+    this->header = *header;
 }
 
 Frame::Frame(Frame &&other) noexcept
-    : frameAudio(std::move(other.frameAudio)),
-    frameData(std::move(other.frameData)),
-    m_audioPos(std::exchange(other.m_audioPos, 0)),
-    m_isACK(std::exchange(other.m_isACK, false)),
-    m_isGood(std::exchange(other.m_isGood, false)), 
-    m_dataLength(std::exchange(other.m_dataLength, 0)),
-    m_id(std::exchange(other.m_id, 0))
+    : m_frameData(std::move(other.m_frameData)),
+    m_isGood(std::exchange(other.m_isGood, false))
 {}
 
-void Frame::addToBuffer(RingBuffer<float> &buffer) const
+void Frame::getData(DataType &out) const
 {
-    buffer.write(frameAudio.getReadPointer(0), frameAudio.getNumSamples());
-}
-
-void Frame::addSound(const AudioType &src)
-{
-    if (src.getNumSamples() + m_audioPos > frameAudio.getNumSamples())
-    {
-        std::cerr << "ERROR: frameAudio is full" << newLine;
-        return;
-    }
-    frameAudio.copyFrom(0, m_audioPos, src, 0, 0, src.getNumSamples());
-    m_audioPos += src.getNumSamples();
-}
-
-void Frame::addHeader()
-{
-    frameAudio.copyFrom(0, 0, Config::header, 0, 0, Config::HEADER_LENGTH);
-    m_audioPos += Config::HEADER_LENGTH;
-}
-
-void Frame::getData(uint8_t *out) const
-{
-    memcpy(out, frameData.getRawDataPointer(), m_dataLength + sizeof(MACHeader));
+    out.addArray(m_frameData, sizeof(struct FrameHeader));
 }
 
 bool Frame::isGoodFrame() const
@@ -88,17 +61,9 @@ bool Frame::isGoodFrame() const
     return m_isGood;
 }
 
-bool Frame::isACK() const
+uint16_t Frame::dataLength() const
 {
-    return m_isACK;
-}
-
-uint8_t Frame::dataLength() const
-{
-    return m_dataLength;
-}
-
-uint8_t Frame::id() const
-{
-    return m_id;
+    if (m_isGood)
+        return header.length;
+    return 0;
 }
