@@ -12,6 +12,8 @@ typedef juce::AudioBuffer<float> AudioType;
 using namespace std::chrono_literals;
 class MACHeader;
 
+#define VERBOSE_MAC
+
 enum state {
     SENDING = 1,
     RECEIVING = 2,
@@ -61,7 +63,7 @@ public:
     constexpr static uint8_t SELF = 0xCE;
     constexpr static uint8_t OTHER = 0xEC;
 
-    constexpr static auto ACK_TIMEOUT = 200ms;
+    constexpr static auto ACK_TIMEOUT = 500ms;
 
     constexpr static int POWER_AVG_LEN = 100; 
     constexpr static float POWER_THOR  = 0.01f;

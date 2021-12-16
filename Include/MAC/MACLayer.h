@@ -16,21 +16,20 @@ class AudioDevice;
 class MACLayer
 {
 public:
-    explicit MACLayer(std::shared_ptr<AudioDevice> audioDevice);
+    explicit MACLayer();
     virtual ~MACLayer() = default;
 
     virtual void stopMACThread();
 
 protected:
-    std::thread *MACThread;
+    std::unique_ptr<std::thread> MACThread;
     std::atomic<bool> running;
-    std::shared_ptr<AudioDevice> audioDevice;
 };
 
 class MACLayerReceiver : public MACLayer
 {
 public:
-    explicit MACLayerReceiver(std::shared_ptr<AudioDevice> audioDevice);
+    explicit MACLayerReceiver();
     ~MACLayerReceiver() override;
 
     void frameReceived(Frame &&frame);
@@ -66,14 +65,10 @@ class MACLayerTransmitter : public MACLayer
 {
 public:
     // send data
-    explicit MACLayerTransmitter(std::shared_ptr<AudioDevice> audioDevice);
-    
-    // send ping
-    // explicit MACLayerTransmitter(std::shared_ptr<AudioDevice> audioDevice);
-    
+    explicit MACLayerTransmitter();
     ~MACLayerTransmitter() override;
 
-    /* This function may called from other thread. */
+    /* This function may be called from other thread. */
     void ACKReceived(Frame&& ack);
     void SendPacket(const uint8_t *data, int len);
 
@@ -118,8 +113,8 @@ public:
 
 private:
     void senderStart();
-    
-    std::thread *m_senderThread;
+
+    std::unique_ptr<std::thread> m_senderThread;
     std::shared_ptr<AudioDevice> m_audioDevice;
 
     std::mutex m_queue_m;

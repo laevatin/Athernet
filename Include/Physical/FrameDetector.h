@@ -19,14 +19,12 @@ public:
     FrameDetector();
     ~FrameDetector() = default;
 
-    void checkHeader();
-    void detectAndGet(std::list<Frame> &received);
+    void detectAndGet(RingBuffer<float> &detectorBuffer, std::list<Frame> &received);
 
     void clear();
-    RingBuffer<float> detectorBuffer;
 
 private:
-    std::function<float(int, const float *, const float *)> mkl_dot;
+
     enum state {
         CK_HEADER,
         FD_HEADER,
@@ -39,7 +37,9 @@ private:
     DataType frameHeader;
 
     void resetState();
+    void checkHeader(RingBuffer<float> &detectorBuffer);
     static DataType getMACHeader(const float *samples);
+
 };
 
 #endif

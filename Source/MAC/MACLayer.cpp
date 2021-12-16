@@ -11,9 +11,8 @@
 
 using namespace std::chrono_literals;
 
-MACLayer::MACLayer(std::shared_ptr<AudioDevice> audioDevice)
-    : running(true),
-    audioDevice(std::move(audioDevice))
+MACLayer::MACLayer()
+    : running(true)
 {}
 
 void MACLayer::stopMACThread()
@@ -22,29 +21,31 @@ void MACLayer::stopMACThread()
 }
 
 
-MACLayerReceiver::MACLayerReceiver(std::shared_ptr<AudioDevice> audioDevice)
-    : MACLayer(std::move(audioDevice)),
-    rxstate(MACLayerReceiver::IDLE)
+MACLayerReceiver::MACLayerReceiver()
+    : rxstate(MACLayerReceiver::IDLE)
 {
-    MACThread = new std::thread([this]() { MACThreadRecvStart(); });
+    MACThread = std::make_unique<std::thread>([this]() { MACThreadRecvStart(); });
 }
 
 MACLayerReceiver::~MACLayerReceiver()
 {
-    if (MACThread != nullptr)
+    if (MACThread)
     {
+        cv_frameQueue.notify_one();
         MACThread->join();
-        delete MACThread;
     }
 }
 
 void MACLayerReceiver::MACThreadRecvStart()
 {
-    while (running)
+    while (true)
     {
         std::unique_lock<std::mutex> lock(m_frameQueue);
 
-        cv_frameQueue.wait(lock, [this]() { return !frameQueue.empty(); });
+        cv_frameQueue.wait(lock, [this]() { return !frameQueue.empty() || !running; });
+
+        if (!running)
+            break;
 
         MACFrame macFrame;
         if (frameQueue.front().isGoodFrame())
@@ -56,9 +57,6 @@ void MACLayerReceiver::MACThreadRecvStart()
         }
         frameQueue.pop_front();
     }
-
-    audioDevice->stopSending();
-    audioDevice->stopReceiving();
 }
 
 void MACLayerReceiver::frameReceived(Frame &&frame)
@@ -103,26 +101,18 @@ int MACLayerReceiver::RecvPacket(uint8_t *out)
 }
 
 
-MACLayerTransmitter::MACLayerTransmitter(std::shared_ptr<AudioDevice> audioDevice)
-    : MACLayer(std::move(audioDevice)),
-    txstate(MACLayerTransmitter::IDLE)
+MACLayerTransmitter::MACLayerTransmitter()
+    : txstate(MACLayerTransmitter::IDLE)
 {
-    MACThread = new std::thread([this]() { MACThreadTransStart(); });
+    MACThread = std::make_unique<std::thread>([this]() { MACThreadTransStart(); });
 }
-
-// MACLayerTransmitter::MACLayerTransmitter(std::shared_ptr<AudioDevice> audioDevice)
-//     : MACLayer(audioDevice),
-//     txstate(MACLayerTransmitter::SEND_PING)
-// {
-//     MACThread = new std::thread([this]() { MACThreadPingStart(); });
-// }
 
 MACLayerTransmitter::~MACLayerTransmitter()
 {
-    if (MACThread != nullptr)
+    if (MACThread)
     {
+        cv_queue.notify_one();
         MACThread->join();
-        delete MACThread;
     }
 }
 
@@ -176,10 +166,13 @@ bool MACLayerTransmitter::checkPingReply(const MACHeader* macHeader) {
 void MACLayerTransmitter::MACThreadTransStart()
 {
     int resendCount = 0;
-    while (running) 
+    while (true)
     {
         std::unique_lock<std::mutex> lock_queue(m_queue);
-        cv_queue.wait(lock_queue, [this]() { return !pendingFrame.empty(); });
+        cv_queue.wait(lock_queue, [this]() { return !pendingFrame.empty() || !running; });
+
+        if (!running)
+            break;
 
         txstate = SEND_DATA;
         MACManager::get().csmaSenderQueue->sendDataAsync(Frame(pendingFrame.front()));
@@ -191,7 +184,10 @@ void MACLayerTransmitter::MACThreadTransStart()
         {
             resendCount = 0;
             auto recv = std::chrono::system_clock::now();
-            std::cout << "SENDER: Time to ACK " << (int)pendingFrame.front().id() << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << "\n";
+#ifdef VERBOSE_MAC
+            std::cout << "SENDER: Time to ACK " << (int)pendingFrame.front().id() << ": "
+                      << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << "\n";
+#endif
             pendingFrame.pop_front();
         }
         else
@@ -204,7 +200,6 @@ void MACLayerTransmitter::MACThreadTransStart()
             }
         }
     }
-    audioDevice->stopSending();
 }
 
 void MACLayerTransmitter::MACThreadPingStart()
@@ -219,7 +214,8 @@ void MACLayerTransmitter::MACThreadPingStart()
         if (cv_ack.wait_until(lock, now + 2s, [this](){ return txstate == PING_RECEIVED; }))
         {
             auto recv = std::chrono::system_clock::now();
-            std::cout << "SENDER: Get Ping After: " << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << " milliseconds.\n";
+            std::cout << "SENDER: Get Ping After: "
+                      << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << " milliseconds.\n";
         }
         Sleep(400);
     }
@@ -238,7 +234,7 @@ void MACLayerTransmitter::SendPacket(const uint8_t *data, int len)
 CSMASenderQueue::CSMASenderQueue(std::shared_ptr<AudioDevice> audioDevice)
     : m_audioDevice(std::move(audioDevice))
 {
-    m_senderThread = new std::thread([this]() { senderStart(); });
+    m_senderThread = std::make_unique<std::thread>([this]() { senderStart(); });
 }
 
 CSMASenderQueue::~CSMASenderQueue()
@@ -248,7 +244,6 @@ CSMASenderQueue::~CSMASenderQueue()
     {
         m_cv_frame.notify_one();
         m_senderThread->join();
-        delete m_senderThread;
     }
 }
 
@@ -284,7 +279,7 @@ void CSMASenderQueue::sendACKAsync(uint8_t id)
 
 void CSMASenderQueue::sendPingAsync(uint8_t id, uint8_t type)
 {
-    MACFrame *macFrame;
+    MACFrame *macFrame = nullptr;
     if (type == Config::MACPING_REQ)
         macFrame = MACManager::get().macFrameFactory->createPingReq(id);
     else if (type == Config::MACPING_REPLY)
@@ -320,10 +315,15 @@ void CSMASenderQueue::senderStart()
                 m_audioDevice->sendFrame(m_queue.front());
                 if (m_queue.front().isACK()) {
                     m_hasACKid[m_queue.front().id()] = false;
+#ifdef VERBOSE_MAC
                     std::cout << "SENDER: Send ACK:  " << (int)m_queue.front().id() << "\n";
+#endif
                 }
-                else{
+                else
+                {
+#ifdef VERBOSE_MAC
                     std::cout << "SENDER: Send Frame: " << (int)m_queue.front().id() << "\n";
+#endif
                     m_hasDATAid[m_queue.front().id()] = false;
                 } 
 
