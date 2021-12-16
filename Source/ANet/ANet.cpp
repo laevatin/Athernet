@@ -65,8 +65,6 @@ void ANetClient::SendPing(uint32_t target)
         struct ANetPing ping{};
         memcpy(&ping, packet.payload, sizeof(ANetPing));
 
-
-
         if (ping.success)
         {
             std::cout << "Reply from " << packet.ip.ip_src << ": time="

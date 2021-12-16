@@ -17,7 +17,7 @@ class MACLayer
 {
 public:
     explicit MACLayer(std::shared_ptr<AudioDevice> audioDevice);
-    virtual ~MACLayer() = 0;
+    virtual ~MACLayer() = default;
 
     virtual void stopMACThread();
 
@@ -35,7 +35,7 @@ public:
 
     void frameReceived(Frame &&frame);
     void stopMACThread() override;
-    static static void sendACK(uint8_t id);
+    static void sendACK(uint8_t id);
     int RecvPacket(uint8_t *out);
 
     static bool checkFrame(const MACHeader *macHeader);

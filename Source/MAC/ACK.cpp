@@ -26,6 +26,6 @@ ACK::ACK(MACHeader *header)
     frameData.addArray(header_uint8, Config::MACHEADER_LENGTH / 8);
 }
 
-ACK::ACK(ACK&& other) noexcept
+ACK::ACK(ACK&& other)
     : Frame(std::move(other))
 {}

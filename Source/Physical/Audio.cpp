@@ -22,7 +22,6 @@ void AudioDevice::beginTransmit()
     if (deviceState & SENDING)
     {
         sender.reset();
-
         isSending = true;
     }
     
@@ -30,41 +29,40 @@ void AudioDevice::beginTransmit()
     {
         receiver.reset();
         frameDetector.clear();
-
         isReceiving = true;
     }
     startTimer(10);
 }
 
 void AudioDevice::hiResTimerCallback() 
-{   
+{
     if (isSending || isReceiving)
     {
-        std::size_t len = receiver.size();
-        std::size_t maxlen = 12000;
-        len = std::min(len, maxlen);
-        auto *buffer = new float[len];
-
-        lock.enter();
-        if (frameDetector.detectorBuffer.hasEnoughSpace(len))
-        {
-            receiver.read(buffer, len);
-            frameDetector.detectorBuffer.write(buffer, len);
-        }
-        lock.exit();
-
-        frameDetector.detectAndGet(received);
-
-        if (!received.empty())
-        {
-            if (received.front().isACK() && (deviceState & SENDING)) 
-                MACManager::get().macTransmitter->ACKReceived(std::move(received.front()));
-            else if (!received.front().isACK() && (deviceState & RECEIVING))
-                MACManager::get().macReceiver->frameReceived(std::move(received.front()));
-            received.pop_front();
-        }
-
-        delete [] buffer;
+//        std::size_t len = receiver.size();
+//        std::size_t maxlen = 12000;
+//        len = std::min(len, maxlen);
+//        auto *buffer = new float[len];
+//
+//        lock.enter();
+//        if (frameDetector.detectorBuffer.hasEnoughSpace(len))
+//        {
+//            receiver.read(buffer, len);
+//            frameDetector.detectorBuffer.write(buffer, len);
+//        }
+//        lock.exit();
+//
+//        frameDetector.detectAndGet(received);
+//
+//        if (!received.empty())
+//        {
+//            if (received.front().isACK() && (deviceState & SENDING))
+//                MACManager::get().macTransmitter->ACKReceived(std::move(received.front()));
+//            else if (!received.front().isACK() && (deviceState & RECEIVING))
+//                MACManager::get().macReceiver->frameReceived(std::move(received.front()));
+//            received.pop_front();
+//        }
+//
+//        delete [] buffer;
     }
 
     if (!isSending && !isReceiving)
@@ -158,6 +156,24 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
         for (int i = 0; i < numOutputChannels; ++i)
             if (outputChannelData[i] != nullptr)
                 zeromem(outputChannelData[i], (size_t)numSamples * sizeof(float));
+    }
+    float buffer[512];
+
+    if (frameDetector.detectorBuffer.hasEnoughSpace(numSamples))
+    {
+        receiver.read(buffer, numSamples);
+        frameDetector.detectorBuffer.write(buffer, numSamples);
+    }
+
+    frameDetector.detectAndGet(received);
+
+    if (!received.empty())
+    {
+        if (received.front().isACK() && (deviceState & SENDING))
+            MACManager::get().macTransmitter->ACKReceived(std::move(received.front()));
+        else if (!received.front().isACK() && (deviceState & RECEIVING))
+            MACManager::get().macReceiver->frameReceived(std::move(received.front()));
+        received.pop_front();
     }
 #endif
 }
