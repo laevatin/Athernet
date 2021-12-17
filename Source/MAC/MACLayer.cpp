@@ -193,7 +193,7 @@ void MACLayerTransmitter::MACThreadTransStart()
         else
         {
             resendCount += 1;
-            if (resendCount >= 10)
+            if (resendCount >= 100)
             {
                 std::cout << "Link Error: no ACK received after 10 retries.\n";
                 break;
@@ -293,7 +293,7 @@ void CSMASenderQueue::SendMACFrameAsync(const MACFrame &macFrame)
     std::cout << "SENDER: Send Frame: " << (int)macFrame.getId() << "\n";
 #endif
     macFrame.serialize(buffer, true);
-    m_queue.emplace_back(key, AudioFrame(buffer, macFrame.getLength() + sizeof(MACHeader)));
+    m_queue.emplace_back(key, AudioFrame(Frame(buffer, macFrame.getLength() + sizeof(MACHeader))));
     m_cvQueue.notify_one();
 }
 
@@ -310,7 +310,7 @@ void CSMASenderQueue::SendACKAsync(uint8_t id)
     std::cout << "SENDER: Send ACK: " << (int)ackFrame.getId() << "\n";
 #endif
     ackFrame.serialize(buffer, true);
-    m_queue.emplace_back(key, AudioFrame(buffer, sizeof(MACHeader)));
+    m_queue.emplace_back(key, AudioFrame(Frame(buffer, sizeof(MACHeader))));
 
     m_cvQueue.notify_one();
 }

@@ -54,7 +54,7 @@ public:
     constexpr static uint8_t SELF = 0xCE;
     constexpr static uint8_t OTHER = 0xEC;
 
-    constexpr static auto ACK_TIMEOUT = 500ms;
+    constexpr static auto ACK_TIMEOUT = 5000ms;
 
     constexpr static int POWER_AVG_LEN = 100; 
     constexpr static float POWER_THOR  = 0.01f;

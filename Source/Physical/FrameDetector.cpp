@@ -31,7 +31,7 @@ void FrameDetector::checkHeader(RingBuffer<float>& detectorBuffer)
                 (std::size_t)Config::HEADER_LENGTH,
                 headerOffset);
 
-        if (dot > 5.0f && dot > prevMax)
+        if (dot > 2.5f && dot > prevMax)
         {
             prevMax = dot;
             prevMaxPos = headerOffset;

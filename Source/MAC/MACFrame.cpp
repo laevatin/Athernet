@@ -39,7 +39,7 @@ MACFrame::MACFrame(const Frame &frame)
     if (rawData.size() < sizeof(MACHeader)) {
         m_isGoodMACFrame = false;
 #ifdef DEBUG
-        std::cout << __FILE__ << "wrong frame size\n";
+        std::cout << __FILE__ << " wrong frame size " << rawData.size() << "\n";
 #endif
         return;
     }
@@ -49,7 +49,7 @@ MACFrame::MACFrame(const Frame &frame)
     if (macHeader->len > rawData.size() - sizeof(MACHeader)) {
         m_isGoodMACFrame = false;
 #ifdef DEBUG
-        std::cout << __FILE__ << "wrong frame size " << rawData.size()
+        std::cout << __FILE__ << " wrong frame size " << rawData.size()
                   << " or MAC header length " << macHeader->len << "\n";
 #endif
         return;

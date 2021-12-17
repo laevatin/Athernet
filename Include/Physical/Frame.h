@@ -48,7 +48,7 @@ public:
 
 protected:
 
-    FrameHeader header;
+    FrameHeader m_header;
     /* frameData is byte array */
     DataType m_frameData;
     bool m_isGood = false;
