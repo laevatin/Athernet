@@ -68,7 +68,7 @@ void AudioDevice::hiResTimerCallback()
 #endif
 }
 
-void AudioDevice::sendFrame(const Frame &frame)
+void AudioDevice::sendFrame(const AudioFrame &frame)
 {
     ScopedLock sl(lock);
     frame.addToBuffer(sender);
@@ -120,10 +120,7 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
 
         if (!received.empty())
         {
-            if (received.front().isACK())
-                MACManager::get().macTransmitter->ACKReceived(std::move(received.front()));
-            else
-                MACManager::get().macReceiver->frameReceived(std::move(received.front()));
+            MACManager::get().macReceiver->frameReceived(std::move(received.front()));
             received.pop_front();
         }
     }
@@ -134,16 +131,6 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
                 zeromem(outputChannelData[i], (size_t)numSamples * sizeof(float));
     }
 #endif
-}
-
-void AudioDevice::stopReceiving()
-{
-    isReceiving = false;
-}
-
-void AudioDevice::stopSending()
-{
-    isSending = false;
 }
 
 enum AudioDevice::ChannelState AudioDevice::getChannelState() 
@@ -170,19 +157,14 @@ AudioIO::AudioIO()
 
         std::unique_ptr<MACLayerReceiver> macReceiver;
         std::unique_ptr<MACLayerTransmitter> macTransmitter;
-        std::unique_ptr<CSMASenderQueue> csmaSenderQueue;
 
         std::cout << "AudioIO: selected mode: " << Config::STATE << "\n";
-        if constexpr (Config::STATE & RECEIVING)
-            macReceiver = std::make_unique<MACLayerReceiver>();
 
-        if constexpr (Config::STATE & SENDING)
-            macTransmitter = std::make_unique<MACLayerTransmitter>();
+        macReceiver = std::make_unique<MACLayerReceiver>();
+        macTransmitter = std::make_unique<MACLayerTransmitter>(audioDevice);
 
-        csmaSenderQueue = std::make_unique<CSMASenderQueue>(audioDevice);
         MACManager::initialize(std::move(macReceiver),
-                               std::move(macTransmitter),
-                               std::move(csmaSenderQueue));
+                               std::move(macTransmitter));
         audioDevice->beginTransmit();
     }
     refcount += 1;

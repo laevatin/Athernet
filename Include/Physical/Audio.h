@@ -10,6 +10,7 @@
 
 #include "Utils/Ringbuffer.hpp"
 #include "Physical/FrameDetector.h"
+#include "Physical/AudioFrame.h"
 #include "Physical/Frame.h"
 #include "Physical/Codec.h"
 #include "MAC/MACLayer.h"
@@ -59,7 +60,7 @@ public:
 
     void hiResTimerCallback() override;
 
-    void sendFrame(const Frame &frame);
+    void sendFrame(const AudioFrame &frame);
 
     void audioDeviceAboutToStart(AudioIODevice* device) override;
 
@@ -67,12 +68,8 @@ public:
 
     void audioDeviceIOCallback(const float** inputChannelData, int numInputChannels,
         float** outputChannelData, int numOutputChannels, int numSamples) override;
+
     static Codec codec;
-
-    void stopReceiving();
-
-    void stopSending();
-    
     enum ChannelState getChannelState();
 
 private:

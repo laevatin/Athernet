@@ -17,8 +17,8 @@ Frame::Frame(const void *phys_data, uint16_t length)
     if (length == Config::DATA_PER_FRAME)
         header.length = Config::BIT_PER_FRAME / 8;
 
-    m_frameData.addArray((void *)&header, sizeof(struct FrameHeader));
-    m_frameData.addArray(phys_data, length);
+    m_frameData.addArray(reinterpret_cast<uint8_t *>(&header), sizeof(struct FrameHeader));
+    m_frameData.addArray(static_cast<const uint8_t *>(phys_data), length);
 
     /* Add FEC when length == Config::DATA_PER_FRAME */
     if (length == Config::DATA_PER_FRAME)
@@ -31,13 +31,11 @@ Frame::Frame(FrameHeader *header, const float *audio)
     for (int i = 0; i < header->length * 8 * Config::BIT_LENGTH / Config::BAND_WIDTH; i += Config::BIT_LENGTH)
         Modulator::demodulate(audio + i, bitArray);
 
-    byteArray.addArray((void *)header, sizeof(struct FrameHeader));
+    byteArray.addArray(reinterpret_cast<uint8_t *>(header), sizeof(struct FrameHeader));
     byteArray.addArray(bitToByte(bitArray), header->length);
 
     if (header->length == Config::BIT_PER_FRAME / 8)
-    {
         m_isGood = AudioDevice::codec.decodeBlock(byteArray, m_frameData, 0);
-    }
     else
     {
         m_frameData = std::move(byteArray);

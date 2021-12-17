@@ -3,8 +3,8 @@
 #include <fstream>
 #include "Config.h"
 #include "Utils/IOFunctions.hpp"
-#include "MAC/ACK.h"
 #include "MAC/MACManager.h"
+#include "Physical/Frame.h"
 
 extern std::ofstream debug_file;
 
@@ -68,79 +68,35 @@ void FrameDetector::resetState()
 void FrameDetector::detectAndGet(RingBuffer<float>& detectorBuffer, std::list<Frame> &received)
 {
     float buffer[Config::BIT_PER_FRAME * Config::BIT_LENGTH / Config::BAND_WIDTH];
-    static MACHeader *macHeader;
-    static uint8_t lastReceived = -1;
+    static FrameHeader *frameHeader;
 
     if (m_state == CK_HEADER)
         checkHeader(detectorBuffer);
 
-    if (m_state == FD_HEADER && detectorBuffer.hasEnoughElem((std::size_t)Config::MACHEADER_LENGTH * Config::BIT_LENGTH / Config::BAND_WIDTH))
-    {
-        detectorBuffer.read(buffer, Config::MACHEADER_LENGTH * Config::BIT_LENGTH / Config::BAND_WIDTH);
-        frameHeader = getMACHeader(buffer);
-        macHeader = headerView(frameHeader.getRawDataPointer());
-        if (macHeader->type == Config::ACK && MACLayerTransmitter::checkACK(macHeader))
-        {
-#ifdef VERBOSE_MAC
-            std::cout << "RECIVER: FrameDetector: ACK detected, id: " << (int)macHeader->id << "\n";
-#endif
-            received.push_back(ACK(macHeader));
+    if (m_state == FD_HEADER && detectorBuffer.hasEnoughElem((std::size_t)Config::PHYHEADER_LENGTH * Config::BIT_LENGTH / Config::BAND_WIDTH)) {
+        detectorBuffer.read(buffer, Config::PHYHEADER_LENGTH * Config::BIT_LENGTH / Config::BAND_WIDTH);
+        tmp = getFrameHeader(buffer);
+        frameHeader = reinterpret_cast<FrameHeader *>(tmp.getRawDataPointer());
+        if (frameHeader->length > Config::BIT_PER_FRAME)
             m_state = CK_HEADER;
-        }
-        else if (macHeader->type == Config::DATA && MACLayerReceiver::checkFrame(macHeader))
-        {
-#ifdef VERBOSE_MAC
-            std::cout << "RECIVER: FrameDetector: DATA detected, id: " << (int)macHeader->id
-                << " length: " << (int)macHeader->len << "\n";
-#endif
-            if (macHeader->id == lastReceived)
-            {
-#ifdef VERBOSE_MAC
-                std::cout << "RECIVER: This frame has been received\n";
-#endif
-                MACManager::get().macReceiver->sendACK(macHeader->id);
-                m_state = CK_HEADER;
-            }
-            else 
-                m_state = GET_DATA;
-        }
-        else if (macHeader->type == Config::MACPING_REQ && MACLayerTransmitter::checkPingReq(macHeader))
-		{
-#ifdef VERBOSE_MAC
-			std::cout << "RECIVER: FrameDetector: MACPING_REQ detected.\n";
-#endif
-            MACManager::get().csmaSenderQueue->sendPingAsync(Config::MACPING_ID, Config::MACPING_REPLY);
-            MACManager::get().macReceiver->stopMACThread();
-			m_state = CK_HEADER;
-		}
-        else if (macHeader->type == Config::MACPING_REPLY && MACLayerTransmitter::checkPingReply(macHeader))
-        {
-#ifdef VERBOSE_MAC
-			std::cout << "RECIVER: FrameDetector: MACPING_REPLY detected.\n";
-#endif
-            received.push_back(ACK(macHeader));
-            m_state = CK_HEADER;
-        }
         else
-            m_state = CK_HEADER;
+            m_state = GET_DATA;
     }
 
-    if (m_state == GET_DATA)
-    {
-        constexpr int remaining = (Config::BIT_PER_FRAME - Config::MACHEADER_LENGTH) * Config::BIT_LENGTH / Config::BAND_WIDTH;
+    if (m_state == GET_DATA) {
+        int remaining = frameHeader->length * 8 * Config::BIT_LENGTH / Config::BAND_WIDTH;
         if (detectorBuffer.size() >= remaining) {
             detectorBuffer.read(buffer, remaining);
-            received.emplace_back(macHeader, buffer);
+            received.emplace_back(frameHeader, buffer);
             m_state = CK_HEADER;
-            lastReceived = received.front().isGoodFrame() ? macHeader->id : -1;
         }
     }
 }
 
-DataType FrameDetector::getMACHeader(const float *samples)
+DataType FrameDetector::getFrameHeader(const float *samples)
 {
     DataType bitArray;
-    for (int i = 0; i < Config::MACHEADER_LENGTH * Config::BIT_LENGTH / Config::BAND_WIDTH; i += Config::BIT_LENGTH)
+    for (int i = 0; i < Config::PHYHEADER_LENGTH * Config::BIT_LENGTH / Config::BAND_WIDTH; i += Config::BIT_LENGTH)
         Modulator::demodulate(samples + i, bitArray);
     return bitToByte(bitArray);
 }

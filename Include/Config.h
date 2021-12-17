@@ -13,6 +13,7 @@ using namespace std::chrono_literals;
 class MACHeader;
 
 #define VERBOSE_MAC
+#define VERBOSE_PHY
 
 enum state {
     SENDING = 1,
@@ -42,22 +43,12 @@ public:
     constexpr static int DATA_PER_FRAME = 8 * 120;
     constexpr static int BIT_PER_FRAME  = 8 * 127;
 
+    constexpr static int PHYHEADER_LENGTH = 2 * 8; // sizeof(FrameHeader) * 8
     constexpr static int MACHEADER_LENGTH = 8 * 8; // sizeof(MACHeader) * 8
     constexpr static int MACDATA_PER_FRAME = DATA_PER_FRAME / 8 - MACHEADER_LENGTH / 8;
 
-    constexpr static int BIT_PER_ACK  = MACHEADER_LENGTH;
-
     constexpr static int BAND_WIDTH   = 2;
 
-    constexpr static int SAMPLE_PER_FRAME = BIT_PER_FRAME * BIT_LENGTH / BAND_WIDTH;
-    constexpr static int FRAME_LENGTH     = SAMPLE_PER_FRAME + HEADER_LENGTH + 10;
-    constexpr static int ACK_LENGTH       = HEADER_LENGTH + BIT_LENGTH * BIT_PER_ACK;
-
-    constexpr static uint8_t ACK = 0xAC;
-    constexpr static uint8_t DATA = 0xDA;
-
-	constexpr static uint8_t MACPING_REQ = 0xBE;
-	constexpr static uint8_t MACPING_REPLY = 0xEF;
     constexpr static uint8_t MACPING_ID = 0xFE;
 
     constexpr static uint8_t SELF = 0xCE;

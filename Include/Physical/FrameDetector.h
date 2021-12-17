@@ -5,7 +5,6 @@
 
 #include <JuceHeader.h>
 #include "Utils/Ringbuffer.hpp"
-#include "MAC/Serde.h"
 #include "Physical/Frame.h"
 
 using namespace juce;
@@ -34,11 +33,11 @@ private:
     int headerOffset = 0;
     int prevMaxPos = -1;
     float prevMax = 0.0f;
-    DataType frameHeader;
+    DataType tmp;
 
     void resetState();
     void checkHeader(RingBuffer<float> &detectorBuffer);
-    static DataType getMACHeader(const float *samples);
+    static DataType getFrameHeader(const float *samples);
 
 };
 

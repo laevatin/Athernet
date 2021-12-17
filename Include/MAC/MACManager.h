@@ -10,8 +10,7 @@ class MACManager
 {
 public:
     static void initialize(std::unique_ptr<MACLayerReceiver> &&macReceiver, 
-                        std::unique_ptr<MACLayerTransmitter> &&macTransmitter,
-                        std::unique_ptr<CSMASenderQueue> &&csmaSenderQueue);
+                        std::unique_ptr<MACLayerTransmitter> &&macTransmitter);
     static MACManager& get();
     static void destroy();
 
@@ -22,11 +21,8 @@ public:
     
     std::unique_ptr<MACLayerReceiver> macReceiver;
     std::unique_ptr<MACLayerTransmitter> macTransmitter;
-    std::unique_ptr<CSMASenderQueue> csmaSenderQueue; 
-    std::unique_ptr<MACFrameFactory> macFrameFactory;
-
 private:
-    MACManager();
+    MACManager() = default;
     ~MACManager() = default;
 };
 

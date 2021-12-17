@@ -13,8 +13,6 @@ using namespace juce;
 typedef Array<uint8_t> DataType;
 typedef AudioBuffer<float> AudioType;
 
-class MACHeader;
-
 /**
  * Data structure for the frames
  */

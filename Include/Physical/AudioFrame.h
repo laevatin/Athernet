@@ -25,12 +25,12 @@ public:
     explicit AudioFrame(const Frame& frame);
 
     void addSound(const AudioType& src);
-    void addToBuffer(RingBuffer<float>& buffer);
+    void addToBuffer(RingBuffer<float>& buffer) const;
 
 private:
     void addHeader();
     AudioType m_frameAudio;
-    size_t m_audioPos;
+    size_t m_audioPos = 0;
 };
 
 #endif

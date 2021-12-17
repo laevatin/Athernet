@@ -5,7 +5,7 @@
 AudioFrame::AudioFrame(const void *data, size_t len) {
     m_frameAudio.setSize(1, (Config::BIT_LENGTH * len * 8 / Config::BAND_WIDTH) + Config::HEADER_LENGTH + 10);
     DataType dataArray;
-    dataArray.addArray(data, len);
+    dataArray.addArray(static_cast<const uint8_t *>(data), len);
     DataType bitArray = byteToBit(dataArray);
     addHeader();
     Modulator::modulate(*this, bitArray);
@@ -34,6 +34,6 @@ void AudioFrame::addSound(const AudioType &src) {
     m_audioPos += src.getNumSamples();
 }
 
-void AudioFrame::addToBuffer(RingBuffer<float> &buffer) {
+void AudioFrame::addToBuffer(RingBuffer<float> &buffer) const {
     buffer.write(m_frameAudio.getReadPointer(0), m_frameAudio.getNumSamples());
 }

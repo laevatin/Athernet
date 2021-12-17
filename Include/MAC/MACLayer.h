@@ -5,6 +5,7 @@
 
 #include <thread>
 #include <list>
+#include <set>
 #include <condition_variable>
 #include <atomic>
 #include <stdint.h>
@@ -12,14 +13,13 @@
 #include "Physical/Frame.h"
 
 class AudioDevice;
+class CSMASenderQueue;
 
 class MACLayer
 {
 public:
     explicit MACLayer();
     virtual ~MACLayer() = default;
-
-    virtual void stopMACThread();
 
 protected:
     std::unique_ptr<std::thread> MACThread;
@@ -32,54 +32,37 @@ public:
     explicit MACLayerReceiver();
     ~MACLayerReceiver() override;
 
+    /* For frame detector */
     void frameReceived(Frame &&frame);
-    void stopMACThread() override;
-    static void sendACK(uint8_t id);
     int RecvPacket(uint8_t *out);
-
-    static bool checkFrame(const MACHeader *macHeader);
 
 private:
     void MACThreadRecvStart();
-    
-    enum RxState {
-        IDLE,
-        CK_HEADER,
-        CK_FRAME,
-        SEND_ACK
-    };
 
-    std::mutex m_frameQueue;
-    std::condition_variable cv_frameQueue;
-    std::list<Frame> frameQueue;
+    std::mutex              m_mQueue;
+    std::condition_variable m_cvQueue;
+    std::list<Frame>        m_recvQueue;
 
-    std::mutex m_packetQueue;
-    std::condition_variable cv_packetQueue;
-    std::list<MACFrame> packetQueue;
-
-    std::atomic<RxState> rxstate;
+    std::mutex              m_mPacketQueue;
+    std::condition_variable m_cvPacketQueue;
+    std::list<MACFrame>     m_packetQueue;
 };
 
 
 class MACLayerTransmitter : public MACLayer
 {
 public:
-    // send data
-    explicit MACLayerTransmitter();
+    explicit MACLayerTransmitter(std::shared_ptr<AudioDevice> audioDevice);
     ~MACLayerTransmitter() override;
 
     /* This function may be called from other thread. */
-    void ACKReceived(Frame&& ack);
+    void ReplyReceived(MACFrame& reply);
     void SendPacket(const uint8_t *data, int len);
+    void SendPing(MACType pingType);
+    void SendACK(uint8_t id);
 
-    static bool checkACK(const MACHeader *macHeader);
-
-	static bool checkPingReq(const MACHeader* macHeader);
-
-	static bool checkPingReply(const MACHeader* macHeader);
 private:
     void MACThreadTransStart();
-    void MACThreadPingStart();
 
     enum TxState {
         IDLE,
@@ -88,17 +71,19 @@ private:
         SEND_DATA,
         SEND_PING
     };
-    
-    std::mutex cv_ack_m;
-    std::condition_variable cv_ack;
-    
-    std::mutex m_queue;
-    std::condition_variable cv_queue;
 
-    std::list<Frame> pendingFrame;
-    std::list<uint8_t> pendingID;
+    std::unique_ptr<CSMASenderQueue> m_asyncSender;
+    
+    std::mutex              m_mAck;
+    std::condition_variable m_cvAck;
+    
+    std::mutex              m_mSend;
+    std::condition_variable m_cvSend;
 
-    std::atomic<TxState> txstate;
+    std::list<MACFrame>         m_sendQueue;
+    std::map<uint8_t, MACFrame> m_sentWindow;
+    std::atomic<TxState>        m_txState;
+    std::atomic<uint8_t>        m_lastId;
 };
 
 class CSMASenderQueue
@@ -107,24 +92,23 @@ public:
     explicit CSMASenderQueue(std::shared_ptr<AudioDevice> audioDevice);
     ~CSMASenderQueue();
 
-    void sendDataAsync(Frame&& frame);
-    void sendACKAsync(uint8_t id);
-    void sendPingAsync(uint8_t id, uint8_t type);
+    void SendMACFrameAsync(const MACFrame &macFrame);
+
+    void SendACKAsync(uint8_t id);
 
 private:
-    void senderStart();
+    void SenderStart();
 
     std::unique_ptr<std::thread> m_senderThread;
     std::shared_ptr<AudioDevice> m_audioDevice;
 
-    std::mutex m_queue_m;
-    std::list<Frame> m_queue;
-    std::condition_variable m_cv_frame;
+    /* low probability to crc collide */
+    std::set<uint16_t>                         m_hasFrame;
+    std::mutex                                 m_mQueue;
+    std::condition_variable                    m_cvQueue;
+    std::list<std::pair<uint16_t, AudioFrame>> m_queue;
 
-    bool m_hasACKid[256] = { false };
-    bool m_hasDATAid[256] = { false };
-    std::atomic<bool> running = true;
-
+    std::atomic<bool> running;
 };
 
 #endif

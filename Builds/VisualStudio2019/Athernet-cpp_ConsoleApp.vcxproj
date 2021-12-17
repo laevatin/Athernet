@@ -142,11 +142,9 @@
     <ClCompile Include="..\..\Source\ANet\ANet.cpp"/>
     <ClCompile Include="..\..\Source\ANet\Ping.cpp"/>
     <ClCompile Include="..\..\Source\UDP\UDP.cpp"/>
-    <ClCompile Include="..\..\Source\MAC\ACK.cpp"/>
     <ClCompile Include="..\..\Source\MAC\MACFrame.cpp"/>
     <ClCompile Include="..\..\Source\MAC\MACLayer.cpp"/>
     <ClCompile Include="..\..\Source\MAC\MACManager.cpp"/>
-    <ClCompile Include="..\..\Source\MAC\Serde.cpp"/>
     <ClCompile Include="..\..\Source\Physical\Audio.cpp"/>
     <ClCompile Include="..\..\Source\Physical\AudioFrame.cpp"/>
     <ClCompile Include="..\..\Source\Physical\Codec.cpp"/>
@@ -1087,11 +1085,9 @@
     <ClInclude Include="..\..\Include\UDP\UDP.h"/>
     <ClInclude Include="..\..\Include\ANet\ANet.h"/>
     <ClInclude Include="..\..\Include\ANet\Ping.h"/>
-    <ClInclude Include="..\..\Include\MAC\ACK.h"/>
     <ClInclude Include="..\..\Include\MAC\MACFrame.h"/>
     <ClInclude Include="..\..\Include\MAC\MACLayer.h"/>
     <ClInclude Include="..\..\Include\MAC\MACManager.h"/>
-    <ClInclude Include="..\..\Include\MAC\Serde.h"/>
     <ClInclude Include="..\..\Include\Physical\Audio.h"/>
     <ClInclude Include="..\..\Include\Physical\AudioFrame.h"/>
     <ClInclude Include="..\..\Include\Physical\Codec.h"/>

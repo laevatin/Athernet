@@ -26,7 +26,7 @@ MACFrame::MACFrame(const void *mac_payload, uint16_t length)
     m_macHeader.len   = length;
     m_macHeader.id    = nextID++;
     m_macHeader.crc16 = 0;
-    m_payload.addArray(mac_payload, length);
+    m_payload.addArray(static_cast<const uint8_t *>(mac_payload), length);
     uint16_t crcHeader = CRC::Calculate(&m_macHeader, sizeof(MACHeader), crcTable);
     m_macHeader.crc16 = CRC::Calculate(m_payload.getRawDataPointer(), length, crcTable, crcHeader);
     m_isGoodMACFrame  = true;
@@ -58,6 +58,7 @@ MACFrame::MACFrame(const Frame &frame)
     m_macHeader = *macHeader;
     m_payload.addArray(dataPtr, macHeader->len);
     m_isGoodMACFrame = checkCRC();
+    m_isGoodMACFrame &= checkAddr();
 }
 
 MACFrame::MACFrame(MACFrame &&other) noexcept
@@ -80,11 +81,17 @@ bool MACFrame::checkCRC() {
     return true;
 }
 
-uint16_t MACFrame::serialize(void *out) const {
-    uint16_t total_size = sizeof(MACHeader);
+uint16_t MACFrame::serialize(void *out, bool withHeader) const {
+    uint16_t total_size = 0;
     auto *ptr = (uint8_t *)out;
-    memcpy(out, &m_macHeader, sizeof(MACHeader));
-    ptr += sizeof(MACHeader);
+
+    if (withHeader)
+    {
+        memcpy(out, &m_macHeader, sizeof(MACHeader));
+        ptr += sizeof(MACHeader);
+        total_size += sizeof(MACHeader);
+    }
+
     memcpy(ptr, m_payload.getRawDataPointer(), m_macHeader.len);
     total_size += m_macHeader.len;
     return total_size;
@@ -96,4 +103,23 @@ bool MACFrame::isGood() const {
 
 const MACHeader &MACFrame::getHeader() const {
     return m_macHeader;
+}
+
+MACType MACFrame::getType() const {
+    return (MACType)getHeader().type;
+}
+
+bool MACFrame::checkAddr() {
+    bool success = (m_macHeader.src == Config::OTHER)
+                && (m_macHeader.dest == Config::SELF);
+
+    return success;
+}
+
+uint8_t MACFrame::getId() const {
+    return m_macHeader.id;
+}
+
+uint16_t MACFrame::getLength() const {
+    return m_macHeader.len;
 }

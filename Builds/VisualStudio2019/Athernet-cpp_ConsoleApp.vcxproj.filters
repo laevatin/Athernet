@@ -274,9 +274,6 @@
     <ClCompile Include="..\..\Source\UDP\UDP.cpp">
       <Filter>Athernet-cpp\Source\UDP</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\MAC\ACK.cpp">
-      <Filter>Athernet-cpp\Source\MAC</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\MAC\MACFrame.cpp">
       <Filter>Athernet-cpp\Source\MAC</Filter>
     </ClCompile>
@@ -284,9 +281,6 @@
       <Filter>Athernet-cpp\Source\MAC</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\MAC\MACManager.cpp">
-      <Filter>Athernet-cpp\Source\MAC</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\MAC\Serde.cpp">
       <Filter>Athernet-cpp\Source\MAC</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\Physical\Audio.cpp">
@@ -1305,9 +1299,6 @@
     <ClInclude Include="..\..\Include\ANet\Ping.h">
       <Filter>Athernet-cpp\Include\ANet</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Include\MAC\ACK.h">
-      <Filter>Athernet-cpp\Include\MAC</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Include\MAC\MACFrame.h">
       <Filter>Athernet-cpp\Include\MAC</Filter>
     </ClInclude>
@@ -1315,9 +1306,6 @@
       <Filter>Athernet-cpp\Include\MAC</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Include\MAC\MACManager.h">
-      <Filter>Athernet-cpp\Include\MAC</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Include\MAC\Serde.h">
       <Filter>Athernet-cpp\Include\MAC</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Include\Physical\Audio.h">

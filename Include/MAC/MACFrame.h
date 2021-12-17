@@ -38,16 +38,26 @@ public:
     MACFrame(const MACFrame& other) = default;
     MACFrame(MACFrame&& other) noexcept ;
 
-    uint16_t serialize(void *out) const;
-    bool isGood() const;
-    const MACHeader& getHeader() const;
+    uint16_t serialize(void *out, bool withHeader) const;
+
+    [[nodiscard]] bool isGood() const;
+
+    [[nodiscard]] const MACHeader& getHeader() const;
+
+    [[nodiscard]] MACType getType() const;
+
+    [[nodiscard]] uint8_t getId() const;
+
+    [[nodiscard]] uint16_t getLength() const;
 
 private:
     bool checkCRC();
+    bool checkAddr();
 
     MACHeader m_macHeader;
-    DataType m_payload;
-    bool m_isGoodMACFrame;
+    DataType  m_payload;
+    bool      m_isGoodMACFrame;
+
     static uint8_t nextID;
     static CRC::Table<std::uint16_t, 16> crcTable;
 };

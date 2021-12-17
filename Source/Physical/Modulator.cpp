@@ -8,17 +8,6 @@ float m_dot2(int length, const float *x, const float *y)
         sum += x[i] * y[i];
     return sum;
 }
-void Modulator::modulate(const DataType &data, int start, int length, Frame &frame)
-{
-    for (int i = start; i < start + length; i += Config::BAND_WIDTH)
-    {
-        /* gets 0 if i is out of bound */
-        uint8_t composed = data[i];
-        composed = composed | (data[i + 1] << 1);
-
-        frame.addSound(Config::modulateSound[composed]);
-    }
-}
 
 /* consume Config::BIT_LENGTH samples, `samples` should contain at least Config::BIT_LENGTH data */
 void Modulator::demodulate(const float *samples, DataType &out)
@@ -50,4 +39,15 @@ void Modulator::demodulate(const float *samples, DataType &out)
         out.add((uint8_t)1);
     else
         out.add((uint8_t)0);
+}
+
+void Modulator::modulate(AudioFrame &audioFrame, const DataType &bitArray) {
+    for (int i = 0; i < bitArray.size(); i += Config::BAND_WIDTH)
+    {
+        /* gets 0 if i is out of bound */
+        uint8_t composed = bitArray[i];
+        composed = composed | (bitArray[i + 1] << 1);
+
+        audioFrame.addSound(Config::modulateSound[composed]);
+    }
 }
