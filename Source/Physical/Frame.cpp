@@ -32,7 +32,7 @@ Frame::Frame(FrameHeader *header, const float *audio)
         Modulator::demodulate(audio + i, bitArray);
 
     byteArray.addArray(reinterpret_cast<uint8_t *>(header), sizeof(struct FrameHeader));
-    byteArray.addArray(bitToByte(bitArray), header->length);
+    byteArray.addArray(bitToByte(bitArray));
 
     if (header->length == Config::BIT_PER_FRAME / 8)
         m_isGood = AudioDevice::codec.decodeBlock(byteArray, m_frameData, 0);

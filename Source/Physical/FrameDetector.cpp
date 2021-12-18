@@ -77,7 +77,10 @@ void FrameDetector::detectAndGet(RingBuffer<float>& detectorBuffer, std::list<Fr
         detectorBuffer.read(buffer, Config::PHYHEADER_LENGTH * Config::BIT_LENGTH / Config::BAND_WIDTH);
         tmp = getFrameHeader(buffer);
         frameHeader = reinterpret_cast<FrameHeader *>(tmp.getRawDataPointer());
-        if (frameHeader->length > Config::BIT_PER_FRAME)
+#ifdef VERBOSE_PHY
+        std::cout << "frame length: " << (int)frameHeader->length << "\n";
+#endif
+        if (frameHeader->length > Config::BIT_PER_FRAME && frameHeader->length == 0)
             m_state = CK_HEADER;
         else
             m_state = GET_DATA;
