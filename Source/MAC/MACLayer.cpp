@@ -161,8 +161,11 @@ void MACLayerTransmitter::MACThreadTransStart()
             break;
 
         if (!m_sendQueue.empty())
+        {
             m_sentWindow.insert(std::make_pair(m_sendQueue.front().getId(),
                                                std::move(m_sendQueue.front())));
+            m_sendQueue.pop_front();
+        }
 
         auto now = std::chrono::system_clock::now();
         m_asyncSender->SendMACFrameAsync(m_sentWindow.begin()->second);
@@ -187,7 +190,7 @@ void MACLayerTransmitter::MACThreadTransStart()
                 std::cout << "SENDER: Time to ACK " << (int)m_lastId << ": "
                           << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << "\n";
 #endif
-                m_sendQueue.pop_front();
+                m_sentWindow.erase(m_lastId);
             }
         }
         else

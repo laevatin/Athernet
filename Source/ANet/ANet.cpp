@@ -153,6 +153,9 @@ void ANetGateway::ATNToInternet() {
                     std::to_string(ntohs(m_outPort)).c_str(),
                     false);
         }
+#ifdef DEBUG
+        std::cout << (char *)packet.payload << std::endl;
+#endif
         switch (packet.ip.tag)
         {
         case ANetIPTag::PING:

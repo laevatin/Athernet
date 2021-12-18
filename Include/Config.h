@@ -13,7 +13,6 @@ using namespace std::chrono_literals;
 class MACHeader;
 
 #define VERBOSE_MAC
-#define VERBOSE_PHY
 
 enum state {
     SENDING = 1,
@@ -34,7 +33,7 @@ public:
 
     constexpr static int SAMPLE_RATE   = 48000;
 
-    constexpr static int HEADER_LENGTH = 160;
+    constexpr static int HEADER_LENGTH = 80;
 
     constexpr static int BIT_LENGTH    = 6;
 
@@ -54,12 +53,12 @@ public:
     constexpr static uint8_t SELF = 0xCE;
     constexpr static uint8_t OTHER = 0xEC;
 
-    constexpr static auto ACK_TIMEOUT = 5000ms;
+    constexpr static auto ACK_TIMEOUT = 300ms;
 
     constexpr static int POWER_AVG_LEN = 100; 
-    constexpr static float POWER_THOR  = 0.01f;
+    constexpr static float POWER_THOR  = 0.05f;
 
-    constexpr static int BACKOFF_TSLOT = 100; // CSMA Tslot in milliseconds
+    constexpr static int BACKOFF_TSLOT = 30; // CSMA Tslot in milliseconds
 
     constexpr static enum state STATE = BOTH;
     constexpr static char IP_ATHERNET[] = "192.168.1.1"; // Node1

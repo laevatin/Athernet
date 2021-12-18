@@ -151,7 +151,7 @@ AudioIO::AudioIO()
         audioDeviceManager.initialiseWithDefaultDevices(1, 1);
         AudioDeviceManager::AudioDeviceSetup dev_info = audioDeviceManager.getAudioDeviceSetup();
         dev_info.sampleRate = 48000;
-        dev_info.bufferSize = 512;
+        dev_info.bufferSize = 256;
         audioDevice = std::make_shared<AudioDevice>(Config::STATE);
         audioDeviceManager.addAudioCallback(audioDevice.get());
 
