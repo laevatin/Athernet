@@ -5,7 +5,7 @@
 #include <chrono>
 #include <memory>
 #include <utility>
-
+#include <future>
 #include <windows.h>
 
 using namespace std::chrono_literals;
@@ -51,14 +51,6 @@ void MACLayerReceiver::MACThreadRecvStart() {
                         m_mPacketQueue.unlock();
                         m_cvPacketQueue.notify_one();
                         break;
-                    case MACType::PING_REQ:
-#ifdef VERBOSE_MAC
-                        std::cout << "RECIVER: FrameDetector: MACPING_REQ detected.\n";
-#endif
-                        MACManager::get().macTransmitter->SendPing(MACType::PING_REP);
-                        break;
-                    case MACType::PING_REP:
-                        [[fallthrough]];
                     case MACType::ACK:
 #ifdef VERBOSE_MAC
                         std::cout << "RECIVER: FrameDetector: ACK detected, id: " << (int) macFrame.getId() << "\n";
@@ -88,7 +80,7 @@ int MACLayerReceiver::RecvPacket(uint8_t *out) {
 }
 
 MACLayerTransmitter::MACLayerTransmitter(std::shared_ptr<AudioDevice> audioDevice)
-        : m_txState(MACLayerTransmitter::IDLE) {
+        : m_slidingWindow(Config::SLIDING_WINDOW_SIZE) {
     m_asyncSender = std::make_unique<CSMASenderQueue>(audioDevice);
     MACThread = std::make_unique<std::thread>([this]() { MACThreadTransStart(); });
 }
@@ -103,27 +95,11 @@ MACLayerTransmitter::~MACLayerTransmitter() {
 
 void MACLayerTransmitter::ReplyReceived(MACFrame &reply) {
     std::lock_guard<std::mutex> guard(m_mSend);
-    switch (reply.getType()) {
-        case MACType::PING_REP:
-            if (m_txState == SEND_PING) {
-                m_txState = PING_RECEIVED;
-                m_cvAck.notify_one();
-                return;
-            }
-            break;
+    jassert(reply.getType() == MACType::ACK);
 
-        case MACType::ACK:
-            if (m_txState != SEND_PING && m_sentWindow.count(reply.getId())) {
-                m_sentWindow.erase(reply.getId());
-                m_lastId = reply.getId();
-                m_txState = ACK_RECEIVED;
-                m_cvAck.notify_one();
-                return;
-            }
-            break;
-
-        default:
-            break;
+    if (m_slidingWindow.removePacket(reply.getId())) {
+        m_cvAck.notify_one();
+        return;
     }
 
     std::cout << "SENDER: Received bad reply "
@@ -133,50 +109,31 @@ void MACLayerTransmitter::ReplyReceived(MACFrame &reply) {
 
 void MACLayerTransmitter::MACThreadTransStart() {
     int resendCount = 0;
+    std::future<void> asyncFutures[Config::SLIDING_WINDOW_SIZE];
     while (true) {
         std::unique_lock<std::mutex> lock_queue(m_mSend);
         m_cvSend.wait(lock_queue, [this]() {
-            return !m_sendQueue.empty() || !m_sentWindow.empty() || !running;
+            return !m_sendQueue.empty() || !running;
         });
 
         if (!running)
             break;
 
-        if (!m_sendQueue.empty()) {
-            m_sentWindow.insert(std::make_pair(m_sendQueue.front().getId(),
-                                               std::move(m_sendQueue.front())));
+        int windowIdx = m_slidingWindow.addPacket(m_sendQueue.front());
+
+        if (windowIdx != -1) {
             m_sendQueue.pop_front();
+            asyncFutures[windowIdx] = std::async(std::launch::async,
+                                                 [this, windowIdx]() { return SlidingWindowSender(windowIdx); });
         }
 
-        auto now = std::chrono::system_clock::now();
-        m_asyncSender->SendMACFrameAsync(m_sentWindow.begin()->second);
         lock_queue.unlock();
-
         std::unique_lock<std::mutex> lock_ack(m_mAck);
-        if (m_cvAck.wait_until(lock_ack, now + Config::ACK_TIMEOUT, [this]() {
-            return m_txState == PING_RECEIVED || m_txState == ACK_RECEIVED;
-        })) {
-            if (m_txState == PING_RECEIVED) {
-                auto recv = std::chrono::system_clock::now();
-                std::cout << "MACLayer: Get Ping After: "
-                          << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count()
-                          << "ms\n";
-            } else if (m_txState == ACK_RECEIVED) {
-                resendCount = 0;
-                auto recv = std::chrono::system_clock::now();
-#ifdef VERBOSE_MAC
-                std::cout << "SENDER: Time to ACK " << (int) m_lastId << ": "
-                          << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << "\n";
-#endif
-                m_sentWindow.erase(m_lastId);
-            }
-        } else {
-            resendCount += 1;
-            if (resendCount >= 100) {
-                std::cout << "Link Error: no ACK received after 10 retries.\n";
-                break;
-            }
-        }
+        m_cvAck.wait_for(lock_ack, Config::ACK_TIMEOUT);
+    }
+
+    for (auto & asyncFuture : asyncFutures) {
+        asyncFuture.get();
     }
 }
 
@@ -184,24 +141,41 @@ void MACLayerTransmitter::SendPacket(const uint8_t *data, int len) {
     jassert(len <= Config::MACDATA_PER_FRAME);
 
     std::lock_guard<std::mutex> guard(m_mSend);
-
-    m_txState = SEND_DATA;
     m_sendQueue.emplace_back(data, static_cast<uint16_t>(len));
-    m_cvSend.notify_one();
-}
-
-void MACLayerTransmitter::SendPing(MACType pingType) {
-    if (pingType != MACType::PING_REQ && pingType != MACType::PING_REP)
-        return;
-
-    std::lock_guard<std::mutex> guard(m_mSend);
-    m_txState = SEND_PING;
-    m_sendQueue.emplace_back(Config::MACPING_ID, pingType);
     m_cvSend.notify_one();
 }
 
 void MACLayerTransmitter::SendACK(uint8_t id) {
     m_asyncSender->SendACKAsync(id);
+}
+
+void MACLayerTransmitter::SlidingWindowSender(int windowIdx) {
+    uint8_t macId;
+    int resendCount = 0;
+    auto sendTime = std::chrono::system_clock::now();
+
+    while (m_slidingWindow.getStatus(windowIdx)) {
+        MACFrame macFrame(m_slidingWindow.getPacket(windowIdx));
+        macId = macFrame.getId();
+        /* There may be one situation that the status is changed after
+         * getStatus before send. */
+        m_asyncSender->SendMACFrameAsync(macFrame);
+        if (m_slidingWindow.waitReply(windowIdx))
+            break;
+
+        resendCount += 1;
+        if (resendCount >= 20) {
+            std::cout << "Link Error: no ACK received after 20 retries.\n";
+            running = false;
+            return;
+        }
+    }
+
+    auto recvTime = std::chrono::system_clock::now();
+#ifdef VERBOSE_MAC
+    std::cout << "MACTransmitter: Time to ACK " << (int) macId << ": "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(recvTime - sendTime).count() << "\n";
+#endif
 }
 
 CSMASenderQueue::CSMASenderQueue(std::shared_ptr<AudioDevice> audioDevice)
@@ -232,7 +206,7 @@ void CSMASenderQueue::SenderStart() {
         while (!m_queue.empty() && running) {
             retryNum++;
             if (m_audioDevice->getChannelState() == AudioDevice::CN_BUSY)
-                Sleep(10);
+                std::this_thread::sleep_for(10ms);
 
             if (m_audioDevice->getChannelState() == AudioDevice::CN_IDLE) {
                 m_audioDevice->sendFrame(m_queue.front().second);
@@ -259,7 +233,7 @@ void CSMASenderQueue::SendMACFrameAsync(const MACFrame &macFrame) {
     if (m_hasFrame.count(key))
         return;
 #ifdef VERBOSE_MAC
-    std::cout << "SENDER: Send Frame: " << (int) macFrame.getId() << "\n";
+    std::cout << "MACTransmitter: Send Frame: " << (int) macFrame.getId() << "\n";
 #endif
     macFrame.serialize(buffer, true);
     m_queue.emplace_back(key, AudioFrame(Frame(buffer, macFrame.getLength() + sizeof(MACHeader))));
@@ -275,7 +249,7 @@ void CSMASenderQueue::SendACKAsync(uint8_t id) {
     if (m_hasFrame.count(key))
         return;
 #ifdef VERBOSE_MAC
-    std::cout << "SENDER: Send ACK: " << (int) ackFrame.getId() << "\n";
+    std::cout << "MACTransmitter: Send ACK: " << (int) ackFrame.getId() << "\n";
 #endif
     ackFrame.serialize(buffer, true);
     m_queue.emplace_back(key, AudioFrame(Frame(buffer, sizeof(MACHeader))));

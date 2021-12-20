@@ -55,6 +55,8 @@ public:
 
     constexpr static auto ACK_TIMEOUT = 300ms;
 
+    constexpr static int SLIDING_WINDOW_SIZE = 3;
+
     constexpr static int POWER_AVG_LEN = 100;
     constexpr static float POWER_THOR = 0.05f;
 

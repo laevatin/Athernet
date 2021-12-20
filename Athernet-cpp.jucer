@@ -16,6 +16,7 @@
         <FILE id="TdIymT" name="MACFrame.h" compile="0" resource="0" file="Include/MAC/MACFrame.h"/>
         <FILE id="nihHGa" name="MACLayer.h" compile="0" resource="0" file="Include/MAC/MACLayer.h"/>
         <FILE id="RmQwhn" name="MACManager.h" compile="0" resource="0" file="Include/MAC/MACManager.h"/>
+        <FILE id="Mpbg7G" name="SlidingWindow.h" compile="0" resource="0" file="Include/MAC/SlidingWindow.h"/>
       </GROUP>
       <GROUP id="{E2AFAEC3-8EC8-EED8-68FB-678EC7811792}" name="Physical">
         <FILE id="OtvU5J" name="Audio.h" compile="0" resource="0" file="Include/Physical/Audio.h"/>
@@ -44,6 +45,8 @@
         <FILE id="amNhuR" name="MACFrame.cpp" compile="1" resource="0" file="Source/MAC/MACFrame.cpp"/>
         <FILE id="k8MGMh" name="MACLayer.cpp" compile="1" resource="0" file="Source/MAC/MACLayer.cpp"/>
         <FILE id="kFx9tk" name="MACManager.cpp" compile="1" resource="0" file="Source/MAC/MACManager.cpp"/>
+        <FILE id="LW5yk8" name="SlidingWindow.cpp" compile="1" resource="0"
+              file="Source/MAC/SlidingWindow.cpp"/>
       </GROUP>
       <GROUP id="{FE4895C6-983A-6044-B1C1-6A095568E775}" name="Physical">
         <FILE id="hetPTa" name="Audio.cpp" compile="1" resource="0" file="Source/Physical/Audio.cpp"/>

@@ -52,11 +52,12 @@ jucer_project_files("Athernet-cpp/Include/ANet"
 )
 
 jucer_project_files("Athernet-cpp/Include/MAC"
-# Compile   Xcode     Binary    File                        Compiler Flag
-#           Resource  Resource                              Scheme
+# Compile   Xcode     Binary    File                           Compiler Flag
+#           Resource  Resource                                 Scheme
   .         .         .         "Include/MAC/MACFrame.h"
   .         .         .         "Include/MAC/MACLayer.h"
   .         .         .         "Include/MAC/MACManager.h"
+  .         .         .         "Include/MAC/SlidingWindow.h"
 )
 
 jucer_project_files("Athernet-cpp/Include/Physical"
@@ -98,11 +99,12 @@ jucer_project_files("Athernet-cpp/Source/UDP"
 )
 
 jucer_project_files("Athernet-cpp/Source/MAC"
-# Compile   Xcode     Binary    File                         Compiler Flag
-#           Resource  Resource                               Scheme
+# Compile   Xcode     Binary    File                            Compiler Flag
+#           Resource  Resource                                  Scheme
   x         .         .         "Source/MAC/MACFrame.cpp"
   x         .         .         "Source/MAC/MACLayer.cpp"
   x         .         .         "Source/MAC/MACManager.cpp"
+  x         .         .         "Source/MAC/SlidingWindow.cpp"
 )
 
 jucer_project_files("Athernet-cpp/Source/Physical"

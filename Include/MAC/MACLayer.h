@@ -10,6 +10,7 @@
 #include <atomic>
 #include <stdint.h>
 #include "MAC/MACFrame.h"
+#include "MAC/SlidingWindow.h"
 #include "Physical/Frame.h"
 
 class AudioDevice;
@@ -69,13 +70,7 @@ public:
 private:
     void MACThreadTransStart();
 
-    enum TxState {
-        IDLE,
-        ACK_RECEIVED,
-        PING_RECEIVED,
-        SEND_DATA,
-        SEND_PING
-    };
+    void SlidingWindowSender(int windowIdx);
 
     std::unique_ptr<CSMASenderQueue> m_asyncSender;
 
@@ -85,10 +80,9 @@ private:
     std::mutex m_mSend;
     std::condition_variable m_cvSend;
 
+    SlidingWindow m_slidingWindow;
+
     std::list<MACFrame> m_sendQueue;
-    std::map<uint8_t, MACFrame> m_sentWindow;
-    std::atomic<TxState> m_txState;
-    std::atomic<uint8_t> m_lastId;
 };
 
 class CSMASenderQueue {

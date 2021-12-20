@@ -12,9 +12,7 @@ typedef juce::Array<uint8_t> DataType;
 
 enum class MACType {
     DATA,
-    ACK,
-    PING_REQ,
-    PING_REP
+    ACK
 };
 
 struct MACHeader {
@@ -28,6 +26,8 @@ struct MACHeader {
 
 class MACFrame {
 public:
+    MACFrame();
+
     MACFrame(const void *mac_payload, uint16_t length);
 
     MACFrame(uint8_t id, MACType type);
@@ -35,6 +35,10 @@ public:
     explicit MACFrame(const Frame &frame);
 
     MACFrame(const MACFrame &other) = default;
+
+    MACFrame &operator=(const MACFrame &other);
+
+    MACFrame &operator=(MACFrame &&other) noexcept;
 
     MACFrame(MACFrame &&other) noexcept;
 
@@ -61,6 +65,8 @@ private:
 
     static uint8_t nextID;
     static CRC::Table<std::uint16_t, 16> crcTable;
+
+    friend void swap(MACFrame &left, MACFrame &right);
 };
 
 #endif

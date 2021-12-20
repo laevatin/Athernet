@@ -4,6 +4,11 @@
 uint8_t MACFrame::nextID = 0;
 CRC::Table<std::uint16_t, 16> MACFrame::crcTable(CRC::CRC_16_ARC());
 
+MACFrame::MACFrame()
+        : m_macHeader() {
+    m_isGoodMACFrame = false;
+}
+
 MACFrame::MACFrame(uint8_t id, MACType type)
         : m_macHeader() {
     m_macHeader.dest = Config::OTHER;
@@ -66,21 +71,6 @@ MACFrame::MACFrame(MACFrame &&other) noexcept
           m_payload(std::move(other.m_payload)),
           m_isGoodMACFrame(std::exchange(other.m_isGoodMACFrame, false)) {}
 
-bool MACFrame::checkCRC() {
-    uint16_t savedCRC = m_macHeader.crc16;
-    m_macHeader.crc16 = 0;
-    uint16_t crcHeader = CRC::Calculate(&m_macHeader, sizeof(MACHeader), crcTable);
-    m_macHeader.crc16 = CRC::Calculate(m_payload.getRawDataPointer(), m_macHeader.len, crcTable, crcHeader);
-    if (m_macHeader.crc16 != savedCRC) {
-#ifdef DEBUG
-        std::cout << "CRC Check failed for id: " << (int) m_macHeader.id << "\n";
-#endif
-        m_macHeader.crc16 = savedCRC;
-        return false;
-    }
-    return true;
-}
-
 uint16_t MACFrame::serialize(void *out, bool withHeader) const {
     uint16_t total_size = 0;
     auto *ptr = (uint8_t *) out;
@@ -108,6 +98,29 @@ MACType MACFrame::getType() const {
     return (MACType) getHeader().type;
 }
 
+uint8_t MACFrame::getId() const {
+    return m_macHeader.id;
+}
+
+uint16_t MACFrame::getLength() const {
+    return m_macHeader.len;
+}
+
+bool MACFrame::checkCRC() {
+    uint16_t savedCRC = m_macHeader.crc16;
+    m_macHeader.crc16 = 0;
+    uint16_t crcHeader = CRC::Calculate(&m_macHeader, sizeof(MACHeader), crcTable);
+    m_macHeader.crc16 = CRC::Calculate(m_payload.getRawDataPointer(), m_macHeader.len, crcTable, crcHeader);
+    if (m_macHeader.crc16 != savedCRC) {
+#ifdef DEBUG
+        std::cout << "CRC Check failed for id: " << (int) m_macHeader.id << "\n";
+#endif
+        m_macHeader.crc16 = savedCRC;
+        return false;
+    }
+    return true;
+}
+
 bool MACFrame::checkAddr() {
     bool success = (m_macHeader.src == Config::OTHER)
                    && (m_macHeader.dest == Config::SELF);
@@ -115,10 +128,22 @@ bool MACFrame::checkAddr() {
     return success;
 }
 
-uint8_t MACFrame::getId() const {
-    return m_macHeader.id;
+MACFrame &MACFrame::operator=(const MACFrame &other) {
+    MACFrame tmp(other);
+    swap(tmp, *this);
+    return *this;
 }
 
-uint16_t MACFrame::getLength() const {
-    return m_macHeader.len;
+MACFrame &MACFrame::operator=(MACFrame &&other) noexcept {
+    MACFrame tmp(std::move(other));
+    swap(tmp, *this);
+    return *this;
+}
+
+void swap(MACFrame &left, MACFrame &right) {
+    using std::swap;
+
+    swap(left.m_macHeader, right.m_macHeader);
+    swap(left.m_payload, right.m_payload);
+    swap(left.m_isGoodMACFrame, right.m_isGoodMACFrame);
 }
