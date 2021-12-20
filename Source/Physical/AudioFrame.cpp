@@ -11,12 +11,12 @@ AudioFrame::AudioFrame(const void *data, size_t len) {
     Modulator::modulate(*this, bitArray);
 }
 
-AudioFrame::AudioFrame(const Frame& frame)
-    : AudioFrame(frame.m_frameData.getRawDataPointer(), frame.m_frameData.size()) {}
+AudioFrame::AudioFrame(const Frame &frame)
+        : AudioFrame(frame.m_frameData.getRawDataPointer(), frame.m_frameData.size()) {}
 
 AudioFrame::AudioFrame(AudioFrame &&other) noexcept
-    : m_frameAudio(std::move(other.m_frameAudio)),
-      m_audioPos(std::exchange(other.m_audioPos, 0)) {}
+        : m_frameAudio(std::move(other.m_frameAudio)),
+          m_audioPos(std::exchange(other.m_audioPos, 0)) {}
 
 void AudioFrame::addHeader() {
     m_frameAudio.copyFrom(0, 0, Config::header, 0, 0, Config::HEADER_LENGTH);

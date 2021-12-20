@@ -10,16 +10,14 @@
 
 typedef juce::Array<uint8_t> DataType;
 
-enum class MACType
-{
+enum class MACType {
     DATA,
     ACK,
     PING_REQ,
     PING_REP
 };
 
-struct MACHeader
-{
+struct MACHeader {
     uint8_t dest;
     uint8_t src;
     uint8_t type;
@@ -28,21 +26,23 @@ struct MACHeader
     uint16_t crc16;
 };
 
-class MACFrame
-{
+class MACFrame {
 public:
     MACFrame(const void *mac_payload, uint16_t length);
-    MACFrame(uint8_t id, MACType type);
-    explicit MACFrame(const Frame& frame);
 
-    MACFrame(const MACFrame& other) = default;
-    MACFrame(MACFrame&& other) noexcept ;
+    MACFrame(uint8_t id, MACType type);
+
+    explicit MACFrame(const Frame &frame);
+
+    MACFrame(const MACFrame &other) = default;
+
+    MACFrame(MACFrame &&other) noexcept;
 
     uint16_t serialize(void *out, bool withHeader) const;
 
     [[nodiscard]] bool isGood() const;
 
-    [[nodiscard]] const MACHeader& getHeader() const;
+    [[nodiscard]] const MACHeader &getHeader() const;
 
     [[nodiscard]] MACType getType() const;
 
@@ -52,11 +52,12 @@ public:
 
 private:
     bool checkCRC();
+
     bool checkAddr();
 
     MACHeader m_macHeader;
-    DataType  m_payload;
-    bool      m_isGoodMACFrame;
+    DataType m_payload;
+    bool m_isGoodMACFrame;
 
     static uint8_t nextID;
     static CRC::Table<std::uint16_t, 16> crcTable;

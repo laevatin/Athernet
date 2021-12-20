@@ -6,6 +6,7 @@
 #include <JuceHeader.h>
 #include <vector>
 #include "Utils/Ringbuffer.hpp"
+
 #define PI acos(-1)
 
 using namespace juce;
@@ -16,13 +17,11 @@ typedef AudioBuffer<float> AudioType;
 /**
  * Data structure for the frames
  */
-struct FrameHeader
-{
+struct FrameHeader {
     uint16_t length;
 };
 
-class Frame 
-{
+class Frame {
 public:
     Frame() = default;
 
@@ -44,6 +43,7 @@ public:
     void getData(DataType &out) const;
 
     bool isGoodFrame() const;
+
     uint16_t dataLength() const;
 
 protected:

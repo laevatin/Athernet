@@ -10,7 +10,7 @@
 class Modulator {
 
 public:
-    static void modulate(AudioFrame& audioFrame, const DataType& bitArray);
+    static void modulate(AudioFrame &audioFrame, const DataType &bitArray);
 
     static void demodulate(const float *samples, DataType &out);
 

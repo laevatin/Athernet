@@ -12,10 +12,10 @@ using namespace juce;
 typedef Array<uint8_t> DataType;
 typedef AudioBuffer<float> AudioType;
 
-class FrameDetector
-{
+class FrameDetector {
 public:
     FrameDetector();
+
     ~FrameDetector() = default;
 
     void detectAndGet(RingBuffer<float> &detectorBuffer, std::list<Frame> &received);
@@ -36,7 +36,9 @@ private:
     DataType tmp;
 
     void resetState();
+
     void checkHeader(RingBuffer<float> &detectorBuffer);
+
     static DataType getFrameHeader(const float *samples);
 
 };

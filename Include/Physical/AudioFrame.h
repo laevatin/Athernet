@@ -10,25 +10,26 @@
 typedef juce::Array<uint8_t> DataType;
 typedef juce::AudioBuffer<float> AudioType;
 
-class AudioFrame
-{
+class AudioFrame {
 public:
     /* Construct an audio frame with len bytes */
     AudioFrame(const void *data, size_t len);
 
     /* Trivial copy constructor */
-    AudioFrame(const AudioFrame& other) = default;
+    AudioFrame(const AudioFrame &other) = default;
 
     /* Move constructor */
-    AudioFrame(AudioFrame&& other) noexcept;
+    AudioFrame(AudioFrame &&other) noexcept;
 
-    explicit AudioFrame(const Frame& frame);
+    explicit AudioFrame(const Frame &frame);
 
-    void addSound(const AudioType& src);
-    void addToBuffer(RingBuffer<float>& buffer) const;
+    void addSound(const AudioType &src);
+
+    void addToBuffer(RingBuffer<float> &buffer) const;
 
 private:
     void addHeader();
+
     AudioType m_frameAudio;
     size_t m_audioPos = 0;
 };

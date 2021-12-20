@@ -11,28 +11,22 @@
 using namespace std::chrono_literals;
 
 MACLayer::MACLayer()
-    : running(true)
-{}
+        : running(true) {}
 
-MACLayerReceiver::MACLayerReceiver()
-{
+MACLayerReceiver::MACLayerReceiver() {
     MACThread = std::make_unique<std::thread>([this]() { MACThreadRecvStart(); });
 }
 
-MACLayerReceiver::~MACLayerReceiver()
-{
+MACLayerReceiver::~MACLayerReceiver() {
     running = false;
-    if (MACThread)
-    {
+    if (MACThread) {
         m_cvQueue.notify_one();
         MACThread->join();
     }
 }
 
-void MACLayerReceiver::MACThreadRecvStart()
-{
-    while (true)
-    {
+void MACLayerReceiver::MACThreadRecvStart() {
+    while (true) {
         std::unique_lock<std::mutex> lock(m_mQueue);
 
         m_cvQueue.wait(lock, [this]() {
@@ -45,11 +39,10 @@ void MACLayerReceiver::MACThreadRecvStart()
         if (m_recvQueue.front().isGoodFrame()) {
             MACFrame macFrame(m_recvQueue.front());
             if (macFrame.isGood()) {
-                switch(macFrame.getType())
-                {
+                switch (macFrame.getType()) {
                     case MACType::DATA:
 #ifdef VERBOSE_MAC
-                        std::cout << "RECIVER: FrameDetector: DATA detected, id: " << (int)macFrame.getId()
+                        std::cout << "RECIVER: FrameDetector: DATA detected, id: " << (int) macFrame.getId()
                                   << " length: " << macFrame.getLength() << "\n";
 #endif
                         MACManager::get().macTransmitter->SendACK(macFrame.getId());
@@ -60,7 +53,7 @@ void MACLayerReceiver::MACThreadRecvStart()
                         break;
                     case MACType::PING_REQ:
 #ifdef VERBOSE_MAC
-			            std::cout << "RECIVER: FrameDetector: MACPING_REQ detected.\n";
+                        std::cout << "RECIVER: FrameDetector: MACPING_REQ detected.\n";
 #endif
                         MACManager::get().macTransmitter->SendPing(MACType::PING_REP);
                         break;
@@ -68,7 +61,7 @@ void MACLayerReceiver::MACThreadRecvStart()
                         [[fallthrough]];
                     case MACType::ACK:
 #ifdef VERBOSE_MAC
-                        std::cout << "RECIVER: FrameDetector: ACK detected, id: " << (int)macFrame.getId() << "\n";
+                        std::cout << "RECIVER: FrameDetector: ACK detected, id: " << (int) macFrame.getId() << "\n";
 #endif
                         MACManager::get().macTransmitter->ReplyReceived(macFrame);
                         break;
@@ -79,15 +72,13 @@ void MACLayerReceiver::MACThreadRecvStart()
     }
 }
 
-void MACLayerReceiver::frameReceived(Frame &&frame)
-{
+void MACLayerReceiver::frameReceived(Frame &&frame) {
     std::lock_guard<std::mutex> guard(m_mQueue);
     m_recvQueue.push_back(std::move(frame));
     m_cvQueue.notify_one();
 }
 
-int MACLayerReceiver::RecvPacket(uint8_t *out)
-{
+int MACLayerReceiver::RecvPacket(uint8_t *out) {
     std::unique_lock<std::mutex> lock_packet(m_mPacketQueue);
     m_cvPacketQueue.wait(lock_packet, [this]() { return !m_packetQueue.empty(); });
 
@@ -97,30 +88,24 @@ int MACLayerReceiver::RecvPacket(uint8_t *out)
 }
 
 MACLayerTransmitter::MACLayerTransmitter(std::shared_ptr<AudioDevice> audioDevice)
-    : m_txState(MACLayerTransmitter::IDLE)
-{
+        : m_txState(MACLayerTransmitter::IDLE) {
     m_asyncSender = std::make_unique<CSMASenderQueue>(audioDevice);
     MACThread = std::make_unique<std::thread>([this]() { MACThreadTransStart(); });
 }
 
-MACLayerTransmitter::~MACLayerTransmitter()
-{
+MACLayerTransmitter::~MACLayerTransmitter() {
     running = false;
-    if (MACThread)
-    {
+    if (MACThread) {
         m_cvSend.notify_one();
         MACThread->join();
     }
 }
 
-void MACLayerTransmitter::ReplyReceived(MACFrame& reply)
-{
+void MACLayerTransmitter::ReplyReceived(MACFrame &reply) {
     std::lock_guard<std::mutex> guard(m_mSend);
-    switch (reply.getType())
-    {
+    switch (reply.getType()) {
         case MACType::PING_REP:
-            if (m_txState == SEND_PING)
-            {
+            if (m_txState == SEND_PING) {
                 m_txState = PING_RECEIVED;
                 m_cvAck.notify_one();
                 return;
@@ -128,8 +113,7 @@ void MACLayerTransmitter::ReplyReceived(MACFrame& reply)
             break;
 
         case MACType::ACK:
-            if (m_txState != SEND_PING && m_sentWindow.count(reply.getId()))
-            {
+            if (m_txState != SEND_PING && m_sentWindow.count(reply.getId())) {
                 m_sentWindow.erase(reply.getId());
                 m_lastId = reply.getId();
                 m_txState = ACK_RECEIVED;
@@ -143,15 +127,13 @@ void MACLayerTransmitter::ReplyReceived(MACFrame& reply)
     }
 
     std::cout << "SENDER: Received bad reply "
-              << (int)reply.getHeader().id << " type "
-              << (int)reply.getHeader().type << ".\n";
+              << (int) reply.getHeader().id << " type "
+              << (int) reply.getHeader().type << ".\n";
 }
 
-void MACLayerTransmitter::MACThreadTransStart()
-{
+void MACLayerTransmitter::MACThreadTransStart() {
     int resendCount = 0;
-    while (true)
-    {
+    while (true) {
         std::unique_lock<std::mutex> lock_queue(m_mSend);
         m_cvSend.wait(lock_queue, [this]() {
             return !m_sendQueue.empty() || !m_sentWindow.empty() || !running;
@@ -160,8 +142,7 @@ void MACLayerTransmitter::MACThreadTransStart()
         if (!running)
             break;
 
-        if (!m_sendQueue.empty())
-        {
+        if (!m_sendQueue.empty()) {
             m_sentWindow.insert(std::make_pair(m_sendQueue.front().getId(),
                                                std::move(m_sendQueue.front())));
             m_sendQueue.pop_front();
@@ -172,32 +153,26 @@ void MACLayerTransmitter::MACThreadTransStart()
         lock_queue.unlock();
 
         std::unique_lock<std::mutex> lock_ack(m_mAck);
-        if (m_cvAck.wait_until(lock_ack, now + Config::ACK_TIMEOUT,
-                               [this]() { return m_txState == PING_RECEIVED || m_txState == ACK_RECEIVED; }))
-        {
-            if (m_txState == PING_RECEIVED)
-            {
+        if (m_cvAck.wait_until(lock_ack, now + Config::ACK_TIMEOUT, [this]() {
+            return m_txState == PING_RECEIVED || m_txState == ACK_RECEIVED;
+        })) {
+            if (m_txState == PING_RECEIVED) {
                 auto recv = std::chrono::system_clock::now();
                 std::cout << "MACLayer: Get Ping After: "
                           << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count()
                           << "ms\n";
-            }
-            else if (m_txState == ACK_RECEIVED)
-            {
+            } else if (m_txState == ACK_RECEIVED) {
                 resendCount = 0;
                 auto recv = std::chrono::system_clock::now();
 #ifdef VERBOSE_MAC
-                std::cout << "SENDER: Time to ACK " << (int)m_lastId << ": "
+                std::cout << "SENDER: Time to ACK " << (int) m_lastId << ": "
                           << std::chrono::duration_cast<std::chrono::milliseconds>(recv - now).count() << "\n";
 #endif
                 m_sentWindow.erase(m_lastId);
             }
-        }
-        else
-        {
+        } else {
             resendCount += 1;
-            if (resendCount >= 100)
-            {
+            if (resendCount >= 100) {
                 std::cout << "Link Error: no ACK received after 10 retries.\n";
                 break;
             }
@@ -205,8 +180,7 @@ void MACLayerTransmitter::MACThreadTransStart()
     }
 }
 
-void MACLayerTransmitter::SendPacket(const uint8_t *data, int len)
-{
+void MACLayerTransmitter::SendPacket(const uint8_t *data, int len) {
     jassert(len <= Config::MACDATA_PER_FRAME);
 
     std::lock_guard<std::mutex> guard(m_mSend);
@@ -216,8 +190,7 @@ void MACLayerTransmitter::SendPacket(const uint8_t *data, int len)
     m_cvSend.notify_one();
 }
 
-void MACLayerTransmitter::SendPing(MACType pingType)
-{
+void MACLayerTransmitter::SendPing(MACType pingType) {
     if (pingType != MACType::PING_REQ && pingType != MACType::PING_REP)
         return;
 
@@ -227,47 +200,41 @@ void MACLayerTransmitter::SendPing(MACType pingType)
     m_cvSend.notify_one();
 }
 
-void MACLayerTransmitter::SendACK(uint8_t id)
-{
+void MACLayerTransmitter::SendACK(uint8_t id) {
     m_asyncSender->SendACKAsync(id);
 }
 
 CSMASenderQueue::CSMASenderQueue(std::shared_ptr<AudioDevice> audioDevice)
-    : m_audioDevice(std::move(audioDevice)),
-    running(true)
-{
+        : m_audioDevice(std::move(audioDevice)),
+          running(true) {
     m_senderThread = std::make_unique<std::thread>([this]() { SenderStart(); });
 }
 
-CSMASenderQueue::~CSMASenderQueue()
-{
+CSMASenderQueue::~CSMASenderQueue() {
     running = false;
-    if (m_senderThread)
-    {
+    if (m_senderThread) {
         m_cvQueue.notify_one();
         m_senderThread->join();
     }
 }
 
-void CSMASenderQueue::SenderStart()
-{
-    while (true)
-    {
+void CSMASenderQueue::SenderStart() {
+    while (true) {
         std::unique_lock<std::mutex> lock_queue(m_mQueue);
-        m_cvQueue.wait(lock_queue, [this]() { return !m_queue.empty() || !running; } );
+        m_cvQueue.wait(lock_queue, [this]() {
+            return !m_queue.empty() || !running;
+        });
 
         if (!running)
             return;
 
         int retryNum = 0;
-        while (!m_queue.empty() && running) 
-        {
+        while (!m_queue.empty() && running) {
             retryNum++;
             if (m_audioDevice->getChannelState() == AudioDevice::CN_BUSY)
                 Sleep(10);
 
-            if (m_audioDevice->getChannelState() == AudioDevice::CN_IDLE) 
-            {
+            if (m_audioDevice->getChannelState() == AudioDevice::CN_IDLE) {
                 m_audioDevice->sendFrame(m_queue.front().second);
                 m_hasFrame.erase(m_queue.front().first);
                 m_queue.pop_front();
@@ -278,14 +245,13 @@ void CSMASenderQueue::SenderStart()
             std::cout << "Channel busy, retrying " << retryNum << "\n";
             if (retryNum >= 10)
                 retryNum = 10;
-            Sleep(Config::BACKOFF_TSLOT * (int)pow(2, retryNum - 1));
+            Sleep(Config::BACKOFF_TSLOT * (int) pow(2, retryNum - 1));
             lock_queue.lock();
         }
     }
 }
 
-void CSMASenderQueue::SendMACFrameAsync(const MACFrame &macFrame)
-{
+void CSMASenderQueue::SendMACFrameAsync(const MACFrame &macFrame) {
     uint8_t buffer[Config::DATA_PER_FRAME / 8];
     uint16_t key = macFrame.getHeader().crc16;
 
@@ -293,15 +259,14 @@ void CSMASenderQueue::SendMACFrameAsync(const MACFrame &macFrame)
     if (m_hasFrame.count(key))
         return;
 #ifdef VERBOSE_MAC
-    std::cout << "SENDER: Send Frame: " << (int)macFrame.getId() << "\n";
+    std::cout << "SENDER: Send Frame: " << (int) macFrame.getId() << "\n";
 #endif
     macFrame.serialize(buffer, true);
     m_queue.emplace_back(key, AudioFrame(Frame(buffer, macFrame.getLength() + sizeof(MACHeader))));
     m_cvQueue.notify_one();
 }
 
-void CSMASenderQueue::SendACKAsync(uint8_t id)
-{
+void CSMASenderQueue::SendACKAsync(uint8_t id) {
     uint8_t buffer[Config::DATA_PER_FRAME / 8];
     MACFrame ackFrame(id, MACType::ACK);
     uint16_t key = ackFrame.getHeader().crc16;
@@ -310,7 +275,7 @@ void CSMASenderQueue::SendACKAsync(uint8_t id)
     if (m_hasFrame.count(key))
         return;
 #ifdef VERBOSE_MAC
-    std::cout << "SENDER: Send ACK: " << (int)ackFrame.getId() << "\n";
+    std::cout << "SENDER: Send ACK: " << (int) ackFrame.getId() << "\n";
 #endif
     ackFrame.serialize(buffer, true);
     m_queue.emplace_back(key, AudioFrame(Frame(buffer, sizeof(MACHeader))));

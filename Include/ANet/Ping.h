@@ -10,17 +10,17 @@
 
 #define ICMP_BUFFER_SIZE 128
 
-class IcmpPing
-{
-public: 
-	explicit IcmpPing(uint32_t destip);
-	int IcmpSendPing();
+class IcmpPing {
+public:
+    explicit IcmpPing(uint32_t destip);
+
+    int IcmpSendPing();
 
 private:
-	HANDLE m_handle;
-	ICMP_ECHO_REPLY m_reply; //ICMP_ECHO_REPLY data structure
-	IPAddr m_address;
-	char m_recvBuffer[ICMP_BUFFER_SIZE];
+    HANDLE m_handle;
+    ICMP_ECHO_REPLY m_reply; //ICMP_ECHO_REPLY data structure
+    IPAddr m_address;
+    char m_recvBuffer[ICMP_BUFFER_SIZE];
 };
 
 

@@ -8,37 +8,39 @@
 
 struct ANetPacket;
 
-class UDP
-{
+class UDP {
 public:
-	UDP(const UDP&) = delete;
-    UDP& operator=(const UDP&) = delete;
-	
-protected:
-	explicit UDP(const char* port);
-	UDP() = default;
-	~UDP();
+    UDP(const UDP &) = delete;
 
-	WSADATA m_wsaData;
-	SOCKET m_socket;
-	sockaddr_in m_sockaddr;
+    UDP &operator=(const UDP &) = delete;
+
+protected:
+    explicit UDP(const char *port);
+
+    UDP() = default;
+
+    ~UDP();
+
+    WSADATA m_wsaData;
+    SOCKET m_socket;
+    sockaddr_in m_sockaddr;
 };
 
-class UDPServer : protected UDP
-{
+class UDPServer : protected UDP {
 public:
-	explicit UDPServer(const char* port);
-	int RecvPacket(ANetPacket& out);
+    explicit UDPServer(const char *port);
+
+    int RecvPacket(ANetPacket &out);
 
 private:
-	sockaddr_in m_sockaddr_remote;
+    sockaddr_in m_sockaddr_remote;
 };
 
-class UDPClient : protected UDP
-{
+class UDPClient : protected UDP {
 public:
-	explicit UDPClient(const char* ip, const char* port);
-	void SendPacket(const ANetPacket& packet);
+    explicit UDPClient(const char *ip, const char *port);
+
+    void SendPacket(const ANetPacket &packet);
 };
 
 #endif

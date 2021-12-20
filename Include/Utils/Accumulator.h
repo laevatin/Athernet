@@ -11,33 +11,30 @@
  */
 
 template<typename T>
-struct Accumulator
-{
+struct Accumulator {
     T sum;
     std::vector<T> samples;
     T max;
     int index;
     int size;
 
-    Accumulator(int _size)
-    {
+    Accumulator(int _size) {
         size = _size;
         samples.resize(size);
         index = 0;
-        for (int x = 0; x < size; x++) 
+        for (int x = 0; x < size; x++)
             samples[x] = T(0);
         sum = T(0);
     }
 
-    void add(T sample)
-    {
+    void add(T sample) {
         sum -= samples[index];
         sum += sample;
         samples[index++] = sample;
         for (int i = 0; i < size; i++)
             max = std::max(max, samples[i]);
-            
-        if (index >= size) 
+
+        if (index >= size)
             index = 0;
     }
 };

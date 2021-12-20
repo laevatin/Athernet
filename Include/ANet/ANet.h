@@ -12,56 +12,54 @@
 #include "Physical/Audio.h"
 #include "Config.h"
 
-enum ANetIPTag
-{
-    DATA, 
+enum ANetIPTag {
+    DATA,
     PING
 };
 
-struct ANetIP
-{
+struct ANetIP {
     uint32_t ip_src;
     uint32_t ip_dst;
     enum ANetIPTag tag;
 };
 
-struct ANetUDP
-{
+struct ANetUDP {
     uint16_t udp_src_port;
     uint16_t udp_dst_port;
     uint16_t udp_len;
 };
 
-struct ANetPing
-{
+struct ANetPing {
     uint8_t success;
 };
 
-struct ANetPacket 
-{
-    ANetPacket(uint32_t srcip, uint32_t dstip, uint16_t srcport, uint16_t dstport, const uint8_t* data, uint16_t len);
+struct ANetPacket {
+    ANetPacket(uint32_t srcip, uint32_t dstip, uint16_t srcport, uint16_t dstport, const uint8_t *data, uint16_t len);
+
     ANetPacket() = default;
+
     struct ANetIP ip;
     struct ANetUDP udp;
     uint8_t payload[Config::PACKET_PAYLOAD];
 };
 
-class ANetClient
-{
+class ANetClient {
 public:
     ANetClient(const char *dest_ip, const char *dest_port, bool isAthernet);
+
     ANetClient(ANetClient &other) = delete;
 
-    void SendData(const uint8_t* data, int len);
+    void SendData(const uint8_t *data, int len);
 
     void SendPing(uint32_t target);
+
     void SendPing();
 
 private:
     std::unique_ptr<UDPClient> m_udpClient;
     std::unique_ptr<AudioIO> m_audioIO;
     std::unique_ptr<IcmpPing> m_icmpPing;
-    
+
     uint32_t m_selfIP;
     uint16_t m_selfPort;
     uint32_t m_destIP;
@@ -69,31 +67,34 @@ private:
     bool m_isAthernet;
 };
 
-class ANetServer
-{
+class ANetServer {
 public:
     ANetServer(const char *open_port, bool isAthernet);
+
     ANetServer(ANetServer &other) = delete;
-    int RecvData(uint8_t* out, int outlen);
+
+    int RecvData(uint8_t *out, int outlen);
 
 private:
     std::unique_ptr<UDPServer> m_udpServer;
     std::unique_ptr<AudioIO> m_audioIO;
-    
+
     uint16_t m_openPort;
     bool m_isAthernet;
 };
 
-class ANetGateway
-{
-public: 
-    ANetGateway(const char* anet_port, const char* out_port);
+class ANetGateway {
+public:
+    ANetGateway(const char *anet_port, const char *out_port);
+
     void StartForwarding();
 
 private:
 
     void ATNToInternet();
+
     void InternetToATN();
+
     uint16_t m_anetPort;
     uint16_t m_outPort;
     AudioIO m_audioIO;

@@ -7,11 +7,10 @@ std::vector<AudioType> Config::modulateSound;
 /* Initialize configuration by its constructor. */
 static Config config;
 
-void Config::initPreamble()
-{
+void Config::initPreamble() {
     // generate the header
     float startFreq = 6000;
-    float endFreq   = 16000;
+    float endFreq = 16000;
 
     float f_p[HEADER_LENGTH];
     float omega[HEADER_LENGTH];
@@ -30,11 +29,10 @@ void Config::initPreamble()
         omega[i] = omega[i - 1] + (f_p[i] + f_p[i - 1]) / 2.0f * (1.0f / Config::SAMPLE_RATE);
 
     for (int i = 0; i < HEADER_LENGTH; i++)
-        Config::header.setSample(0, i, (float)sin(2 * PI * omega[i]));
+        Config::header.setSample(0, i, (float) sin(2 * PI * omega[i]));
 }
 
-void Config::initAudio()
-{
+void Config::initAudio() {
     int base = 8000;
     AudioType audio1 = generateSound(base, Config::BIT_LENGTH, 0);
     AudioType audio2 = generateSound(base, Config::BIT_LENGTH, PI);
@@ -57,14 +55,13 @@ void Config::initAudio()
     modulateSound.push_back(tmp);
 }
 
-AudioType Config::generateSound(int freq, int length, float initPhase)
-{
+AudioType Config::generateSound(int freq, int length, float initPhase) {
     AudioType sound;
     sound.setSize(1, length);
     auto soundPointer = sound.getWritePointer(0);
 
     for (int i = 0; i < length; i++)
-        soundPointer[i] = (float)sin((float)i * 2 * PI * ((float)freq / (float)Config::SAMPLE_RATE) + initPhase);
+        soundPointer[i] = (float) sin((float) i * 2 * PI * ((float) freq / (float) Config::SAMPLE_RATE) + initPhase);
 
     return std::move(sound);
 }

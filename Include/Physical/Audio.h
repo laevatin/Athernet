@@ -23,16 +23,17 @@ typedef AudioBuffer<float> AudioType;
 
 class AudioDevice;
 
-class AudioIO
-{
+class AudioIO {
 public:
     AudioIO();
+
     ~AudioIO();
 
     // wrapper for macTransmitter
-    static void SendData(const uint8_t* data, int len);
+    static void SendData(const uint8_t *data, int len);
+
     // wrapper for macReceiver
-    static int RecvData(uint8_t* out, int outlen);
+    static int RecvData(uint8_t *out, int outlen);
 
 private:
     static AudioDeviceManager audioDeviceManager;
@@ -44,16 +45,15 @@ private:
 
 
 class AudioDevice : public AudioIODeviceCallback,
-    private HighResolutionTimer
-{   
+                    private HighResolutionTimer {
 public:
-    enum ChannelState 
-    {
-        CN_IDLE, 
+    enum ChannelState {
+        CN_IDLE,
         CN_BUSY,
     };
-    
+
     explicit AudioDevice(enum state s);
+
     ~AudioDevice() override = default;
 
     void beginTransmit();
@@ -62,14 +62,15 @@ public:
 
     void sendFrame(const AudioFrame &frame);
 
-    void audioDeviceAboutToStart(AudioIODevice* device) override;
+    void audioDeviceAboutToStart(AudioIODevice *device) override;
 
     void audioDeviceStopped() override;
 
-    void audioDeviceIOCallback(const float** inputChannelData, int numInputChannels,
-        float** outputChannelData, int numOutputChannels, int numSamples) override;
+    void audioDeviceIOCallback(const float **inputChannelData, int numInputChannels,
+                               float **outputChannelData, int numOutputChannels, int numSamples) override;
 
     static Codec codec;
+
     enum ChannelState getChannelState();
 
 private:
@@ -85,7 +86,7 @@ private:
 
     bool isSending = false;
     bool isReceiving = false;
-    
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioDevice)
 };
 
