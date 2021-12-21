@@ -12,10 +12,32 @@
 #include "MAC/MACFrame.h"
 #include "MAC/SlidingWindow.h"
 #include "Physical/Frame.h"
+#include "Utils/BlockingQueue.h"
 
 class AudioDevice;
 
-class CSMASenderQueue;
+class CSMASenderQueue {
+public:
+    explicit CSMASenderQueue(std::shared_ptr<AudioDevice> audioDevice);
+
+    ~CSMASenderQueue();
+
+    void SendMACFrameAsync(const MACFrame &macFrame);
+
+    void SendACKAsync(uint8_t id);
+
+private:
+    void SenderStart();
+
+    std::unique_ptr<std::thread> m_senderThread;
+    std::shared_ptr<AudioDevice> m_audioDevice;
+
+    /* low probability to crc collide */
+    std::set<uint16_t> m_hasFrame;
+    BlockingQueue<std::pair<uint16_t, AudioFrame>> m_queue;
+
+    std::atomic<bool> running;
+};
 
 class MACLayer {
 public:
@@ -42,13 +64,10 @@ public:
 private:
     void MACThreadRecvStart();
 
-    std::mutex m_mQueue;
-    std::condition_variable m_cvQueue;
-    std::list<Frame> m_recvQueue;
+    BlockingQueue<Frame> m_recvQueue;
+    BlockingQueue<MACFrame> m_packetQueue;
 
-    std::mutex m_mPacketQueue;
-    std::condition_variable m_cvPacketQueue;
-    std::list<MACFrame> m_packetQueue;
+    ReorderQueue m_reorderQueue;
 };
 
 
@@ -63,8 +82,6 @@ public:
 
     void SendPacket(const uint8_t *data, int len);
 
-    void SendPing(MACType pingType);
-
     void SendACK(uint8_t id);
 
 private:
@@ -72,42 +89,14 @@ private:
 
     void SlidingWindowSender(int windowIdx);
 
-    std::unique_ptr<CSMASenderQueue> m_asyncSender;
+    CSMASenderQueue m_asyncSender;
 
     std::mutex m_mAck;
     std::condition_variable m_cvAck;
 
-    std::mutex m_mSend;
-    std::condition_variable m_cvSend;
+    BlockingQueue<MACFrame> m_sendQueue;
 
     SlidingWindow m_slidingWindow;
-
-    std::list<MACFrame> m_sendQueue;
-};
-
-class CSMASenderQueue {
-public:
-    explicit CSMASenderQueue(std::shared_ptr<AudioDevice> audioDevice);
-
-    ~CSMASenderQueue();
-
-    void SendMACFrameAsync(const MACFrame &macFrame);
-
-    void SendACKAsync(uint8_t id);
-
-private:
-    void SenderStart();
-
-    std::unique_ptr<std::thread> m_senderThread;
-    std::shared_ptr<AudioDevice> m_audioDevice;
-
-    /* low probability to crc collide */
-    std::set<uint16_t> m_hasFrame;
-    std::mutex m_mQueue;
-    std::condition_variable m_cvQueue;
-    std::list<std::pair<uint16_t, AudioFrame>> m_queue;
-
-    std::atomic<bool> running;
 };
 
 #endif

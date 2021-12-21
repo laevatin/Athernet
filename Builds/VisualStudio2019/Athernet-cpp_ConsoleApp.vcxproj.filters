@@ -1335,6 +1335,9 @@
     <ClInclude Include="..\..\Include\Utils\Accumulator.h">
       <Filter>Athernet-cpp\Include\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Include\Utils\BlockingQueue.h">
+      <Filter>Athernet-cpp\Include\Utils</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Include\Utils\IOFunctions.hpp">
       <Filter>Athernet-cpp\Include\Utils</Filter>
     </ClInclude>

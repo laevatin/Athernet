@@ -28,6 +28,7 @@
       </GROUP>
       <GROUP id="{2AAFC933-0AE4-0213-D7E4-FCBE3C3E74BA}" name="Utils">
         <FILE id="A5KYdQ" name="Accumulator.h" compile="0" resource="0" file="Include/Utils/Accumulator.h"/>
+        <FILE id="jgHM9x" name="BlockingQueue.h" compile="0" resource="0" file="Include/Utils/BlockingQueue.h"/>
         <FILE id="WXOGRR" name="IOFunctions.hpp" compile="0" resource="0" file="Include/Utils/IOFunctions.hpp"/>
         <FILE id="OdisjR" name="Ringbuffer.hpp" compile="0" resource="0" file="Include/Utils/Ringbuffer.hpp"/>
       </GROUP>

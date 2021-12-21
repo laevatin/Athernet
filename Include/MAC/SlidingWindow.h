@@ -30,11 +30,36 @@ private:
      * Since the window size would not be very large, the
      * O(n) search is acceptable.
      */
-    uint8_t m_left = 0;
-    uint8_t m_right = 0;
+    uint8_t m_left;
+    uint8_t m_right;
     std::vector<std::pair<std::atomic<bool>, MACFrame>> m_windowData;
-    std::vector<std::pair<std::mutex, std::condition_variable>> m_windowCV;
+    std::vector<std::condition_variable> m_windowCV;
     std::mutex m_mWindow;
+};
+
+class ReorderQueue {
+
+public:
+    explicit ReorderQueue(size_t size);
+    ~ReorderQueue() = default;
+
+    bool addPacket(MACFrame &&macFrame);
+
+    [[nodiscard]] bool isReady() const;
+
+    MACFrame getPacketOrdered();
+
+private:
+
+    void updateReady();
+
+    void nextWindow();
+
+    uint8_t m_left;
+    uint8_t m_right;
+    bool m_isReady;
+    std::vector<std::pair<std::atomic<bool>, MACFrame>> m_windowData;
+
 };
 
 #endif

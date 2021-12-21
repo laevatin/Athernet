@@ -75,6 +75,7 @@ jucer_project_files("Athernet-cpp/Include/Utils"
 # Compile   Xcode     Binary    File                             Compiler Flag
 #           Resource  Resource                                   Scheme
   .         .         .         "Include/Utils/Accumulator.h"
+  .         .         .         "Include/Utils/BlockingQueue.h"
   .         .         .         "Include/Utils/IOFunctions.hpp"
   .         .         .         "Include/Utils/Ringbuffer.hpp"
 )
