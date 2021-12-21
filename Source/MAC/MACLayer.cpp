@@ -94,7 +94,6 @@ MACLayerTransmitter::~MACLayerTransmitter() {
 }
 
 void MACLayerTransmitter::ReplyReceived(MACFrame &reply) {
-    std::lock_guard<std::mutex> guard(m_mSend);
     jassert(reply.getType() == MACType::ACK);
 
     if (m_slidingWindow.removePacket(reply.getId())) {
@@ -110,6 +109,7 @@ void MACLayerTransmitter::ReplyReceived(MACFrame &reply) {
 void MACLayerTransmitter::MACThreadTransStart() {
     int resendCount = 0;
     std::future<void> asyncFutures[Config::SLIDING_WINDOW_SIZE];
+    auto t1 = std::chrono::system_clock::now();
     while (true) {
         std::unique_lock<std::mutex> lock_queue(m_mSend);
         m_cvSend.wait(lock_queue, [this]() {
@@ -120,18 +120,19 @@ void MACLayerTransmitter::MACThreadTransStart() {
             break;
 
         int windowIdx = m_slidingWindow.addPacket(m_sendQueue.front());
-
+        int id = m_sendQueue.front().getId();
         if (windowIdx != -1) {
             m_sendQueue.pop_front();
             asyncFutures[windowIdx] = std::async(std::launch::async,
                                                  [this, windowIdx]() { return SlidingWindowSender(windowIdx); });
         }
-
         lock_queue.unlock();
         std::unique_lock<std::mutex> lock_ack(m_mAck);
-        m_cvAck.wait_for(lock_ack, Config::ACK_TIMEOUT);
+        m_cvAck.wait_for(lock_ack, Config::ACK_TIMEOUT / Config::SLIDING_WINDOW_SIZE);
+        if (id == 29) running = false;
     }
-
+    auto t2 = std::chrono::system_clock::now();
+    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << "\n";
     for (auto & asyncFuture : asyncFutures) {
         asyncFuture.get();
     }

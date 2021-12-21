@@ -14,6 +14,9 @@ bool SlidingWindow::removePacket(uint8_t id) {
                 m_windowData[i].first = false;
                 updateLeft(id);
                 m_windowCV[i].second.notify_one();
+#ifdef SLIDING_WINDOW_DEBUG
+                std::cout << (int)id << " received, notifying sender " << i << "\n";
+#endif
                 return true;
             }
             return false;
@@ -24,7 +27,9 @@ bool SlidingWindow::removePacket(uint8_t id) {
 
 int SlidingWindow::addPacket(MACFrame &macFrame) {
     uint8_t currWindowSize = m_right - m_left + 1;
-
+#ifdef SLIDING_WINDOW_DEBUG
+    std::cout << "add packet " << (int)macFrame.getId() << " window size " << (int)currWindowSize << "\n";
+#endif
     jassert(macFrame.getId() == (uint8_t)(m_right + 1));
     if (currWindowSize >= m_windowData.size())
         return -1;
@@ -64,7 +69,7 @@ bool SlidingWindow::getStatus(int idx) {
 
 void SlidingWindow::updateLeft(uint8_t lastRecv) {
     if (lastRecv == m_left) {
-        uint8_t diff = m_right - m_left;
+        uint8_t diff = m_right - m_left + 1;
         for (auto &&p: m_windowData)
             if (p.first)
                 diff = std::min(diff, static_cast<uint8_t>(p.second.getId() - m_left));

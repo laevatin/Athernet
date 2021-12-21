@@ -31,6 +31,7 @@ void getInputFromFile(Array<uint8_t> &input, const std::string &path) {
 
 int main(int argc, char *argv[]) {
     MessageManager::getInstance();
+    std::iostream::sync_with_stdio(false);
 
     if (argc <= 1) {
         std::cout << "Usage: ./Athernet-cpp [node-num]" << std::endl;

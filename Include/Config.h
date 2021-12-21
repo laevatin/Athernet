@@ -15,6 +15,7 @@ class MACHeader;
 
 #define VERBOSE_MAC
 
+
 enum state {
     SENDING = 1,
     RECEIVING = 2,
