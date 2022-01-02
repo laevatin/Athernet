@@ -100,8 +100,9 @@ void ANetClient::SendPing() {
 
         auto ping = reinterpret_cast<struct ANetPing *>(packet.payload);
         ping->success = m_icmpPing->IcmpSendPing();
+        int macLen = sizeof(ANetIP) + sizeof(ANetUDP) + sizeof(ANetPing);
 
-        AudioIO::SendData((const uint8_t *) &packet, Config::MACDATA_PER_FRAME);
+        AudioIO::SendData((const uint8_t *) &packet, macLen);
     }
 }
 
@@ -154,10 +155,10 @@ ANetGateway::ANetGateway(const char *anet_port, const char *out_port)
 }
 
 void ANetGateway::StartForwarding() {
-    PingCapture capturer(Config::IP_ETHERNET);
+    //PingCapture capturer(Config::IP_ETHERNET);
     auto atn2int = std::async(std::launch::async, [this]() { return ATNToInternet(); });
     auto int2atn = std::async(std::launch::async, [this]() { return InternetToATN(); });
-    capturer.startCapture(ANetGateway::OnPingArrive);
+    //capturer.startCapture((void *)ANetGateway::OnPingArrive);
     atn2int.get();
     int2atn.get();
 }
@@ -185,7 +186,6 @@ void ANetGateway::ATNToInternet() {
                 m_NATTable[targetIP]->SendData((const uint8_t *) packet.payload, packet.udp.udp_len);
                 break;
         }
-        break;
     }
 }
 
@@ -197,7 +197,6 @@ void ANetGateway::InternetToATN() {
 
         int macLen = packet.udp.udp_len + sizeof(ANetIP) + sizeof(ANetUDP);
         AudioIO::SendData((const uint8_t *) &packet, macLen);
-        break;
     }
 }
 

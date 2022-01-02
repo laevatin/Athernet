@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     std::cout << "1 for 1->3, 3 for 3->1, 4 for pinging" << std::endl;
     char ctl;
     std::cin >> ctl;
-    strcpy(Config::IP_ETHERNET, "10.20.205.112");
+    strcpy(Config::IP_ETHERNET, "192.168.18.204");
 
     switch (node) {
         case 1: {
@@ -62,9 +62,6 @@ int main(int argc, char *argv[]) {
                     break;
                 }
                 case '4': {
-                    client.SendPing("8.8.8.8");
-                    Sleep(1000);
-                    client.SendPing("10.15.89.111");
                     while (true)
                         server.ReplyPing();
                 }

@@ -1,5 +1,6 @@
 #include "ANet/ExternalPing.h"
 #include <iostream>
+#include "Config.h"
 
 PingCapture::PingCapture(const std::string &ipAddr) {
     m_device = pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDeviceByIp(pcpp::IPv4Address(ipAddr));
@@ -18,9 +19,13 @@ PingCapture::PingCapture(const std::string &ipAddr) {
     m_device->setFilter(protocolFilter);
 }
 
-void PingCapture::startCapture(std::function<void(const char *)> callback) {
+void PingCapture::startCapture(void *callback) {
     std::cout << "Capture started..." << std::endl;
-    m_device->startCapture(replyPing, (void *)callback.target<void(const char *)>());
+    if (m_device == nullptr) {
+        std::cout << "Capture device not set up correctly.\n";
+        return;
+    }
+    m_device->startCapture(replyPing, callback);
 }
 
 void PingCapture::stopCapture() {
@@ -33,10 +38,11 @@ void PingCapture::replyPing(pcpp::RawPacket *rawPacket, pcpp::PcapLiveDevice *de
     auto srcIP_str = srcIP.toString();
     std::cout << "Received ping from " << srcIP_str << "\n";
 
-    if (!received.isPacketOfType(pcpp::ICMP) || !received.isPacketOfType(pcpp::IPv4))
+    if (!received.isPacketOfType(pcpp::ICMP) || !received.isPacketOfType(pcpp::IPv4) || !srcIP_str.compare(Config::IP_ETHERNET))
         return;
 
     std::function<void(const char *)> resendPing((void(*)(const char*))callback);
+    
     resendPing(srcIP_str.c_str());
 
     pcpp::Packet packet(received);

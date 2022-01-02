@@ -20,7 +20,7 @@ public:
     ~PingCapture();
 
     inline bool isWorking() { return m_isWorking; };
-    void startCapture(std::function<void(const char *)> callback);
+    void startCapture(void *callback);
     void stopCapture();
 
 private:
