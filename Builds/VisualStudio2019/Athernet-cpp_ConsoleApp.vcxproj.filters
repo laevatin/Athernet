@@ -268,6 +268,9 @@
     <ClCompile Include="..\..\Source\ANet\ANet.cpp">
       <Filter>Athernet-cpp\Source\ANet</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\ANet\ExternalPing.cpp">
+      <Filter>Athernet-cpp\Source\ANet</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\ANet\Ping.cpp">
       <Filter>Athernet-cpp\Source\ANet</Filter>
     </ClCompile>
@@ -1195,6 +1198,9 @@
     <ClCompile Include="..\..\..\JUCE\modules\juce_data_structures\values\juce_ValueTree.cpp">
       <Filter>JUCE Modules\juce_data_structures\values</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\JUCE\modules\juce_data_structures\values\juce_ValueTreePropertyWithDefault_test.cpp">
+      <Filter>JUCE Modules\juce_data_structures\values</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\JUCE\modules\juce_data_structures\values\juce_ValueTreeSynchroniser.cpp">
       <Filter>JUCE Modules\juce_data_structures\values</Filter>
     </ClCompile>
@@ -1297,6 +1303,9 @@
       <Filter>Athernet-cpp\Include\UDP</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Include\ANet\ANet.h">
+      <Filter>Athernet-cpp\Include\ANet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Include\ANet\ExternalPing.h">
       <Filter>Athernet-cpp\Include\ANet</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Include\ANet\Ping.h">
@@ -2503,6 +2512,9 @@
       <Filter>JUCE Modules\juce_data_structures\values</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\JUCE\modules\juce_data_structures\values\juce_ValueTree.h">
+      <Filter>JUCE Modules\juce_data_structures\values</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\JUCE\modules\juce_data_structures\values\juce_ValueTreePropertyWithDefault.h">
       <Filter>JUCE Modules\juce_data_structures\values</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\JUCE\modules\juce_data_structures\values\juce_ValueTreeSynchroniser.h">

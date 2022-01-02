@@ -35,7 +35,8 @@ jucer_project_settings(
   CXX_LANGUAGE_STANDARD "C++17"
   HEADER_SEARCH_PATHS
     "..\\..\\Include"
-    "C:\\Users\\16322\\Desktop\\lessons\\2021_1\\CS120_Computer_Network\\asiosdk\\asiosdk_2.3.3_2019-06-14\\common"
+    "..\\..\\External\\pcpp_header"
+    "..\\..\\External\\asio_header"
 )
 
 jucer_project_files("Athernet-cpp/Include/UDP"
@@ -45,9 +46,10 @@ jucer_project_files("Athernet-cpp/Include/UDP"
 )
 
 jucer_project_files("Athernet-cpp/Include/ANet"
-# Compile   Xcode     Binary    File                   Compiler Flag
-#           Resource  Resource                         Scheme
+# Compile   Xcode     Binary    File                           Compiler Flag
+#           Resource  Resource                                 Scheme
   .         .         .         "Include/ANet/ANet.h"
+  .         .         .         "Include/ANet/ExternalPing.h"
   .         .         .         "Include/ANet/Ping.h"
 )
 
@@ -87,9 +89,10 @@ jucer_project_files("Athernet-cpp/Include"
 )
 
 jucer_project_files("Athernet-cpp/Source/ANet"
-# Compile   Xcode     Binary    File                    Compiler Flag
-#           Resource  Resource                          Scheme
+# Compile   Xcode     Binary    File                            Compiler Flag
+#           Resource  Resource                                  Scheme
   x         .         .         "Source/ANet/ANet.cpp"
+  x         .         .         "Source/ANet/ExternalPing.cpp"
   x         .         .         "Source/ANet/Ping.cpp"
 )
 
@@ -187,6 +190,8 @@ jucer_project_module(
 jucer_export_target(
   "Visual Studio 2019"
   TARGET_PROJECT_FOLDER "Builds/VisualStudio2019" # used by HEADER_SEARCH_PATHS
+  EXTERNAL_LIBRARIES_TO_LINK
+    "..\\..\\External\\Npcap_lib\\*.lib\;..\\..\\External\\pcpp_lib\\Debug\\*.lib\;"
 )
 
 jucer_export_target_configuration(
