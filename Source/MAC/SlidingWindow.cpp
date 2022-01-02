@@ -102,6 +102,7 @@ bool ReorderQueue::addPacket(MACFrame &&macFrame) {
     }
 
     updateReady();
+    return true;
 }
 
 bool ReorderQueue::isReady() const {
