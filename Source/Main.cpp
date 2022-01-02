@@ -10,7 +10,7 @@
 
 extern std::ofstream debug_file;
 #define PI acos(-1)
-
+ 
 void getInputFromFile(Array<uint8_t> &input, const std::string &path) {
     std::ifstream inputFile;
     uint8_t in;

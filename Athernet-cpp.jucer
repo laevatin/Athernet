@@ -68,7 +68,7 @@
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_ASIO="1" JUCE_WASAPI="0"
                JUCE_DIRECTSOUND="0" JUCE_ALSA="0" JUCE_USE_ANDROID_OBOE="0"/>
   <EXPORTFORMATS>
-    <VS2019 targetFolder="Builds/VisualStudio2019" externalLibraries="..\..\External\Npcap_lib\*.lib;..\..\External\pcpp_lib\Debug\*.lib;..\..\External\pthread_lib\*.lib\Ws2_32.lib;">
+    <VS2019 targetFolder="Builds/VisualStudio2019" externalLibraries="..\..\External\Npcap_lib\*.lib;..\..\External\pcpp_lib\Debug\*.lib;..\..\External\pthread_lib\*.lib;Ws2_32.lib;">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="Athernet-cpp"/>
         <CONFIGURATION isDebug="0" name="Release" targetName="Athernet-cpp"/>

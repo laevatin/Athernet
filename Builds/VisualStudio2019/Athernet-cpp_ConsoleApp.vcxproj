@@ -87,14 +87,14 @@
       <ProgramDatabaseFile>$(IntDir)\Athernet-cpp.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
-      <AdditionalDependencies>..\..\External\Npcap_lib\*.lib;..\..\External\pcpp_lib\Debug\*.lib;..\..\External\pthread_lib\*.lib\Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\..\External\Npcap_lib\*.lib;..\..\External\pcpp_lib\Debug\*.lib;..\..\External\pthread_lib\*.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <OutputFile>$(IntDir)\Athernet-cpp.bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalDependencies>..\..\External\Npcap_lib\*.lib;..\..\External\pcpp_lib\Debug\*.lib;..\..\External\pthread_lib\*.lib\Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\..\External\Npcap_lib\*.lib;..\..\External\pcpp_lib\Debug\*.lib;..\..\External\pthread_lib\*.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -134,14 +134,14 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <LargeAddressAware>true</LargeAddressAware>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalDependencies>..\..\External\Npcap_lib\*.lib;..\..\External\pcpp_lib\Debug\*.lib;..\..\External\pthread_lib\*.lib\Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\..\External\Npcap_lib\*.lib;..\..\External\pcpp_lib\Debug\*.lib;..\..\External\pthread_lib\*.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <OutputFile>$(IntDir)\Athernet-cpp.bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalDependencies>..\..\External\Npcap_lib\*.lib;..\..\External\pcpp_lib\Debug\*.lib;..\..\External\pthread_lib\*.lib\Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\..\External\Npcap_lib\*.lib;..\..\External\pcpp_lib\Debug\*.lib;..\..\External\pthread_lib\*.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
