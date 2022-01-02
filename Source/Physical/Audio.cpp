@@ -125,40 +125,34 @@ enum AudioDevice::ChannelState AudioDevice::getChannelState() {
     return CN_IDLE;
 }
 
-int AudioIO::refcount = 0;
+std::atomic<int> AudioIO::refcount = 0;
 AudioDeviceManager AudioIO::audioDeviceManager;
 std::shared_ptr<AudioDevice> AudioIO::audioDevice;
+std::mutex AudioIO::init_mutex;
 
 AudioIO::AudioIO() {
-    if (refcount == 0) {
-        audioDeviceManager.initialiseWithDefaultDevices(1, 1);
-        AudioDeviceManager::AudioDeviceSetup dev_info = audioDeviceManager.getAudioDeviceSetup();
-        dev_info.sampleRate = 48000;
-        dev_info.bufferSize = 256;
-        audioDevice = std::make_shared<AudioDevice>(Config::STATE);
-        audioDeviceManager.addAudioCallback(audioDevice.get());
-
-        std::unique_ptr<MACLayerReceiver> macReceiver;
-        std::unique_ptr<MACLayerTransmitter> macTransmitter;
-
-        std::cout << "AudioIO: selected mode: " << Config::STATE << "\n";
-
-        macReceiver = std::make_unique<MACLayerReceiver>();
-        macTransmitter = std::make_unique<MACLayerTransmitter>(audioDevice);
-
-        MACManager::initialize(std::move(macReceiver),
-                               std::move(macTransmitter));
-        audioDevice->beginTransmit();
+    /* Double-checking locking pattern from
+      A Relaxed Guide to memory_order_relaxed - Paul E. McKenney & Hans Boehm - CppCon 2020 */
+    if (refcount.load(std::memory_order_acquire) == 0) {
+        std::lock_guard<std::mutex> _(init_mutex);
+        if (refcount.load(std::memory_order_relaxed) == 0) {
+            initAudioIO();
+            refcount.fetch_add(1, std::memory_order_release);
+        }
+    } else {
+        refcount.fetch_add(1, std::memory_order_relaxed);
     }
-    refcount += 1;
 }
 
 AudioIO::~AudioIO() {
-    refcount -= 1;
-    if (refcount == 0) {
-        MACManager::destroy();
-        audioDeviceManager.removeAudioCallback(audioDevice.get());
-        audioDevice.reset();
+    if (refcount.load(std::memory_order_seq_cst) == 1) {
+        std::lock_guard<std::mutex> _(init_mutex);
+        if (refcount.load(std::memory_order_relaxed) == 1) {
+            destoryAudioIO();
+            refcount.fetch_sub(1, std::memory_order_release);
+        }
+    } else {
+        refcount.fetch_sub(1, std::memory_order_relaxed);
     }
 }
 
@@ -183,4 +177,42 @@ int AudioIO::RecvData(uint8_t *out, int outlen) {
     }
     total += MACManager::get().macReceiver->RecvPacket(out + ofs);
     return total;
+}
+
+void AudioIO::initAudioIO() {
+#ifdef DEBUG
+    if (refcount != 0) {
+        std::cout << "Error: AudioIO has been initialized\n";
+        return;
+    }
+#endif
+    audioDeviceManager.initialiseWithDefaultDevices(1, 1);
+    AudioDeviceManager::AudioDeviceSetup dev_info = audioDeviceManager.getAudioDeviceSetup();
+    dev_info.sampleRate = 48000;
+    dev_info.bufferSize = 128;
+    audioDevice = std::make_shared<AudioDevice>(Config::STATE);
+    audioDeviceManager.addAudioCallback(audioDevice.get());
+
+    std::unique_ptr<MACLayerReceiver> macReceiver;
+    std::unique_ptr<MACLayerTransmitter> macTransmitter;
+
+    std::cout << "AudioIO: selected mode: " << Config::STATE << "\n";
+
+    macReceiver = std::make_unique<MACLayerReceiver>();
+    macTransmitter = std::make_unique<MACLayerTransmitter>(audioDevice);
+
+    MACManager::initialize(std::move(macReceiver), std::move(macTransmitter));
+    audioDevice->beginTransmit();
+}
+
+void AudioIO::destoryAudioIO() {
+#ifdef DEBUG
+    if (refcount != 0) {
+        std::cout << "Error: AudioIO is still referenced\n";
+        return;
+    }
+#endif
+    MACManager::destroy();
+    audioDeviceManager.removeAudioCallback(audioDevice.get());
+    audioDevice.reset();
 }

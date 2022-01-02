@@ -36,9 +36,15 @@ public:
     static int RecvData(uint8_t *out, int outlen);
 
 private:
+
+    static void initAudioIO();
+    static void destoryAudioIO();
+
     static AudioDeviceManager audioDeviceManager;
     static std::shared_ptr<AudioDevice> audioDevice;
-    static int refcount;
+
+    static std::atomic<int> refcount;
+    static std::mutex init_mutex;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioIO)
 };
