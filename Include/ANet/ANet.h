@@ -12,11 +12,6 @@
 #include "Physical/Audio.h"
 #include "Config.h"
 
-enum ANetIPTag {
-    DATA,
-    PING
-};
-
 struct ANetIP {
     uint32_t ip_src;
     uint32_t ip_dst;
@@ -38,9 +33,9 @@ struct ANetPacket {
 
     ANetPacket() = default;
 
-    struct ANetIP ip;
-    struct ANetUDP udp;
-    uint8_t payload[Config::PACKET_PAYLOAD];
+    struct ANetIP ip{};
+    struct ANetUDP udp{};
+    uint8_t payload[Config::PACKET_PAYLOAD]{};
 };
 
 class ANetClient {
@@ -51,7 +46,7 @@ public:
 
     void SendData(const uint8_t *data, int len);
 
-    void SendPing(uint32_t target);
+    void SendPing(const char *target, const char *src = nullptr);
 
     void SendPing();
 
@@ -60,9 +55,9 @@ private:
     std::unique_ptr<AudioIO> m_audioIO;
     std::unique_ptr<IcmpPing> m_icmpPing;
 
-    uint32_t m_selfIP;
+    uint32_t m_selfIP{};
     uint16_t m_selfPort;
-    uint32_t m_destIP;
+    uint32_t m_destIP{};
     uint16_t m_destPort;
     bool m_isAthernet;
 };
@@ -74,6 +69,8 @@ public:
     ANetServer(ANetServer &other) = delete;
 
     int RecvData(uint8_t *out, int outlen);
+
+    void ReplyPing();
 
 private:
     std::unique_ptr<UDPServer> m_udpServer;
@@ -94,6 +91,8 @@ private:
     void ATNToInternet();
 
     void InternetToATN();
+
+    static void OnPingArrive(const char *src_ip);
 
     uint16_t m_anetPort;
     uint16_t m_outPort;

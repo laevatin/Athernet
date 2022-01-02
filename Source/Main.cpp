@@ -42,10 +42,12 @@ int main(int argc, char *argv[]) {
     std::cout << "1 for 1->3, 3 for 3->1, 4 for pinging" << std::endl;
     char ctl;
     std::cin >> ctl;
+    strcpy(Config::IP_ETHERNET, "10.20.205.112");
 
     switch (node) {
         case 1: {
-            ANetClient athernet("10.20.222.133", "4567", true);
+            ANetClient client("192.168.1.2", "4567", true);
+            ANetServer server("4566", true);
 
             switch (ctl) {
                 case '1': {
@@ -55,15 +57,16 @@ int main(int argc, char *argv[]) {
                     std::string message;
 
                     while (std::getline(inputFile, message)) {
-                        athernet.SendData((const uint8_t *) message.c_str(), message.length() + 1);
+                        client.SendData((const uint8_t *) message.c_str(), message.length() + 1);
                     }
                     break;
                 }
                 case '4': {
-                    while (1) {
-                        athernet.SendPing(inet_addr("8.8.8.8"));
-                        Sleep(1000);
-                    }
+                    client.SendPing("8.8.8.8");
+                    Sleep(1000);
+                    client.SendPing("10.15.89.111");
+                    while (true)
+                        server.ReplyPing();
                 }
                 default:
                     break;
@@ -110,6 +113,5 @@ int main(int argc, char *argv[]) {
             break;
         }
     }
-
     return 0;
 }

@@ -8,7 +8,6 @@
 #include <set>
 #include <condition_variable>
 #include <atomic>
-#include <stdint.h>
 #include "MAC/MACFrame.h"
 #include "MAC/SlidingWindow.h"
 #include "Physical/Frame.h"

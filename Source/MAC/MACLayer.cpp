@@ -93,7 +93,6 @@ void MACLayerTransmitter::ReplyReceived(MACFrame &reply) {
 }
 
 void MACLayerTransmitter::MACThreadTransStart() {
-    int resendCount = 0;
     std::future<void> asyncFutures[Config::SLIDING_WINDOW_SIZE];
     auto t1 = std::chrono::system_clock::now();
 
@@ -120,7 +119,7 @@ void MACLayerTransmitter::MACThreadTransStart() {
 
 void MACLayerTransmitter::SendPacket(const uint8_t *data, int len) {
     jassert(len <= Config::MACDATA_PER_FRAME);
-    m_sendQueue.push_back(std::move(MACFrame(data, static_cast<uint16_t>(len))));
+    m_sendQueue.push_back(MACFrame(data, static_cast<uint16_t>(len)));
 }
 
 void MACLayerTransmitter::SendACK(uint8_t id) {

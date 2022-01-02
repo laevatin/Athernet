@@ -4,6 +4,7 @@
 AudioType Config::header;
 std::vector<AudioType> Config::modulateSound;
 
+char Config::IP_ETHERNET[16];
 /* Initialize configuration by its constructor. */
 static Config config;
 

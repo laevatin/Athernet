@@ -49,14 +49,12 @@ public:
 
     constexpr static int BAND_WIDTH = 2;
 
-    constexpr static uint8_t MACPING_ID = 0xFE;
-
     constexpr static uint8_t SELF = 0xCE;
     constexpr static uint8_t OTHER = 0xEC;
 
     constexpr static auto ACK_TIMEOUT = 200ms;
 
-    constexpr static int SLIDING_WINDOW_SIZE = 4;
+    constexpr static int SLIDING_WINDOW_SIZE = 3;
 
     constexpr static int POWER_AVG_LEN = 100;
     constexpr static float POWER_THOR = 0.05f;
@@ -64,8 +62,10 @@ public:
     constexpr static auto BACKOFF_TSLOT = 30ms; // CSMA Tslot in milliseconds
 
     constexpr static enum state STATE = BOTH;
-    constexpr static char IP_ATHERNET[] = "192.168.1.1"; // Node1
+    constexpr static char IP_ATHERNET[16] = "192.168.1.1"; // Node1
     constexpr static char PORT_ATHERNET[] = "4567";
+
+    static char IP_ETHERNET[16];
 
     static AudioType header;
     static std::vector<AudioType> modulateSound;

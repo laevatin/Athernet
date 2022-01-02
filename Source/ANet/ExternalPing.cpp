@@ -18,9 +18,9 @@ PingCapture::PingCapture(const std::string &ipAddr) {
     m_device->setFilter(protocolFilter);
 }
 
-void PingCapture::startCapture(std::function<void()> callback) {
+void PingCapture::startCapture(std::function<void(const char *)> callback) {
     std::cout << "Capture started..." << std::endl;
-    m_device->startCapture(replyPing, (void *)callback.target<void()>());
+    m_device->startCapture(replyPing, (void *)callback.target<void(const char *)>());
 }
 
 void PingCapture::stopCapture() {
@@ -29,10 +29,15 @@ void PingCapture::stopCapture() {
 
 void PingCapture::replyPing(pcpp::RawPacket *rawPacket, pcpp::PcapLiveDevice *dev, void *callback) {
     pcpp::Packet received(rawPacket);
-    std::cout << "Received ping\n";
+    auto srcIP = received.getLayerOfType<pcpp::IPv4Layer>()->getSrcIPv4Address();
+    auto srcIP_str = srcIP.toString();
+    std::cout << "Received ping from " << srcIP_str << "\n";
 
-    if (!received.isPacketOfType(pcpp::ICMP) || !received.isPacketOfType(pcpp::IPv4) || !icmp->getEchoRequestData())
+    if (!received.isPacketOfType(pcpp::ICMP) || !received.isPacketOfType(pcpp::IPv4))
         return;
+
+    std::function<void(const char *)> resendPing((void(*)(const char*))callback);
+    resendPing(srcIP_str.c_str());
 
     pcpp::Packet packet(received);
 
@@ -43,7 +48,7 @@ void PingCapture::replyPing(pcpp::RawPacket *rawPacket, pcpp::PcapLiveDevice *de
 
     /* Set IP address */
     auto ip = packet.getLayerOfType<pcpp::IPv4Layer>();
-    ip->setDstIPv4Address(received.getLayerOfType<pcpp::IPv4Layer>()->getSrcIPv4Address());
+    ip->setDstIPv4Address(srcIP);
     ip->setSrcIPv4Address(dev->getIPv4Address());
 
     /* Set ICMP type to reply */

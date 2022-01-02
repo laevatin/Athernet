@@ -22,11 +22,8 @@ void FrameDetector::checkHeader(RingBuffer<float> &detectorBuffer) {
     const float *header = Config::header.getReadPointer(0);
 
     for (; headerOffset + Config::HEADER_LENGTH < detectorBuffer.size(); headerOffset++) {
-        float dot = detectorBuffer.peek(std::function < float(int,
-        const float *, const float *)>(dot_product),
-                header,
-                (std::size_t) Config::HEADER_LENGTH,
-                headerOffset);
+        float dot = detectorBuffer.peek(std::function <float(int, const float *, const float *)>(dot_product),
+                                header, (std::size_t) Config::HEADER_LENGTH, headerOffset);
 
         if (dot > 2.5f && dot > prevMax) {
             prevMax = dot;
@@ -73,7 +70,7 @@ void FrameDetector::detectAndGet(RingBuffer<float> &detectorBuffer, std::list<Fr
 #ifdef VERBOSE_PHY
         std::cout << "frame length: " << (int)frameHeader->length << "\n";
 #endif
-        if (frameHeader->length > Config::BIT_PER_FRAME && frameHeader->length == 0)
+        if (frameHeader->length > Config::BIT_PER_FRAME || frameHeader->length == 0)
             m_state = CK_HEADER;
         else
             m_state = GET_DATA;

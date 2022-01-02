@@ -7,7 +7,6 @@
 #include <Packet.h>
 #include <PcapFileDevice.h>
 #include <IcmpLayer.h>
-#include <IcmpAPI.h>
 #include <EthLayer.h>
 #include "PcapDevice.h"
 #include "PcapLiveDeviceList.h"
@@ -21,7 +20,7 @@ public:
     ~PingCapture();
 
     inline bool isWorking() { return m_isWorking; };
-    void startCapture(std::function<void(void)> callback);
+    void startCapture(std::function<void(const char *)> callback);
     void stopCapture();
 
 private:
