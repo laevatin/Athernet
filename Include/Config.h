@@ -52,12 +52,12 @@ public:
     constexpr static uint8_t SELF = 0xCE;
     constexpr static uint8_t OTHER = 0xEC;
 
-    constexpr static auto ACK_TIMEOUT = 200ms;
+    constexpr static auto ACK_TIMEOUT = 400ms;
 
     constexpr static int SLIDING_WINDOW_SIZE = 3;
 
     constexpr static int POWER_AVG_LEN = 100;
-    constexpr static float POWER_THOR = 0.05f;
+    constexpr static float POWER_THOR = 100.0f;
 
     constexpr static auto BACKOFF_TSLOT = 30ms; // CSMA Tslot in milliseconds
 

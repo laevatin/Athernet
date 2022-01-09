@@ -38,13 +38,16 @@ void FTPGateway::Gateway() {
                 GetPWD(response, pwd);
             }
             m_client.SendString(pwd);
-        } else if (cmd == "RETR" || cmd == "LIST") {
+        }
+        else if (cmd == "RETR" || cmd == "LIST") {
+            DataTransfer(m_clsFtp.m_strDataIp, m_clsFtp.m_iDataPort);
+            ret = m_clsFtp.Recv(1);
+            m_client.SendInt(ret);
+        } else if (cmd == "PASV") {
             CFtpResponse response;
-            std::string dataIP;
-            int dataPort;
-            m_clsFtp.Recv(response, 1);
-            response.GetIpPort(dataIP, dataPort);
-            DataTransfer(dataIP, dataPort);
+            ret = m_clsFtp.Recv(response, 1);
+            response.GetIpPort(m_clsFtp.m_strDataIp, m_clsFtp.m_iDataPort);
+            m_client.SendInt(ret);
         } else {
             ret = m_clsFtp.Recv(1);
             m_client.SendInt(ret);
