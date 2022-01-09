@@ -31,7 +31,7 @@ UDPServer::UDPServer(const char *port)
 
 int UDPServer::RecvPacket(ANetPacket &out) {
     int remote_size = sizeof(sockaddr);
-    int data_size = recvfrom(m_socket, (char *) out.payload, Config::PACKET_PAYLOAD, 0, (sockaddr *) &m_sockaddr_remote,
+    int data_size = recvfrom(m_socket, (char *) out.payload, Config::IP_PACKET_PAYLOAD, 0, (sockaddr *) &m_sockaddr_remote,
                              &remote_size);
 
     out.ip.ip_src = m_sockaddr_remote.sin_addr.S_un.S_addr;

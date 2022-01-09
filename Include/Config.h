@@ -38,7 +38,7 @@ public:
 
     constexpr static int BIT_LENGTH = 6;
 
-    constexpr static int PACKET_PAYLOAD = 94; // MACDATA_PER_FRAME / 8 - sizeof(ANetIP) - sizeof(ANetUDP)
+    constexpr static int IP_PACKET_PAYLOAD = 94; // MACDATA_PER_FRAME / 8 - sizeof(ANetIP) - sizeof(ANetUDP)
 
     constexpr static int DATA_PER_FRAME = 8 * 120;
     constexpr static int BIT_PER_FRAME = 8 * 127;
@@ -62,7 +62,7 @@ public:
     constexpr static auto BACKOFF_TSLOT = 30ms; // CSMA Tslot in milliseconds
 
     constexpr static enum state STATE = BOTH;
-    constexpr static char IP_ATHERNET[16] = "192.168.1.1"; // Node1
+    constexpr static char IP_ATHERNET[16] = "192.168.1.2"; // Node1
     constexpr static char PORT_ATHERNET[] = "4567";
 
     static char IP_ETHERNET[16];

@@ -1,7 +1,7 @@
 #include "MAC/MACFrame.h"
 #include "Utils/CRC.h"
 
-uint8_t MACFrame::nextID = 0;
+std::atomic<uint8_t> MACFrame::nextID = 0;
 CRC::Table<std::uint16_t, 16> MACFrame::crcTable(CRC::CRC_16_ARC());
 
 MACFrame::MACFrame()

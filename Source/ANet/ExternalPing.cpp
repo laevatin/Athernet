@@ -36,14 +36,21 @@ void PingCapture::replyPing(pcpp::RawPacket *rawPacket, pcpp::PcapLiveDevice *de
     pcpp::Packet received(rawPacket);
     auto srcIP = received.getLayerOfType<pcpp::IPv4Layer>()->getSrcIPv4Address();
     auto srcIP_str = srcIP.toString();
-    std::cout << "Received ping from " << srcIP_str << "\n";
+    auto icmp = received.getLayerOfType<pcpp::IcmpLayer>();
 
-    if (!received.isPacketOfType(pcpp::ICMP) || !received.isPacketOfType(pcpp::IPv4) || !srcIP_str.compare(Config::IP_ETHERNET))
+    if (!received.isPacketOfType(pcpp::ICMP) || !received.isPacketOfType(pcpp::IPv4) || !srcIP_str.compare(Config::IP_ETHERNET)
+        || icmp->getIcmpHeader()->type == 0)
         return;
-
-    std::function<void(const char *)> resendPing((void(*)(const char*))callback);
     
-    resendPing(srcIP_str.c_str());
+    std::cout << "Received ping from " << srcIP_str << "\n";
+    std::function<void(const char *)> resendPing((void(*)(const char*))callback);
+    auto a = icmp->getDataPtr()[24];
+    uint8_t b = 0xff;
+
+    if (a == b) {
+        std::cout << "NAT to Athernet" << "\n";
+        resendPing(srcIP_str.c_str());
+    }
 
     pcpp::Packet packet(received);
 
@@ -58,14 +65,14 @@ void PingCapture::replyPing(pcpp::RawPacket *rawPacket, pcpp::PcapLiveDevice *de
     ip->setSrcIPv4Address(dev->getIPv4Address());
 
     /* Set ICMP type to reply */
-    auto icmp = packet.getLayerOfType<pcpp::IcmpLayer>();
+    icmp = packet.getLayerOfType<pcpp::IcmpLayer>();
     icmp->getIcmpHeader()->type = 0;
 
     packet.computeCalculateFields();
 
     bool success = dev->sendPacket(&packet);
 
-    std::cout << packet.toString();
+    //std::cout << packet.toString();
     if (success)
         std::cout << "reply success\n";
     else

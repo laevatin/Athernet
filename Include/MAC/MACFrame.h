@@ -63,7 +63,7 @@ private:
     DataType m_payload;
     bool m_isGoodMACFrame;
 
-    static uint8_t nextID;
+    static std::atomic<uint8_t> nextID;
     static CRC::Table<std::uint16_t, 16> crcTable;
 
     friend void swap(MACFrame &left, MACFrame &right);

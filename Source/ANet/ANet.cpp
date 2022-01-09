@@ -32,7 +32,7 @@ ANetPacket::ANetPacket(uint32_t src_ip, uint32_t dst_ip, uint16_t src_port, uint
 -------         -------        -------
 */
 
-/* C'tor for client side */
+/* C'tor for m_client side */
 ANetClient::ANetClient(const char *dest_ip, const char *dest_port, bool isAthernet)
         : m_isAthernet(isAthernet) {
     InetPton(AF_INET, dest_ip, &m_destIP);
@@ -106,6 +106,39 @@ void ANetClient::SendPing() {
     }
 }
 
+void ANetClient::SendString(const std::string &str) {
+    if (!m_isAthernet)
+        return;
+
+    constexpr int MAX_STR_LEN = Config::IP_PACKET_PAYLOAD - 1;
+
+    int strPtr = 0;
+    int strLen = (int) str.length() + 1;
+    int sendLen = min(strLen, MAX_STR_LEN);
+
+    while (strLen > MAX_STR_LEN) {
+        ANetPacket packet(m_selfIP, m_destIP, m_selfPort, m_destPort, (const uint8_t *) str.c_str() + strPtr, (uint16_t) sendLen);
+        int macLen = sendLen + (int) sizeof(ANetIP) + (int) sizeof(ANetUDP);
+        strLen -= MAX_STR_LEN;
+        AudioIO::SendData((const uint8_t *) &packet, macLen);
+        strPtr += MAX_STR_LEN;
+    }
+
+    sendLen = min(strLen, MAX_STR_LEN);
+    ANetPacket packet(m_selfIP, m_destIP, m_selfPort, m_destPort, (const uint8_t *) str.c_str() + strPtr, (uint16_t) sendLen);
+    int macLen = sendLen + (int) sizeof(ANetIP) + (int) sizeof(ANetUDP);
+    AudioIO::SendData((const uint8_t *) &packet, macLen);
+}
+
+void ANetClient::SendInt(int i) {
+    if (!m_isAthernet)
+        return;
+
+    ANetPacket packet(m_selfIP, m_destIP, m_selfPort, m_destPort, (const uint8_t *) &i, sizeof(int));
+    int macLen = sizeof(ANetIP) + sizeof(ANetUDP) + sizeof(int);
+    AudioIO::SendData((const uint8_t *) &packet, macLen);
+}
+
 ANetServer::ANetServer(const char *open_port, bool isAthernet)
         : m_isAthernet(isAthernet) {
     m_openPort = htons(std::strtol(open_port, nullptr, 10));
@@ -148,6 +181,26 @@ void ANetServer::ReplyPing() {
     }
 }
 
+void ANetServer::RecvString(std::string &str) {
+    constexpr int MAX_STR_LEN = Config::IP_PACKET_PAYLOAD - 1;
+    ANetPacket packet;
+    str.clear();
+    char *stringPtr = (char *)packet.payload;
+
+    do {
+        m_audioIO->RecvData((uint8_t *) &packet, Config::MACDATA_PER_FRAME);
+        stringPtr[MAX_STR_LEN] = '\0';
+        str.append(stringPtr);
+    } while (strnlen_s(stringPtr, MAX_STR_LEN) == MAX_STR_LEN);
+}
+
+int ANetServer::RecvInt() {
+    ANetPacket packet;
+    int recvLen = sizeof(int) + (int) sizeof(ANetIP) + (int) sizeof(ANetUDP);
+    m_audioIO->RecvData((uint8_t *) &packet, recvLen);
+    return *(int *) packet.payload;
+}
+
 ANetGateway::ANetGateway(const char *anet_port, const char *out_port)
         : m_udpServer(out_port) {
     m_anetPort = htons(std::strtol(anet_port, nullptr, 10));
@@ -155,12 +208,13 @@ ANetGateway::ANetGateway(const char *anet_port, const char *out_port)
 }
 
 void ANetGateway::StartForwarding() {
-    //PingCapture capturer(Config::IP_ETHERNET);
-    auto atn2int = std::async(std::launch::async, [this]() { return ATNToInternet(); });
-    auto int2atn = std::async(std::launch::async, [this]() { return InternetToATN(); });
-    //capturer.startCapture((void *)ANetGateway::OnPingArrive);
-    atn2int.get();
-    int2atn.get();
+    PingCapture capturer(Config::IP_ETHERNET);
+    //auto atn2int = std::async(std::launch::async, [this]() { return ATNToInternet(); });
+    //auto int2atn = std::async(std::launch::async, [this]() { return InternetToATN(); });
+    capturer.startCapture((void *)ANetGateway::OnPingArrive);
+    //atn2int.get();
+    //int2atn.get();
+    Sleep(1000000);
 }
 
 void ANetGateway::ATNToInternet() {

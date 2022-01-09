@@ -35,7 +35,7 @@ struct ANetPacket {
 
     struct ANetIP ip{};
     struct ANetUDP udp{};
-    uint8_t payload[Config::PACKET_PAYLOAD]{};
+    uint8_t payload[Config::IP_PACKET_PAYLOAD]{};
 };
 
 class ANetClient {
@@ -45,6 +45,10 @@ public:
     ANetClient(ANetClient &other) = delete;
 
     void SendData(const uint8_t *data, int len);
+
+    void SendString(const std::string &str);
+
+    void SendInt(int i);
 
     void SendPing(const char *target, const char *src = nullptr);
 
@@ -67,6 +71,10 @@ public:
     ANetServer(const char *open_port, bool isAthernet);
 
     ANetServer(ANetServer &other) = delete;
+
+    void RecvString(std::string &str);
+
+    int RecvInt();
 
     int RecvData(uint8_t *out, int outlen);
 

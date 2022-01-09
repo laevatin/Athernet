@@ -157,26 +157,15 @@ AudioIO::~AudioIO() {
 }
 
 void AudioIO::SendData(const uint8_t *data, int len) {
-    int ofs = 0;
-    while (len > Config::MACDATA_PER_FRAME) {
-        MACManager::get().macTransmitter->SendPacket(data + ofs, Config::MACDATA_PER_FRAME);
-        len -= Config::MACDATA_PER_FRAME;
-        ofs += Config::MACDATA_PER_FRAME;
-    }
-    MACManager::get().macTransmitter->SendPacket(data + ofs, len);
+    jassert(len <= Config::MACDATA_PER_FRAME);
+
+    MACManager::get().macTransmitter->SendPacket(data, len);
 }
 
 int AudioIO::RecvData(uint8_t *out, int outlen) {
-    int ofs = 0;
-    int total = 0;
-    while (outlen > Config::MACDATA_PER_FRAME) {
-        int received = MACManager::get().macReceiver->RecvPacket(out + ofs);
-        outlen -= received;
-        total += received;
-        ofs += received;
-    }
-    total += MACManager::get().macReceiver->RecvPacket(out + ofs);
-    return total;
+    jassert(outlen <= Config::MACDATA_PER_FRAME);
+
+    return MACManager::get().macReceiver->RecvPacket(out);
 }
 
 void AudioIO::initAudioIO() {

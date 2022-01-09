@@ -13,9 +13,9 @@ IcmpPing::IcmpPing(uint32_t destip) {
 }
 
 int IcmpPing::IcmpSendPing() {
-    char randomdata[] = "Hello World!";
+    char randomdata[] = { 255, 255, 255, 255, 255, 255 };
     int success = IcmpSendEcho(m_handle, m_address, randomdata, sizeof(randomdata), NULL, m_recvBuffer,
-                               ICMP_BUFFER_SIZE, 2000);
+                               ICMP_BUFFER_SIZE, 10000);
     memcpy(&m_reply, m_recvBuffer, sizeof(m_reply));
     if (success)
         std::cout << "Success! It took " << m_reply.RoundTripTime << " milliseconds.\n";

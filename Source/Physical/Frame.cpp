@@ -20,11 +20,10 @@ Frame::Frame(const void *phys_data, uint16_t length)
     m_frameData.addArray(static_cast<const uint8_t *>(phys_data), length);
 
     /* Add FEC when length == Config::DATA_PER_FRAME */
-    if (length == Config::DATA_PER_FRAME)
-        m_frameData = AudioDevice::codec.encodeBlock(m_frameData, 0);
+//    if (length == Config::DATA_PER_FRAME)
+//        m_frameData = AudioDevice::codec.encodeBlock(m_frameData, 0);
 }
 
-// TODO: DEBUG with Config::BIT_PER_FRAME because of adding the physical header
 Frame::Frame(FrameHeader *header, const float *audio) {
     DataType bitArray, byteArray;
     for (int i = 0; i < header->length * 8 * Config::BIT_LENGTH / Config::BAND_WIDTH; i += Config::BIT_LENGTH)
@@ -33,12 +32,12 @@ Frame::Frame(FrameHeader *header, const float *audio) {
     byteArray.addArray(reinterpret_cast<uint8_t *>(header), sizeof(struct FrameHeader));
     byteArray.addArray(bitToByte(bitArray));
 
-    if (header->length == Config::BIT_PER_FRAME / 8)
-        m_isGood = AudioDevice::codec.decodeBlock(byteArray, m_frameData, 0);
-    else {
+//    if (header->length == Config::BIT_PER_FRAME / 8)
+//        m_isGood = AudioDevice::codec.decodeBlock(byteArray, m_frameData, 0);
+//    else {
         m_frameData = std::move(byteArray);
         m_isGood = true;
-    }
+//    }
     this->m_header = *header;
 }
 
