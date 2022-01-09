@@ -21,7 +21,7 @@ public:
 private:
     bool FTPGateway::GetPWD(CFtpResponse &response, std::string &path);
 
-    void DataTransfer();
+    void DataTransfer(std::string &dataIP, int dataPort);
 
     ANetClient m_client;
     ANetServer m_server;

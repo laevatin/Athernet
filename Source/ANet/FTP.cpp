@@ -38,19 +38,22 @@ void FTPGateway::Gateway() {
                 GetPWD(response, pwd);
             }
             m_client.SendString(pwd);
+        } else if (cmd == "RETR" || cmd == "LIST") {
+            CFtpResponse response;
+            std::string dataIP;
+            int dataPort;
+            m_clsFtp.Recv(response, 1);
+            response.GetIpPort(dataIP, dataPort);
+            DataTransfer(dataIP, dataPort);
         } else {
             ret = m_clsFtp.Recv(1);
             m_client.SendInt(ret);
         }
-
-        if (cmd == "RETR" || cmd == "LIST") {
-            DataTransfer();
-        }
     }
 }
 
-void FTPGateway::DataTransfer() {
-    Socket hSocket = TcpConnect(m_ftpServer.c_str(), 20, 1000);
+void FTPGateway::DataTransfer(std::string &dataIP, int dataPort) {
+    Socket hSocket = TcpConnect(dataIP.c_str(), dataPort, 1000);
     if (hSocket == INVALID_SOCKET) {
         m_client.SendInt(0);
         return;
@@ -103,14 +106,17 @@ void ANetFTP::run() {
     std::string curCommand;
 
     while (curCommand != "EXIT") {
-        std::cin >> curCommand;
+        std::cout << "> ";
+        std::getline(std::cin, curCommand);
 
         std::istringstream ss(curCommand);
         std::string cmd;
         ss >> cmd;
 
-        if (!checkCmd(cmd))
+        if (!checkCmd(cmd)) {
+            std::cout << "Invalid command" << std::endl;
             continue;
+        }
 
         m_client.SendString(curCommand);
         int ret = m_server.RecvInt();
@@ -127,7 +133,7 @@ void ANetFTP::run() {
             ss >> arg2;
             ss >> arg2;
             if (arg2.length() == 0) {
-                std::cout << "No file name" << std::endl;
+                std::cout << "No local file name: " << curCommand << std::endl;
             } else {
                 outfile.open(arg2);
             }
@@ -161,8 +167,14 @@ void ANetFTP::displayCode(int retCode) {
         case 221:
             std::cout << "FTP server closing connection" << std::endl;
             break;
+        case 227:
+            std::cout << "Entering Passive Mode" << std::endl;
+            break;
         case 230:
             std::cout << "User logged in" << std::endl;
+            break;
+        case 250:
+            std::cout << "Requested file action okay, completed" << std::endl;
             break;
         case 257:
             std::cout << "PWD command successful" << std::endl;
@@ -208,6 +220,9 @@ void ANetFTP::displayCode(int retCode) {
             break;
         case 532:
             std::cout << "Need account for storing files" << std::endl;
+            break;
+        case 550:
+            std::cout << "Failed to change directory or open file" << std::endl;
             break;
         default:
             std::cout << "Code " << retCode << std::endl;
