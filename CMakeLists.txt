@@ -37,6 +37,7 @@ jucer_project_settings(
     "..\\..\\Include"
     "..\\..\\External\\pcpp_header"
     "..\\..\\External\\asio_header"
+    "..\\..\\External\\ftpstack_header"
 )
 
 jucer_project_files("Athernet-cpp/Include/UDP"
@@ -50,6 +51,7 @@ jucer_project_files("Athernet-cpp/Include/ANet"
 #           Resource  Resource                                 Scheme
   .         .         .         "Include/ANet/ANet.h"
   .         .         .         "Include/ANet/ExternalPing.h"
+  .         .         .         "Include/ANet/FTP.h"
   .         .         .         "Include/ANet/Ping.h"
 )
 
@@ -93,6 +95,7 @@ jucer_project_files("Athernet-cpp/Source/ANet"
 #           Resource  Resource                                  Scheme
   x         .         .         "Source/ANet/ANet.cpp"
   x         .         .         "Source/ANet/ExternalPing.cpp"
+  x         .         .         "Source/ANet/FTP.cpp"
   x         .         .         "Source/ANet/Ping.cpp"
 )
 
@@ -191,7 +194,7 @@ jucer_export_target(
   "Visual Studio 2019"
   TARGET_PROJECT_FOLDER "Builds/VisualStudio2019" # used by HEADER_SEARCH_PATHS
   EXTERNAL_LIBRARIES_TO_LINK
-    "..\\..\\External\\Npcap_lib\\*.lib\;..\\..\\External\\pcpp_lib\\Debug\\*.lib\;"
+    "..\\..\\External\\Npcap_lib\\*.lib\;..\\..\\External\\pcpp_lib\\Debug\\*.lib\;..\\..\\External\\pthread_lib\\*.lib\;..\\..\\External\\ftpstack_lib\\*.lib\;Ws2_32.lib\;"
 )
 
 jucer_export_target_configuration(

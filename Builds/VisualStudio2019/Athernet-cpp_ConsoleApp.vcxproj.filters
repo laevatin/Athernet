@@ -271,6 +271,9 @@
     <ClCompile Include="..\..\Source\ANet\ExternalPing.cpp">
       <Filter>Athernet-cpp\Source\ANet</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\ANet\FTP.cpp">
+      <Filter>Athernet-cpp\Source\ANet</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\ANet\Ping.cpp">
       <Filter>Athernet-cpp\Source\ANet</Filter>
     </ClCompile>
@@ -1306,6 +1309,9 @@
       <Filter>Athernet-cpp\Include\ANet</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Include\ANet\ExternalPing.h">
+      <Filter>Athernet-cpp\Include\ANet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Include\ANet\FTP.h">
       <Filter>Athernet-cpp\Include\ANet</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Include\ANet\Ping.h">

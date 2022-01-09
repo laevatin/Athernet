@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="WQZVj5" name="Athernet-cpp" projectType="consoleapp" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              compilerFlagSchemes="NewScheme" cppLanguageStandard="17" headerPath="..\..\Include&#10;..\..\External\pcpp_header&#10;..\..\External\asio_header">
+              compilerFlagSchemes="NewScheme" cppLanguageStandard="17" headerPath="..\..\Include&#10;..\..\External\pcpp_header&#10;..\..\External\asio_header&#10;..\..\External\ftpstack_header">
   <MAINGROUP id="qncXkF" name="Athernet-cpp">
     <GROUP id="{63E937E2-2125-F6F7-7546-45DBF7ED9FA1}" name="Include">
       <GROUP id="{48B39BE5-E3F4-454E-E311-957D15EB1B01}" name="UDP">
@@ -11,6 +11,7 @@
       <GROUP id="{C16F0157-9331-F98B-A9BB-715258F627A8}" name="ANet">
         <FILE id="Eipk0E" name="ANet.h" compile="0" resource="0" file="Include/ANet/ANet.h"/>
         <FILE id="bXWLLu" name="ExternalPing.h" compile="0" resource="0" file="Include/ANet/ExternalPing.h"/>
+        <FILE id="uInZPK" name="FTP.h" compile="0" resource="0" file="Include/ANet/FTP.h"/>
         <FILE id="A34IWZ" name="Ping.h" compile="0" resource="0" file="Include/ANet/Ping.h"/>
       </GROUP>
       <GROUP id="{E597B1AB-690F-023E-273C-483118948409}" name="MAC">
@@ -40,6 +41,7 @@
         <FILE id="bUxVXV" name="ANet.cpp" compile="1" resource="0" file="Source/ANet/ANet.cpp"/>
         <FILE id="XAlCAQ" name="ExternalPing.cpp" compile="1" resource="0"
               file="Source/ANet/ExternalPing.cpp"/>
+        <FILE id="m8HiBE" name="FTP.cpp" compile="1" resource="0" file="Source/ANet/FTP.cpp"/>
         <FILE id="POTLwZ" name="Ping.cpp" compile="1" resource="0" file="Source/ANet/Ping.cpp"/>
       </GROUP>
       <GROUP id="{8D31DFE7-1AB3-83E4-1DD4-3A88F5B7B5FE}" name="UDP">
@@ -68,7 +70,7 @@
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_ASIO="1" JUCE_WASAPI="0"
                JUCE_DIRECTSOUND="0" JUCE_ALSA="0" JUCE_USE_ANDROID_OBOE="0"/>
   <EXPORTFORMATS>
-    <VS2019 targetFolder="Builds/VisualStudio2019" externalLibraries="..\..\External\Npcap_lib\*.lib;..\..\External\pcpp_lib\Debug\*.lib;..\..\External\pthread_lib\*.lib;Ws2_32.lib;">
+    <VS2019 targetFolder="Builds/VisualStudio2019" externalLibraries="..\..\External\Npcap_lib\*.lib;..\..\External\pcpp_lib\Debug\*.lib;..\..\External\pthread_lib\*.lib;..\..\External\ftpstack_lib\*.lib;Ws2_32.lib;">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="Athernet-cpp"/>
         <CONFIGURATION isDebug="0" name="Release" targetName="Athernet-cpp"/>
