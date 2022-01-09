@@ -165,7 +165,7 @@ int ANetServer::RecvData(uint8_t *out, int outlen) {
               << ntohs(packet.udp.udp_src_port) << " with " << packet.udp.udp_len << " bytes.\n";
     memcpy(out, packet.payload, packet.udp.udp_len);
 
-    return length;
+    return packet.udp.udp_len;
 }
 
 void ANetServer::ReplyPing() {

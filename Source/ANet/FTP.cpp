@@ -111,10 +111,17 @@ void ANetFTP::run() {
     while (curCommand != "EXIT") {
         std::cout << "> ";
         std::getline(std::cin, curCommand);
-
+        std::ofstream outfile;
         std::istringstream ss(curCommand);
         std::string cmd;
         ss >> cmd;
+
+        if (cmd == "RETR") {
+            std::string arg1;
+
+            ss >> arg1;
+            outfile.open(arg1, std::ios::trunc | std::ios::binary);
+        }
 
         if (!checkCmd(cmd)) {
             std::cout << "Invalid command" << std::endl;
@@ -122,25 +129,16 @@ void ANetFTP::run() {
         }
 
         m_client.SendString(curCommand);
-        int ret = m_server.RecvInt();
-        displayCode(ret);
+        if (cmd != "RETR" && cmd != "LIST") {
+            int ret = m_server.RecvInt();
+            displayCode(ret);
+        }
 
         if (cmd == "PWD") {
             std::string pwd;
             m_server.RecvString(pwd);
             std::cout << pwd << std::endl;
         } else if (cmd == "RETR") {
-            std::ofstream outfile;
-            std::string arg2;
-
-            ss >> arg2;
-            ss >> arg2;
-            if (arg2.length() == 0) {
-                std::cout << "No local file name: " << curCommand << std::endl;
-            } else {
-                outfile.open(arg2);
-            }
-
             while (true) {
                 uint8_t buf[Config::IP_PACKET_PAYLOAD];
                 int read = m_server.RecvData(buf, Config::IP_PACKET_PAYLOAD);
@@ -152,8 +150,28 @@ void ANetFTP::run() {
                 if (read < Config::IP_PACKET_PAYLOAD)
                     break;
             }
-        } else {
 
+            int ret = m_server.RecvInt();
+            displayCode(ret);
+            ret = m_server.RecvInt();
+            displayCode(ret);
+        } else if (cmd == "LIST") {
+            std::string listStr;
+            uint8_t buf[Config::IP_PACKET_PAYLOAD];
+
+            while (true) {
+                int read = m_server.RecvData(buf, Config::IP_PACKET_PAYLOAD);
+
+                listStr.append((char*)buf, read);
+
+                if (read < Config::IP_PACKET_PAYLOAD) break;
+            }
+            std::cout << listStr << std::endl;
+
+            int ret = m_server.RecvInt();
+            displayCode(ret);
+            ret = m_server.RecvInt();
+            displayCode(ret);
         }
     }
 }
