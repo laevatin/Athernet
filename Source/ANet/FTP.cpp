@@ -4,7 +4,7 @@
 #include <iostream>
 #include <fstream>
 
-FTPGateway::FTPGateway(const std::string& ftp_server)
+FTPGateway::FTPGateway(const std::string &ftp_server)
         : m_client(Config::IP_ATHERNET, Config::PORT_ATHERNET, true),
           m_server(Config::PORT_ATHERNET, true) {
 
@@ -38,8 +38,8 @@ void FTPGateway::Gateway() {
                 GetPWD(response, pwd);
             }
             m_client.SendString(pwd);
-        }
-        else if (cmd == "RETR" || cmd == "LIST") {
+        } else if (cmd == "RETR" || cmd == "LIST") {
+            Sleep(20); // wait for server
             DataTransfer(m_clsFtp.m_strDataIp, m_clsFtp.m_iDataPort);
             ret = m_clsFtp.Recv(1);
             m_client.SendInt(ret);
@@ -68,7 +68,6 @@ void FTPGateway::DataTransfer(std::string &dataIP, int dataPort) {
     while (true) {
         iRead = TcpRecv(hSocket, buf, sizeof(buf), 1000);
         if (iRead <= 0) break;
-
         m_client.SendData((uint8_t *) buf, iRead);
     }
 
@@ -84,7 +83,7 @@ bool FTPGateway::GetPWD(CFtpResponse &response, std::string &path) {
     }
 
     const char *pszLine = it->c_str();
-    int iLineLen = (int)it->length();
+    int iLineLen = (int) it->length();
     int iStartPos = -1;
 
     for (int i = 0; i < iLineLen; ++i) {
@@ -102,8 +101,8 @@ bool FTPGateway::GetPWD(CFtpResponse &response, std::string &path) {
 }
 
 ANetFTP::ANetFTP()
-    : m_client(Config::IP_ATHERNET, Config::PORT_ATHERNET, true),
-      m_server(Config::PORT_ATHERNET, true) {}
+        : m_client(Config::IP_ATHERNET, Config::PORT_ATHERNET, true),
+          m_server(Config::PORT_ATHERNET, true) {}
 
 void ANetFTP::run() {
     std::string curCommand;
@@ -162,7 +161,7 @@ void ANetFTP::run() {
             while (true) {
                 int read = m_server.RecvData(buf, Config::IP_PACKET_PAYLOAD);
 
-                listStr.append((char*)buf, read);
+                listStr.append((char *) buf, read);
 
                 if (read < Config::IP_PACKET_PAYLOAD) break;
             }
@@ -177,7 +176,8 @@ void ANetFTP::run() {
 }
 
 bool ANetFTP::checkCmd(const std::string &cmd) {
-    return cmd == "PWD" || cmd == "RETR" || cmd == "LIST" || cmd == "EXIT" || cmd == "USER" || cmd == "PASS" || cmd == "PASV" || cmd == "CWD";
+    return cmd == "PWD" || cmd == "RETR" || cmd == "LIST" || cmd == "EXIT" || cmd == "USER" || cmd == "PASS" ||
+           cmd == "PASV" || cmd == "CWD";
 }
 
 void ANetFTP::displayCode(int retCode) {

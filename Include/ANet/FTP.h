@@ -12,21 +12,20 @@
 
 class FTPGateway {
 public:
-    FTPGateway(const std::string& ftp_server);
+    explicit FTPGateway(const std::string& ftp_server);
 
     void Gateway();
 
     ~FTPGateway() = default;
 
 private:
-    bool FTPGateway::GetPWD(CFtpResponse &response, std::string &path);
+    static bool GetPWD(CFtpResponse &response, std::string &path);
 
     void DataTransfer(std::string &dataIP, int dataPort);
 
     ANetClient m_client;
     ANetServer m_server;
     CFtpClient m_clsFtp;
-    std::string m_ftpServer;
 };
 
 class ANetFTP {

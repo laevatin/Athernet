@@ -72,6 +72,7 @@ void PingCapture::replyPing(pcpp::RawPacket *rawPacket, pcpp::PcapLiveDevice *de
 
     bool success = dev->sendPacket(&packet);
 
+
     //std::cout << packet.toString();
     if (success)
         std::cout << "reply success\n";

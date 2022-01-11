@@ -12,6 +12,8 @@
 #include "Physical/Audio.h"
 #include "Config.h"
 
+enum ANetIPTag;
+
 struct ANetIP {
     uint32_t ip_src;
     uint32_t ip_dst;
@@ -52,9 +54,17 @@ public:
 
     void SendPing(const char *target, const char *src = nullptr);
 
+    void StartPingReq();
+
+    void StopPingReq();
+
+    void StartRecvReq();
+
     void SendPing();
 
 private:
+
+    void SendPacketWithType(ANetIPTag type);
     std::unique_ptr<UDPClient> m_udpClient;
     std::unique_ptr<AudioIO> m_audioIO;
     std::unique_ptr<IcmpPing> m_icmpPing;
@@ -101,6 +111,7 @@ private:
     void InternetToATN();
 
     static void OnPingArrive(const char *src_ip);
+    static int replyCount;
 
     uint16_t m_anetPort;
     uint16_t m_outPort;

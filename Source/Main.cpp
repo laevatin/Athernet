@@ -31,79 +31,111 @@ void getInputFromFile(Array<uint8_t> &input, const std::string &path) {
     inputFile.close();
 }
 
+void project3_node1() {
+    constexpr char NODE2_IP[] = "192.168.1.2";
+    ANetClient client(NODE2_IP, Config::PORT_ATHERNET, true);
+    ANetServer server(Config::PORT_ATHERNET, true);
+
+    std::cout << "Athernet Node 1\n";
+    std::cout << "Press enter to start";
+
+    getchar();
+
+    std::cout << "Connecting to server..." << std::endl;
+
+    client.SendPing(NODE2_IP);
+    std::string input;
+    while (true) {
+        std::cout << "Athernet> ";
+        std::getline(std::cin, input);
+        if (input == "exit")
+            break;
+
+        if (input.length() >= 5 && input.substr(0, 4) == "ping") {
+            client.StartPingReq();
+            for (int i = 0; i < Config::PING_NUM; i++) {
+                auto ip = input.substr(5);
+                client.SendPing(ip.c_str());
+            }
+            client.StopPingReq();
+        } else if (input == "receive") {
+            client.StartRecvReq();
+            for (int i = 0; i < Config::PING_NUM; i++) {
+                server.ReplyPing();
+            }
+        } else if (input.length() >= 5 && input.substr(0, 4) == "send") {
+            std::ifstream inputFile;
+            inputFile.open(input.substr(5));
+            std::string message;
+
+            while (std::getline(inputFile, message)) {
+                client.SendData((const uint8_t*)message.c_str(), message.length() + 1);
+            }
+        } else {
+            std::cout << "Unknown command: " << input << std::endl;
+        }
+    }
+}
+
+void project3_node2() {
+    constexpr char NODE1_IP[] = "192.168.1.1";
+    std::cout << "Athernet Node 2" << std::endl;
+
+    ANetClient client(NODE1_IP, Config::PORT_ATHERNET, true);
+    ANetServer server(Config::PORT_ATHERNET, true);
+
+    std::cout << "Receiving connection..." << std::endl;
+
+    server.ReplyPing();
+
+    ANetGateway gateway(Config::PORT_ATHERNET, Config::PORT_ATHERNET);
+
+    gateway.StartForwarding();
+}
+
 void project3(int argc, char* argv[]) {
-	int node = atoi(argv[1]);
-	std::cout << "1 for 1->3, 3 for 3->1, 4 for pinging" << std::endl;
-	char ctl;
-	std::cin >> ctl;
-	strcpy(Config::IP_ETHERNET, "10.20.210.29");
+    int node = atoi(argv[1]);
+    strcpy(Config::IP_ETHERNET, "192.168.18.204");
 
-	switch (node) {
-	case 1: {
-		ANetClient client("192.168.1.2", "4567", true);
-		ANetServer server("4566", true);
+    switch (node) {
+        case 1: {
+            project3_node1();
+        }
+        case 2: {
+            project3_node2();
+        }
+        case 3: {
+/*            switch (ctl) {
+                case '1': {
+                    ANetServer athernet("4568", false);
+                    while (1) {
+                        char buffer[512];
+                        athernet.RecvData((uint8_t*)buffer, Config::IP_PACKET_PAYLOAD);
+                        std::cout << "Payload: " << buffer << std::endl;
+                    }
+                    break;
+                }
+                case '3': {
+                    ANetClient athernet("10.19.131.103", "4568", false);
+                    std::ifstream inputFile;
+                    inputFile.open(
+                            R"(C:\Users\16322\Desktop\lessons\2021_1\CS120_Computer_Network\Athernet-cpp\Input\input.in)");
+                    std::string message;
 
-		switch (ctl) {
-		case '1': {
-			std::ifstream inputFile;
-			inputFile.open(
-				R"(C:\Users\16322\Desktop\lessons\2021_1\CS120_Computer_Network\Athernet-cpp\Input\input.in)");
-			std::string message;
+                    while (std::getline(inputFile, message)) {
+                        athernet.SendData((const uint8_t*)message.c_str(), message.length() + 1);
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
 
-			while (std::getline(inputFile, message)) {
-				client.SendData((const uint8_t*)message.c_str(), message.length() + 1);
-			}
-			break;
-		}
-		case '4': {
-			while (true)
-				server.ReplyPing();
-		}
-		default:
-			break;
-		}
-
-		getchar();
-		getchar();
-		break;
-	}
-	case 2: {
-		ANetGateway gateway("4567", "4568");
-		gateway.StartForwarding();
-		break;
-	}
-	case 3: {
-		switch (ctl) {
-		case '1': {
-			ANetServer athernet("4568", false);
-			while (1) {
-				char buffer[512];
-				athernet.RecvData((uint8_t*)buffer, Config::IP_PACKET_PAYLOAD);
-				std::cout << "Payload: " << buffer << std::endl;
-			}
-			break;
-		}
-		case '3': {
-			ANetClient athernet("10.19.131.103", "4568", false);
-			std::ifstream inputFile;
-			inputFile.open(
-				R"(C:\Users\16322\Desktop\lessons\2021_1\CS120_Computer_Network\Athernet-cpp\Input\input.in)");
-			std::string message;
-
-			while (std::getline(inputFile, message)) {
-				athernet.SendData((const uint8_t*)message.c_str(), message.length() + 1);
-			}
-			break;
-		}
-		default:
-			break;
-		}
-
-		getchar();
-		getchar();
-		break;
-	}
-	}
+            getchar();
+            getchar();*/
+            break;
+        }
+    }
 }
 
 void project4(int argc, char *argv[]) {
@@ -135,7 +167,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    project4(argc, argv);
+    project3(argc, argv);
 
     return 0;
 }

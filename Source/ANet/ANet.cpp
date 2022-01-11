@@ -8,7 +8,10 @@
 
 enum ANetIPTag {
     DATA,
-    PING
+    PING,
+    START_PING,
+    STOP_PING,
+    START_RECV
 };
 
 ANetPacket::ANetPacket(uint32_t src_ip, uint32_t dst_ip, uint16_t src_port, uint16_t dst_port, const uint8_t *data,
@@ -117,7 +120,8 @@ void ANetClient::SendString(const std::string &str) {
     int sendLen = min(strLen, MAX_STR_LEN);
 
     while (strLen > MAX_STR_LEN) {
-        ANetPacket packet(m_selfIP, m_destIP, m_selfPort, m_destPort, (const uint8_t *) str.c_str() + strPtr, (uint16_t) sendLen);
+        ANetPacket packet(m_selfIP, m_destIP, m_selfPort, m_destPort, (const uint8_t *) str.c_str() + strPtr,
+                          (uint16_t) sendLen);
         int macLen = sendLen + (int) sizeof(ANetIP) + (int) sizeof(ANetUDP);
         strLen -= MAX_STR_LEN;
         AudioIO::SendData((const uint8_t *) &packet, macLen);
@@ -125,7 +129,8 @@ void ANetClient::SendString(const std::string &str) {
     }
 
     sendLen = min(strLen, MAX_STR_LEN);
-    ANetPacket packet(m_selfIP, m_destIP, m_selfPort, m_destPort, (const uint8_t *) str.c_str() + strPtr, (uint16_t) sendLen);
+    ANetPacket packet(m_selfIP, m_destIP, m_selfPort, m_destPort, (const uint8_t *) str.c_str() + strPtr,
+                      (uint16_t) sendLen);
     int macLen = sendLen + (int) sizeof(ANetIP) + (int) sizeof(ANetUDP);
     AudioIO::SendData((const uint8_t *) &packet, macLen);
 }
@@ -136,6 +141,36 @@ void ANetClient::SendInt(int i) {
 
     ANetPacket packet(m_selfIP, m_destIP, m_selfPort, m_destPort, (const uint8_t *) &i, sizeof(int));
     int macLen = sizeof(ANetIP) + sizeof(ANetUDP) + sizeof(int);
+    AudioIO::SendData((const uint8_t *) &packet, macLen);
+}
+
+void ANetClient::StartPingReq() {
+    if (!m_isAthernet)
+        return;
+    SendPacketWithType(ANetIPTag::START_PING);
+}
+
+void ANetClient::StopPingReq() {
+    if (!m_isAthernet)
+        return;
+
+    SendPacketWithType(ANetIPTag::STOP_PING);
+}
+
+void ANetClient::StartRecvReq() {
+    if (!m_isAthernet)
+        return;
+
+    SendPacketWithType(ANetIPTag::START_RECV);
+}
+
+void ANetClient::SendPacketWithType(ANetIPTag type) {
+    if (!m_isAthernet)
+        return;
+    ANetPacket packet(m_selfIP, m_destIP, m_selfPort, m_destPort, nullptr, 0);
+    packet.ip.tag = type;
+
+    int macLen = sizeof(ANetIP) + sizeof(ANetUDP);
     AudioIO::SendData((const uint8_t *) &packet, macLen);
 }
 
@@ -152,12 +187,11 @@ ANetServer::ANetServer(const char *open_port, bool isAthernet)
 int ANetServer::RecvData(uint8_t *out, int outlen) {
     struct ANetPacket packet{};
     char stringBuf[16];
-    int length = 0;
 
-    if (m_isAthernet) 
-        length = AudioIO::RecvData((uint8_t *) &packet, Config::MACDATA_PER_FRAME);
+    if (m_isAthernet)
+        AudioIO::RecvData((uint8_t *) &packet, Config::MACDATA_PER_FRAME);
     else
-        length = m_udpServer->RecvPacket(packet);
+        m_udpServer->RecvPacket(packet);
 
     InetNtop(AF_INET, &packet.ip.ip_src, stringBuf, 16);
 
@@ -185,7 +219,7 @@ void ANetServer::RecvString(std::string &str) {
     constexpr int MAX_STR_LEN = Config::IP_PACKET_PAYLOAD - 1;
     ANetPacket packet;
     str.clear();
-    char *stringPtr = (char *)packet.payload;
+    char *stringPtr = (char *) packet.payload;
 
     do {
         m_audioIO->RecvData((uint8_t *) &packet, Config::MACDATA_PER_FRAME);
@@ -207,14 +241,32 @@ ANetGateway::ANetGateway(const char *anet_port, const char *out_port)
     m_outPort = htons(std::strtol(out_port, nullptr, 10));
 }
 
+int ANetGateway::replyCount = 0;
+
 void ANetGateway::StartForwarding() {
+//    auto int2atn = std::async(std::launch::async, [this]() { return InternetToATN(); });
     PingCapture capturer(Config::IP_ETHERNET);
-    //auto atn2int = std::async(std::launch::async, [this]() { return ATNToInternet(); });
-    //auto int2atn = std::async(std::launch::async, [this]() { return InternetToATN(); });
-    capturer.startCapture((void *)ANetGateway::OnPingArrive);
-    //atn2int.get();
-    //int2atn.get();
-    Sleep(1000000);
+    if (capturer.isWorking()) {
+        capturer.startCapture((void *) ANetGateway::OnPingArrive);
+    }
+
+    while (true) {
+        ANetPacket packet;
+        AudioIO::RecvData((uint8_t *) &packet, Config::MACDATA_PER_FRAME);
+        switch (packet.ip.tag) {
+            case ANetIPTag::START_PING: {
+                std::cout << "Start pinging other devices.\n";
+                ATNToInternet();
+            }
+            case ANetIPTag::START_RECV: {
+                std::cout << "Start receiving ping from other devices.\n";
+                replyCount = Config::PING_NUM;
+            }
+            default:
+                std::cout << "Wrong state: " << (int) packet.ip.tag << "\n";
+                break;
+        }
+    }
 }
 
 void ANetGateway::ATNToInternet() {
@@ -239,6 +291,10 @@ void ANetGateway::ATNToInternet() {
             case ANetIPTag::DATA:
                 m_NATTable[targetIP]->SendData((const uint8_t *) packet.payload, packet.udp.udp_len);
                 break;
+            case ANetIPTag::STOP_PING:
+                return;
+            default:
+                break;
         }
     }
 }
@@ -255,6 +311,9 @@ void ANetGateway::InternetToATN() {
 }
 
 void ANetGateway::OnPingArrive(const char *src_ip) {
-    ANetClient ANetConn(Config::IP_ATHERNET, Config::PORT_ATHERNET, true);
-    ANetConn.SendPing(Config::IP_ATHERNET, src_ip);
+    if (replyCount >= 0) {
+        ANetClient ANetConn(Config::IP_ATHERNET, Config::PORT_ATHERNET, true);
+        ANetConn.SendPing(Config::IP_ATHERNET, src_ip);
+        replyCount -= 1;
+    }
 }

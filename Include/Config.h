@@ -62,10 +62,12 @@ public:
     constexpr static auto BACKOFF_TSLOT = 30ms; // CSMA Tslot in milliseconds
 
     constexpr static enum state STATE = BOTH;
-    constexpr static char IP_ATHERNET[16] = "192.168.1.2"; // Node1
+    constexpr static char IP_ATHERNET[16] = "192.168.1.1"; // Node1
     constexpr static char PORT_ATHERNET[] = "4567";
 
     static char IP_ETHERNET[16];
+
+    constexpr static int PING_NUM = 4;
 
     static AudioType header;
     static std::vector<AudioType> modulateSound;
