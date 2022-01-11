@@ -53,11 +53,13 @@ void project3_node1() {
 
         if (input.length() >= 5 && input.substr(0, 4) == "ping") {
             client.StartPingReq();
+            auto ip = input.substr(5);
             for (int i = 0; i < Config::PING_NUM; i++) {
-                auto ip = input.substr(5);
                 client.SendPing(ip.c_str());
+                std::this_thread::sleep_for(500ms);
             }
             client.StopPingReq();
+            std::this_thread::sleep_for(500ms);
         } else if (input == "receive") {
             client.StartRecvReq();
             for (int i = 0; i < Config::PING_NUM; i++) {
