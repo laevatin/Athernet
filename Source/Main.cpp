@@ -95,14 +95,16 @@ void project3_node2() {
 
 void project3(int argc, char* argv[]) {
     int node = atoi(argv[1]);
-    strcpy(Config::IP_ETHERNET, "192.168.18.204");
+    strcpy(Config::IP_ETHERNET, "10.20.195.86");
 
     switch (node) {
         case 1: {
             project3_node1();
+            break;
         }
         case 2: {
             project3_node2();
+            break;
         }
         case 3: {
 /*            switch (ctl) {

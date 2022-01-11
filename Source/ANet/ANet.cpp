@@ -252,15 +252,22 @@ void ANetGateway::StartForwarding() {
 
     while (true) {
         ANetPacket packet;
-        AudioIO::RecvData((uint8_t *) &packet, Config::MACDATA_PER_FRAME);
+        if (replyCount > 0) {
+            Sleep(200);
+            continue;
+        } else {
+            AudioIO::RecvData((uint8_t *) &packet, Config::MACDATA_PER_FRAME);
+        }
         switch (packet.ip.tag) {
             case ANetIPTag::START_PING: {
                 std::cout << "Start pinging other devices.\n";
                 ATNToInternet();
+                break;
             }
             case ANetIPTag::START_RECV: {
                 std::cout << "Start receiving ping from other devices.\n";
                 replyCount = Config::PING_NUM;
+                break;
             }
             default:
                 std::cout << "Wrong state: " << (int) packet.ip.tag << "\n";
@@ -311,7 +318,7 @@ void ANetGateway::InternetToATN() {
 }
 
 void ANetGateway::OnPingArrive(const char *src_ip) {
-    if (replyCount >= 0) {
+    if (replyCount > 0) {
         ANetClient ANetConn(Config::IP_ATHERNET, Config::PORT_ATHERNET, true);
         ANetConn.SendPing(Config::IP_ATHERNET, src_ip);
         replyCount -= 1;
