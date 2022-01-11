@@ -31,6 +31,102 @@ void getInputFromFile(Array<uint8_t> &input, const std::string &path) {
     inputFile.close();
 }
 
+void project2_node1() {
+    AudioIO audioIO;
+    std::cout << "Project 2 Node 1" << newLine;
+    std::cout << "Press any key to continue..." << newLine;
+
+    getchar();
+    std::string input;
+
+    while (true) {
+        std::cout << "Athernet> ";
+        std::getline(std::cin, input);
+        if (input == "exit")
+            break;
+
+        if (input.length() >= 5 && input.substr(0, 4) == "send") {
+            std::ifstream inputFile;
+            inputFile.open(input.substr(5));
+            Array<uint8_t> data;
+            getInputFromFile(data, input.substr(5));
+            data = bitToByte(data);
+            std::cout << "Sending " << data.size() << " bits" << newLine;
+            int size = data.size();
+            audioIO.SendData((uint8_t *)&size, sizeof(int));
+            for (int i = 0; i < data.size(); i += Config::MACDATA_PER_FRAME) {
+                int len = min(Config::MACDATA_PER_FRAME, data.size() - i);
+                audioIO.SendData(data.getRawDataPointer() + i, len);
+            }
+            inputFile.close();
+        } else {
+            std::cout << "Unknown command: " << input << std::endl;
+        }
+    }
+
+
+}
+
+void project2_node2() {
+    std::cout << "Project 2 Node 2" << newLine;
+    std::cout << "Press any key to continue..." << newLine;
+
+    AudioIO audioIO;
+    getchar();
+
+    while (true) {
+        std::ofstream outputFile;
+        std::string file_path;
+        std::cout << "Input your output file path: ";
+        std::getline(std::cin, file_path);
+
+        outputFile.open(file_path);
+        if (!outputFile) {
+            std::cout << "ERROR: Unable to open output file." << newLine;
+            continue;
+        }
+
+        if (file_path == "exit")
+            break;
+
+        uint8_t buffer[Config::MACDATA_PER_FRAME];
+
+        audioIO.RecvData(buffer, sizeof(int));
+        int size = *(int *)buffer;
+        std::cout << "Start receiving " << size << " bits" << newLine;
+
+        auto start = std::chrono::high_resolution_clock::now();
+        for (int i = 0; i < size; i += Config::MACDATA_PER_FRAME) {
+            int len = min(Config::MACDATA_PER_FRAME, size - i);
+            audioIO.RecvData(buffer, len);
+            outputFile.write((char *)buffer, len);
+        }
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end - start;
+
+        std::cout << "Received " << size << " bits in "
+                  << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count()
+                  << " seconds" << newLine;
+
+        outputFile.close();
+    }
+}
+
+void project2(int argc, char *argv[]) {
+    int node = atoi(argv[1]);
+    switch (node) {
+        case 1:
+            project2_node1();
+            break;
+        case 2:
+            project2_node2();
+            break;
+        default:
+            std::cout << "Invalid node number." << newLine;
+            break;
+    }
+}
+
 void project3_node1() {
     constexpr char NODE2_IP[] = "192.168.1.2";
     ANetClient client(NODE2_IP, Config::PORT_ATHERNET, true);
@@ -104,37 +200,6 @@ void project3(int argc, char* argv[]) {
         }
         case 2: {
             project3_node2();
-            break;
-        }
-        case 3: {
-/*            switch (ctl) {
-                case '1': {
-                    ANetServer athernet("4568", false);
-                    while (1) {
-                        char buffer[512];
-                        athernet.RecvData((uint8_t*)buffer, Config::IP_PACKET_PAYLOAD);
-                        std::cout << "Payload: " << buffer << std::endl;
-                    }
-                    break;
-                }
-                case '3': {
-                    ANetClient athernet("10.19.131.103", "4568", false);
-                    std::ifstream inputFile;
-                    inputFile.open(
-                            R"(C:\Users\16322\Desktop\lessons\2021_1\CS120_Computer_Network\Athernet-cpp\Input\input.in)");
-                    std::string message;
-
-                    while (std::getline(inputFile, message)) {
-                        athernet.SendData((const uint8_t*)message.c_str(), message.length() + 1);
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
-
-            getchar();
-            getchar();*/
             break;
         }
     }
