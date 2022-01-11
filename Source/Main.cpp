@@ -4,7 +4,6 @@
 #include "ANet/ANet.h"
 #include <windows.h>
 #include <objbase.h>
-#include <bitset>
 #include <fstream>
 #include <chrono>
 #include "ANet/FTP.h"
@@ -15,7 +14,7 @@ extern std::ofstream debug_file;
  
 void getInputFromFile(Array<uint8_t> &input, const std::string &path) {
     std::ifstream inputFile;
-    uint8_t in;
+    char in;
     int idx = 0;
 
     inputFile.open(path);
@@ -25,7 +24,7 @@ void getInputFromFile(Array<uint8_t> &input, const std::string &path) {
     }
 
     while (inputFile >> in) {
-        input.set(idx++, in);
+        input.set(idx++, (uint8_t)(in - '0'));
     }
 
     inputFile.close();
@@ -79,6 +78,8 @@ void project2_node2() {
         std::string file_path;
         std::cout << "Input your output file path: ";
         std::getline(std::cin, file_path);
+        if (file_path == "exit")
+            break;
 
         outputFile.open(file_path);
         if (!outputFile) {
@@ -86,8 +87,6 @@ void project2_node2() {
             continue;
         }
 
-        if (file_path == "exit")
-            break;
 
         uint8_t buffer[Config::MACDATA_PER_FRAME];
 
@@ -99,14 +98,19 @@ void project2_node2() {
         for (int i = 0; i < size; i += Config::MACDATA_PER_FRAME) {
             int len = min(Config::MACDATA_PER_FRAME, size - i);
             audioIO.RecvData(buffer, len);
-            outputFile.write((char *)buffer, len);
+            DataType byte(buffer, len);
+            DataType bit = byteToBit(byte);
+            for (auto b : bit) {
+                outputFile << (char)(b + '0');
+            }
         }
         auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed = end - start;
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-        std::cout << "Received " << size << " bits in "
-                  << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count()
-                  << " seconds" << newLine;
+        std::cout << "Received " << size << " bytes in "
+                  << elapsed.count()
+                  << " ms" << newLine;
+        std::cout << "Link bandwidth: " << (double)size * 8.0 / (double)elapsed.count() * 1000.0 << " Kbps" << newLine;
 
         outputFile.close();
     }
@@ -236,7 +240,8 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    project3(argc, argv);
+    project2(argc, argv);
+    //project3(argc, argv);
 
     return 0;
 }
