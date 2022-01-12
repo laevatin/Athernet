@@ -27,7 +27,7 @@ void Frame::modulate(const DataType &data, int start)
     {
         /* gets 0 if i is out of bound */
         int8_t composed = data[i];
-        composed = composed | (data[i + 1] << 1);
+        composed = composed | (data[i + 1] << 1) | (data[i + 2] << 2);
         std::cout << (int)composed << " ";
 
         addSound(Config::modulateSound[composed]);

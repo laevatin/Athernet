@@ -34,25 +34,39 @@ void Config::initPreamble()
 
 void Config::initAudio()
 {
-    int base = 5600;
+    int base = 2800;
     AudioType audio1 = generateSound(base, Config::BIT_LENGTH, 0);
     AudioType audio2 = generateSound(base, Config::BIT_LENGTH, PI);
     AudioType audio3 = generateSound(base * 2, Config::BIT_LENGTH, 0);
     AudioType audio4 = generateSound(base * 2, Config::BIT_LENGTH, PI);
+    AudioType audio5 = generateSound(base * 4, Config::BIT_LENGTH, 0);
+    AudioType audio6 = generateSound(base * 4, Config::BIT_LENGTH, PI);
 
     AudioType tmp;
     tmp.setSize(1, Config::BIT_LENGTH);
     for (int i = 0; i < Config::BIT_LENGTH; i++)
-        tmp.setSample(0, i, audio1.getSample(0, i) + audio3.getSample(0, i));
+        tmp.setSample(0, i, audio1.getSample(0, i) + audio3.getSample(0, i) + audio5.getSample(0, i));
     modulateSound.push_back(tmp);
     for (int i = 0; i < Config::BIT_LENGTH; i++)
-        tmp.setSample(0, i, audio1.getSample(0, i) + audio4.getSample(0, i));
+        tmp.setSample(0, i, audio1.getSample(0, i) + audio4.getSample(0, i) + audio5.getSample(0, i));
     modulateSound.push_back(tmp);
     for (int i = 0; i < Config::BIT_LENGTH; i++)
-        tmp.setSample(0, i, audio2.getSample(0, i) + audio3.getSample(0, i));
+        tmp.setSample(0, i, audio2.getSample(0, i) + audio3.getSample(0, i) + audio5.getSample(0, i));
     modulateSound.push_back(tmp);
     for (int i = 0; i < Config::BIT_LENGTH; i++)
-        tmp.setSample(0, i, audio2.getSample(0, i) + audio4.getSample(0, i));
+        tmp.setSample(0, i, audio2.getSample(0, i) + audio4.getSample(0, i) + audio5.getSample(0, i));
+    modulateSound.push_back(tmp);
+    for (int i = 0; i < Config::BIT_LENGTH; i++)
+        tmp.setSample(0, i, audio1.getSample(0, i) + audio3.getSample(0, i) + audio6.getSample(0, i));
+    modulateSound.push_back(tmp);
+    for (int i = 0; i < Config::BIT_LENGTH; i++)
+        tmp.setSample(0, i, audio1.getSample(0, i) + audio4.getSample(0, i) + audio6.getSample(0, i));
+    modulateSound.push_back(tmp);
+    for (int i = 0; i < Config::BIT_LENGTH; i++)
+        tmp.setSample(0, i, audio2.getSample(0, i) + audio3.getSample(0, i) + audio6.getSample(0, i));
+    modulateSound.push_back(tmp);
+    for (int i = 0; i < Config::BIT_LENGTH; i++)
+        tmp.setSample(0, i, audio2.getSample(0, i) + audio4.getSample(0, i) + audio6.getSample(0, i));
     modulateSound.push_back(tmp);
 }
 

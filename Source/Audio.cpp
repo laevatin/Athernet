@@ -4,6 +4,8 @@
 static std::condition_variable cv;
 static std::mutex cv_m;
 
+//#define TEST_NOPHYS
+
 AudioDevice::AudioDevice() 
 {}
 
@@ -93,9 +95,45 @@ void AudioDevice::hiResTimerCallback()
         if (demodulator.isTimeout())
         {
             isReceiving = false;
+            isSending = false;
             std::cout << "Receiving timed out" << newLine;
         }
     }
+
+#ifdef TEST_NOPHYS
+    // simulate physical layer
+    if (isSending && isReceiving)
+    {
+        lock.enter();
+        std::cout << "SEND" << "\n";
+        int numSamples = 1000;
+        float* buffer = new float[numSamples];
+        if (sender.hasEnoughElem(numSamples))
+            sender.read(buffer, numSamples);
+        else
+        {
+            std::size_t size = sender.size();
+            sender.read(buffer, size);
+            zeromem(buffer + size, ((size_t)numSamples - size) * sizeof(float));
+        }
+
+        for (int i = 0; i < numSamples; i++) {
+            buffer[i] /= 10;
+        }
+
+        if (receiver.hasEnoughSpace(numSamples))
+            receiver.write(buffer, numSamples);
+        else
+        {
+            std::cerr << "No enough space to receive." << newLine;
+            std::size_t avail = receiver.avail();
+            receiver.write(buffer, avail);
+            isReceiving = false;
+        }
+        lock.exit();
+        delete[] buffer;
+    }
+#endif
 
     if (!isSending && !isReceiving)
     {
@@ -118,6 +156,7 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
 {
     const ScopedLock sl(lock);
 
+#ifndef TEST_NOPHYS
     /* Only use channel 0. */
     if (isSending) 
     {
@@ -150,6 +189,7 @@ void AudioDevice::audioDeviceIOCallback(const float** inputChannelData, int numI
             isReceiving = false;
         }
     }
+#endif
 }
 
 void AudioDevice::createNextFrame()

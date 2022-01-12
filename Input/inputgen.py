@@ -1,5 +1,5 @@
 from fileutils import create_input
 
-create_input("input100.in", 100)
-create_input("input1000.in", 1000)
-create_input("input10000.in", 10000)
+create_input("input99.in", 99)
+create_input("input990.in", 990)
+create_input("input9900.in", 9900)
