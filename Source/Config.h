@@ -25,11 +25,12 @@ public:
 
     constexpr static int HEADER_LENGTH = 440;
 
-    constexpr static int BIT_LENGTH = 200;
-    constexpr static int FRAME_LENGTH = 10490;
-    constexpr static int BIT_PER_FRAME = 100;
+    constexpr static int BIT_LENGTH = 300;
+    constexpr static int BIT_PER_FRAME = 99;
 
-    constexpr static int BAND_WIDTH = 2;
+    constexpr static int BAND_WIDTH = 3;
+    
+    constexpr static int FRAME_LENGTH = BIT_LENGTH * BIT_PER_FRAME / BAND_WIDTH + HEADER_LENGTH + 20;
 
     constexpr static int RECV_TIMEOUT = 1;
 

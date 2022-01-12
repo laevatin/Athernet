@@ -73,7 +73,9 @@ void AudioDevice::hiResTimerCallback()
 
     if (isReceiving)
     {
-        std::size_t len = receiver.size();
+        std::size_t len1 = receiver.size();
+        std::size_t len = std::min(len1, 12000);
+
         float *buffer = new float[len];
 
         lock.enter();
